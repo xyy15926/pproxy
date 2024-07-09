@@ -9,7 +9,7 @@ tags:
   - Data Mart
   - Data Warehouse
 date: 2023-02-13 10:33:07
-updated: 2024-07-08 16:25:28
+updated: 2024-07-09 11:14:28
 toc: true
 mathjax: true
 description: 
@@ -562,3 +562,57 @@ grace_hash_join(t1, t2):
 
 > - 拉链表：<https://dantezhao.gitbooks.io/data-warehouse-in-action/content/di-si-zhang-la-lian-biao.html>
 
+##	相似性检索
+
+-   相似性检索：从指定目标集合中检索出与给定样本相似的目标
+
+> - *range searches*：范围检索，给定查询点、检索距离阈值
+> - *K-neighbor searches*：K近邻检索，给定查询点、检索结果数量
+
+-	待检索目标、样本：以指定*feature space*中的高维数据点
+	表示
+
+-	相似性检索则在相应*metric space*中搜索样本点最近邻作为
+	检索结果
+
+-	关键：对待检索的目标建立有效的**相似性索引**
+	-	对待检索目标进行预划分，在对给定样本进行检索时，只需
+		对比相似索引中给出的可能相似的目标
+	-	减少相似性检索的对比次数、I/O，让相似性检索在大规模
+		数据集中应用成为可能
+
+###	*Tree-Based Index*
+
+-   基于树结构的索引
+    -	向量维度大于 20 之后，仍然需要扫描整个向量集合的大部分，与线性扫描没有太大差别
+    -	包括
+        -	*KD-Tree*
+        -	*R-Tree*
+        -	R\*-Tree
+        -	*X-Tree*
+        -	*SS-Tree*
+        -	*SR-Tree*
+        -	*VP-Tree*
+        -	*Metric-Trees*
+
+###	*Hasing-Based Index*
+
+-   基于哈希的索引技术：利用 Hash 技术进行特征提取、空间划分以简化高维数据搜索
+    -	特征提取：提取特征、减小特征维度
+        -	在损失信息较小的情况下对数据进行降维
+        -	Hash 函数（特征提取方法）选择依赖于对问题认识
+        -   特征提取 Hash
+            -	*Average Hashing*：*aHash*，平均哈希
+            -	*Perceptual Hashing*：*pHash*，感知哈希
+            -	*Differantiate Hashing*：*dHash*，差异哈希
+    -	空间划分：划分特征空间（哈希桶）、缩小搜索空间
+        -	将高维特征映射到 1 维先进行近似搜索得到候选集，然后在候选集中进行精确搜索
+        -	Hash 函数的选择取决于原始特征表示、度量空间
+        -	*Locality Sensitive Hashing* 局部敏感哈希：特征向量越接近，哈希后值越可能相同
+            -	局部敏感哈希值能够代表代替原始数据比较相似性
+            -	支持对原始特征向量进行非精确匹配
+            -   根据定义在特征向量空间的距离
+                -	*MinHashing*：最小值哈希，基于Jaccard系数
+                -	基于汉明距离的 *LSH*
+                -	基于曼哈顿距离的 *LSH*
+                -	*Exact Euclidean LSH*：*E2LSH*，基于欧式距离

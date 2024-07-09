@@ -1,0 +1,26 @@
+# tmp files
+tmp/
+temp/
+Session.vim
+
+# executable directories
+bin/
+gen/
+out/
+build/
+__pycache__/
+
+# executable files
+*.pyc
+*.exe
+*.xlsx
+*.db
+
+# log files
+*.log
+
+# setting files
+.classpath
+.project
+.vscode
+.idle
