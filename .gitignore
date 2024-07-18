@@ -2,6 +2,7 @@
 tmp/
 temp/
 Session.vim
+*.Identifier
 
 # executable directories
 bin/
