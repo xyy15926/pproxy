@@ -9,7 +9,7 @@ tags:
   - Semi-Supervised Learning
   - Reinforcement Learning
 date: 2019-07-14 20:02:42
-updated: 2024-07-18 19:09:54
+updated: 2024-07-21 20:52:49
 toc: true
 mathjax: true
 comments: true
@@ -353,9 +353,9 @@ description: 机器学习范畴
         -   应用场合
             -   蒙特卡洛类似算法：随机化损失
     -   最大熵原理（估计）：选择熵最大的概率（分布）模型
-        -	最大熵原理思路：熵最大概率模型即最好模型
-            -	概率模型要满足已有事实（约束条件）
-            -	没有更多信息的情况下，不确定部分是等可能的
+        -   最大熵原理思路：熵最大概率模型即最好模型
+            -   概率模型要满足已有事实（约束条件）
+            -   没有更多信息的情况下，不确定部分是等可能的
             -   信息熵可代表概率分布的混乱程度
             -   则信息熵最大即为给定条件下，非必要限制最小、最自然的情况
         -   应用场合
@@ -733,4 +733,363 @@ $$ L(y, f(x)) = \frac 1 2 \sum_{y^{(j)} \neq f(x)} w_j (1 - f(x, y) + f(x, y^{(j
         -   *AUC*
             -   *ROC*
     -   *Tagging* 标注问题：类似分类问题
+
+##  数据空间
+
+### 距离
+
+-   距离：可认为是两个对象 $x,y$ 之间的 **相似程度**
+    -   距离和相似度是互补的
+    -   可以根据处理问题的情况，自定义距离
+
+> - 向量距离与相似度：<https://paddlepedia.readthedocs.io/en/latest/tutorials/deep_learning/distances/distances.html>
+
+####    *Bregman Divergence*
+
+$$ D(x, y) = \Phi(x) - \Phi(y) - <\nabla \Phi(y), (x - y)> $$
+> - $Phi(x)$：凸函数
+
+-   *Bregman Divergence* 布雷格曼散度
+    -   穷尽所有关于“正常距离”的定义：给定 $R^n * R^n \rightarrow R$ 上的正常距离 $D(x,y)$，一定可以表示成布雷格曼散度形式
+        -   *正常距离*：对满足任意概率分布的点，点平均值点（期望点）应该是空间中距离所有点平均距离最小的点
+        -   布雷格曼散度对一般概率分布均成立，而其本身限定由凸函数生成
+    -   直观上：$x$ 处函数、函数过 $y$ 点切线（线性近似）之差
+        -   可以视为是损失、失真函数：$x$ 由 $y$ 失真、近似、添加噪声得到
+    -   特点
+        -   非对称：$D(x, y) = D(y, x)$
+        -   不满足三角不等式：$D(x, z) \leq D(x, y) + D(y, z)$
+        -   对凸集作 *Bregman Projection* 唯一
+            -   即寻找凸集中与给定点Bregman散度最小点
+            -   一般的投影指欧式距离最小
+
+| Domain    | $\Phi(x)$                    | $D_{\Phi}(x,y)$                                                      | Divergence                 |
+|-----------|------------------------------|----------------------------------------------------------------------|----------------------------|
+| $R$       | $x^2$                        | $(x-y)^2$                                                            | Squared Loss               |
+| $R_{+}$   | $xlogx$                      | $xlog(\frac x y) - (x-y)$                                            |                            |
+| $[0,1]$   | $xlogx + (1-x)log(1-x)$      | $xlog(\frac x y) + (1-x)log(\frac {1-x} {1-y})$                      | Logistic Loss              |
+| $R_{++}$  | $-logx$                      | $\frac x y - log(\frac x y) - 1$                                     | Itakura-Saito Distance     |
+| $R$       | $e^x$                        | $e^x - e^y - (x-y)e^y$                                               |                            |
+| $R^d$     | $\|x\|$                      | $\|x-y\|$                                                            | Squared Euclidean Distance |
+| $R^d$     | $x^TAx$                      | $(x-y)^T A (x-y)$                                                    | Mahalanobis Distance       |
+| d-Simplex | $\sum_{j=1}^d x_j log_2 x_j$ | $\sum_{j=1}^d x_j log_2 log(\frac {x_j} {y_j})$                      | KL-divergence              |
+| $R_{+}^d$ | $\sum_{j=1}^d x_j log x_j$   | $\sum_{j=1}^d x_j log(\frac {x_j} {y_j}) - \sum_{j=1}^d (x_j - y_j)$ | Genelized I-divergence     |
+
+> - <http://www.jmlr.org/papers/volume6/banerjee05b/banerjee05b.pdf>
+
+####    *Eculid Distance*
+
+-   *Eculid Distance* 欧式距离：向量空间上 $L_2$ 范数
+    $$ d_{12} = \sqrt {\sum_{k=1}^n |x_{1,k} - x_{2,k}|^2} $$
+
+-   向量空间上还可以类似定义点到平面欧式距离
+    -   *Functional Margin* 函数间隔
+        $$ \hat{\gamma_i} = y_i(wx_i + b) $$
+        -   函数间隔可以表示分类的正确性、确信度
+            -   正值表示正确
+            -   间隔越大确信度越高
+        -   点集与超平面的函数间隔取点间隔最小值 $\hat{T} = \min_{i=1,2,\cdots,n} \hat{\gamma_i}$
+        -   超平面参数 $w, b$ 成比例改变时，平面未变化，但是函数间隔成比例变化
+    -   *Geometric Margin* 几何间隔
+        $$\begin{align*}
+        \gamma_i & = \frac {y_i} {\|w\|} (wx_i + b) \\
+            & = \frac {\hat \gamma_i} {\|w\|}
+        \end{align*}$$
+        -   几何间隔一般是样本点到超平面的有符号距离
+            -   点正确分类时，几何间隔就是点到直线的距离
+        -   几何间隔相当于使用 $\|w\|$ 对函数间隔作规范化
+            -   $\|w\|=1$ 时，两者相等
+            -   几何间隔对确定超平面、样本点是确定的，不会因为超平面表示形式改变而改变
+        -   点集与超平面的几何间隔取点间隔最小值 $\hat{T} = \min_{i=1,2,\cdots,n} \hat{\gamma_i}$
+
+####    常见单点距离
+
+-   *Minkowski Distance* 闵科夫斯基距离：向量空间 $\mathcal{L_p}$ 范数
+    $$ d_{12} = \sqrt [1/p] {\sum_{k=1}^n |x_{1,k} - x_{2,k}|^p} $$
+    -   表示一组距离族
+        -   $p=1$：*Manhattan Distance*，曼哈顿距离
+        -   $p=2$：*Euclidean Distance*，欧式距离
+        -   $p \rightarrow \infty$：*Chebychev Distance*，切比雪夫距离
+    -   闵氏距离缺陷
+        -   将各个分量量纲视作相同
+        -   未考虑各个分量的分布
+
+-   *Mahalanobis Distance* 马氏距离：表示数据的协方差距离
+    $$ d_{12} = \sqrt {({x_1-\mu}^T) \Sigma^{-1} (x_2-\mu)} $$
+    > - $\Sigma$：总体协方差矩阵
+    -   优点
+        -   马氏距离和原始数据量纲无关
+        -   考虑变量相关性
+    -   缺点
+        -   需要知道总体协方差矩阵，使用样本估计效果不好
+
+-   *Lance and Williams Distance* 兰氏距离、堪培拉距离
+    $$ d_{12} = \sum^{n}_{k=1} \frac {|x_{1,k} - x_{2,k}|} {|x_{1,k} + x_{2,k}|} $$
+    -   特点
+        -   对接近0的值非常敏感
+        -   对量纲不敏感
+        -   未考虑变量直接相关性，认为变量之间相互独立
+
+-   *Hamming Distance* 汉明距离：分类数据间差别
+    $$ diff = \frac 1 p \sum_{i=1}^p  (v^{(1)}_i - v^{(2)}_i)^k $$
+    > - $v_i \in \{0, 1\}$：虚拟变量
+    > - $p$：虚拟变量数量
+    -   特点
+        -   可以衡量定性变量之间的距离
+    -   汉明距离 *Embedding*：将数值类型数据嵌入汉明距离空间
+        -   找到所有点、所有维度坐标值中最大值 $C$
+        -   对每个点 $P=(x_1, x_2, \cdots, x_d)$
+            -   将每维 $x_i$ 转换为长度为 $C$ 的 0、1 序列
+            -   其中前 $x_i$ 个值为 1，之后为 0
+        -   将 $d$ 个长度为 $C$ 的序列连接，形成长度为 $d * C$ 的序列
+        > - 以上汉明距离空间嵌入对曼哈顿距离是保距的
+
+-   *Levenshtein Distance*、*Edit Distance* 字符串、编辑距离：两个字符串转换需要进行插入、删除、替换操作的次数
+    $$ lev_{A,B}(i, j) = \left \{ \begin{array}{l}
+        i, & j = 0 \\
+        j, & i = 0 \\
+        min \left \{ \begin{array}{l}
+            lev_{A,B}(i,j-1) + 1 \\
+            lev_{A,B}(i-1,j) + 1 \\
+            lev_{A,B}(i-1, j-1) + 1
+        \end{array} \right. & A[i] != B[j] \\
+        min \left \{ \begin{array}{l}
+            lev_{A,B}(i,j-1) + 1 \\
+            lev_{A,B}(i-1,j) + 1 \\
+            lev_{A,B}(i-1, j-1)
+        \end{array} \right. & A[i] = B[j] \\
+    \end{array} \right. $$
+
+####    常见相似度
+
+-   *Jaccard* 系数：度量两个集合的相似度，值越大相似度越高
+    $$ sim = \frac {\|S_1 \hat S_2\|} {\|S_1 \cup S_2\|} $$
+    > - $S_1, S_2$：待度量相似度的两个集合
+
+-   *Consine Similarity* 余弦相似度
+    $$ similarity = cos(\theta) = \frac {x_1 x_2} {\|x_1\|\|x_2\|} $$
+    > - $x_1, x_2$：向量
+
+### *Kernel Function*
+
+-   *Kernel Function*：对输入空间 $X$ （欧式空间 $R^n$ 的子集或离散集合）、特征空间 $H$ ，若存在从映射
+    $$ \phi(x): X \rightarrow H $$
+    使得对所有 $x, z \in X$ ，函数 $K(x,z)$ 满足
+    $$ K(x,z) = \phi(x) \phi(z) $$
+    则称 $K(x,z)$ 为核函数、 $\phi(x)$ 为映射函数，其中 $\phi(x) \phi(z)$ 表示内积
+    -   特征空间 $H$ 一般为无穷维
+        -   特征空间必须为希尔伯特空间（内积完备空间）
+    -   *Kernel Trick* 核技巧：利用核函数简化映射函数 $\phi(x)$ 映射、内积的计算技巧
+        -   避免实际计算映射函数
+            -   实务中往往寻找到的合适的核函数即可，不关心对应的映射函数
+            -   单个核函数可以对应多个映射、特征空间
+            -   避免高维向量空间向量的存储
+        -   核技巧常被用于分类器中
+            -   根据 *Cover's* 定理，核技巧可用于非线性分类问题，如在 *SVM* 中常用
+            -   核函数的作用范围：梯度变化较大的区域
+                -   梯度变化小的区域，核函数值变化不大，所以没有区分能力
+
+> - *Cover's* 定理可以简单表述为：非线性分类问题映射到高维空间后更有可能线性可分
+
+-   映射函数 $\phi$：输入空间 $R^n$ 到特征空间的映射 $H$ 的映射
+    -   对于给定的核 $K(x,z)$ ，映射函数取法不唯一
+        -   以核函数 $K(x, y) = (x y)^2, x, y \in R^2$ 为例，有
+            $$\begin{align*}
+            (xy)^2 & = (x_1y_1 + x_2y_2)^2 \\
+            & = (x_1y_1)^2 + 2x_1y_1x_2y_2 + (x_2y_2)^2
+            \end{align*}$$
+        -   若特征空间为 $R^3$，取映射
+            $$ \phi(x) = (x_1^2, \sqrt 2 x_1x_2, x_2^2)^T $$
+        -   目标特征空间可以不同，若特征空间为 $R^4$，取映射
+            $$ \phi(x) = (x_1^2, x_1x_2, x_1x_2, x_2^2)^T $$
+        -   相同目标特征空间可以取不同映射，同样特征空间为 $R^3$，也可以取映射
+            $$ \phi(x) = \frac 1 {\sqrt 2} (x_1^2 - x_2^2, 2x_1x_2, x_1^2 + x_2^2)^T $$
+
+####    正定核函数
+
+-   （正定）核函数：满足如下条件的函数 $K(x,y): X * X \rightarrow R$
+    -   核函数条件
+        -   正定性：$\forall x \in V, \int\int f(x)K(x,y)f(y)dxdy \geq 0$
+        -   对称性：$K(x,y) = K(y,x)$
+    -   正定核具有优秀性质
+        -   *SVM* 中正定核能保证优化问题为凸二次规划，即二次规划中矩阵 $G$ 为正定矩阵
+    -   检验具体函数是否为正定核函数不容易，*Mercer* 定理可用于指导构造核函数
+
+
+-   *Mercer* 定理（正定核函数充要条件）：设 $K: \mathcal{X * X} \rightarrow R$ 是对称函数，则 $K(x,z)$ 为正定核函数的充要条件是 $\forall x_i \in \mathcal{X}, i=1,2,...,m$，$K(x,z)$ 对应的 *Gram* 矩阵 $K = [K(x_i, x_j)]_{m*m} $ 是半正定矩阵
+    -   必要性证明
+        -   由于 $K(x,z)$ 是 $\mathcal{X * X}$ 上的正定核，所以存在从 $\mathcal{X}$ 到 *Hilbert* 空间 $\mathcal{H}$ 的映射，使得
+            $$ K(x,z) = \phi(x) \phi(z) $$
+        -   则对任意 $x_1, x_2, \cdots, x_m$，构造 $K(x,z)$ 关于其的 *Gram* 矩阵
+            $$ [K_{ij}]_{m*m} = [K(x_i, x_i)]_{m*m} $$
+        -   对任意 $c_1, c_2, \cdots, c_m \in R$，有
+            $$\begin{align*}
+            \sum_{i,j=1}^m c_i c_j K(x_i, x_j) & = \sum_{i,j=1}^m
+                c_i c_j (\phi(x_i) \phi(x_j)) \\
+            & = (\sum_i c_i \phi(x_i))(\sum_j c_j \phi(x_j)) \\
+            & = \| \sum_i c_i \phi(x_i) \|^2 \geq 0
+            \end{align*}$$
+            所以 $K(x,z)$ 关于 $x_1, x_2, \cdots, x_m$ 的 *Gram* 矩阵半正定
+    -   充分性证明
+        -   对给定的 $K(x,z)$，可以构造从 $\mathcal{x}$ 到某个希尔伯特空间的映射
+            $$ \phi: x \leftarrow K(·, x) $$
+        -   且有
+            $$ K(x,z) = \phi(x) · \phi(z) $$
+            所以 $K(x,z)$ 是 $\mathcal{X * X}$ 上的核函数
+
+> - 正定核的充要条件：<https://www.cnblogs.com/qizhou/p/17491302.html>
+
+####    欧式空间核函数
+
+-   *Linear Kernel* 线性核：最简单的核函数
+    $$ k(x, y) = x^T y $$
+    -   特点
+        -   适用线性核的核算法通常同普通算法结果相同
+            -   *KPCA* 使用线性核等同于普通 *PCA*
+
+-   *Polynomial Kernel* 多项式核：*non-stational kernel*
+    $$ K(x, y) = (\alpha x^T y + c)^p $$
+    -   特点
+        -   适合正交归一化后的数据
+        -   参数较多，稳定
+    -   应用场合
+        -   SVM：*p* 次多项式分类器
+            $$ f(x) = sgn(\sum_{i=1}^{N_s} \alpha_i^{*} y_i (x_i x + 1)^p + b^{*}) $$
+
+-   *Gaussian Kernel* 高斯核：*Radial Basis Kernel*，经典的稳健径向基核
+    $$ K(x, y) = exp(-\frac {\|x - y\|^2} {2\sigma^2}) $$
+    > - $\sigma$：带通，取值关于核函数效果，影响高斯分布形状
+    > > -   高估：分布过于集中，靠近边缘非常平缓，表现类似像线性一样，非线性能力失效
+    > > -   低估：分布过于平缓，失去正则化能力，决策边界对噪声高度敏感
+    -   特点
+        -   对数据中噪声有较好的抗干扰能力
+        -   高斯核能够把数据映射至无穷维：对应映射（省略分母）
+            $$\begin{align*}
+            K(x, y) & = exp(-(x - y)^2)  \\
+            & = exp(-(x^2 - 2 x y - y^2)) \\
+            & = exp(-x^2) exp(-y^2) exp(2xy) \\
+            & = exp(-x^2) exp(-y^2) \sum_{i=0}^\infty \frac {(2xy)^i} {i!} \\
+            & = \phi(x) \phi(y) \\
+            \phi(x) & = exp(-x^2)\sum_{i=0}^\infty \sqrt {\frac {2^i} {i!}} x^i
+            \end{align*}$$
+    -   应用场合
+        -   *SVM*：高斯 *Radial Basis Function* 分类器
+            $$ f(x) = sgn(\sum_{i=1}^{N_s} \alpha_i^{*} y_i exp(-\frac {\|x - y\|^2} {2\sigma^2}) + b^{*}) $$
+
+-   *Exponential Kernel* 指数核：高斯核变种，仅去掉范数的平方，也是径向基核
+    $$ K(x, y) = exp(-\frac {\|x - y\|} {2\sigma^2}) $$
+    -   特点
+        -   降低了对参数的依赖性
+        -   适用范围相对狭窄
+
+-   *Laplacian Kernel* 拉普拉斯核：完全等同于的指数核，只是对参数 $\sigma$ 改变敏感性稍低，也是径向基核
+    $$ K(x, y) = exp(-\frac {\|x - y\|} {\sigma^2}) $$
+
+-   *ANOVA Kernel* 方差核：径向基核，在多维回归问题中效果很好
+    $$ k(x,y) = \sum_{k=1}^n exp(-\sigma(x^k - y^k)^2)^d $$
+
+-   *Sigmoid* 核：来自神经网络领域，被用作人工神经元的激活函数
+    $$ k(x, y) = tanh(\alpha x^T y + c) $$
+    > - $\alpha$：通常设置为 $1/N$，$N$ 是数据维度
+    -   特点
+        -   条件正定，但是实际应用中效果不错
+        -   使用*Sigmoid* 核的 *SVM* 等同于两层感知机神经网络
+
+-   *Ration Quadratic Kernel* 二次有理核：可替代高斯核，计算耗时较小
+    $$ k(x, y) = 1 - \frac {\|x - y\|^2} {\|x - y\|^2 + c} $$
+
+-   *Multiquadric Kernel* 多元二次核：适用范围同二次有理核，是非正定核
+    $$ k(x, y) = \sqrt {\|x - y\|^2 + c^2} $$
+
+-   *Inverse Multiquadric Kernel* 逆多元二次核：和高斯核一样，产生满秩核矩阵，产生无穷维的特征空间
+    $$ k(x, y) = \frac 1 {\sqrt {\|x - y\|^2 + c^2}} $$
+
+-   *Circular Kernel* 环形核：从统计角度考虑的核，各向同性稳定核，在$R^2$上正定
+    $$ k(x, y) = \frac 2 \pi arccos(-\frac {\|x - y\|} \sigma) -
+        \frac 2 \pi \frac {\|x - y\|} \sigma \sqrt{1- \frac {\|x - y\|^2} \sigma} $$
+
+-   *Spherical Kernel*：类似环形核，在 $R^3$ 上正定
+    $$ k(x, y) = 1 - \frac 3 2 \frac {\|x - y\|} \sigma +
+        \frac 1 2 (\frac {\|x - y\|} \sigma)^3 $$
+
+-   *Wave Kernel* 波动核：适用于语音处理场景
+    $$ k(x, y) = \frac \theta {\|x - y\|} sin(\frac {\|x - y\|} \theta) $$
+
+
+-   *Triangular/Power Kernel* 三角核/幂核：量纲不变核，条件正定
+    $$ k(x, y) = - \|x - y\|^d $$
+
+-   *Log Kernel* 对数核：在图像分隔上经常被使用，条件正定
+    $$ k(x, y) = -log(1 + \|x - y\|^d) $$
+
+-   *Spline Kernel* 样条核：以分段三次多项式形式给出
+    $$ k(x, y) = 1 + x^t y + x^t y min(x, y) - \frac {x + y} 2
+        min(x, y)^2 + \frac 1 3 min(x, y)^2 $$
+
+-   *B-Spline Kernel* B-样条核：径向基核，通过递归形式给出
+    $$\begin{align*}
+    k(x, y) & = \prod_{p=1}^d B_{2n+1}(x_p - y_p) \\
+    B_n(x) & = B_{n-1} \otimes B_0 \\
+    & = \frac 1 {n!} \sum_{k=0}^{n+1} \binom {n+1} {r} (-1)^k (x + \frac {n+1} 2 - k)_{+}^n
+    \end{align*}$$
+    > - $x_{+}^d$：截断幂函数 $$
+        x_{+}^d = \left \{ \begin{array}{l}
+            x^d, & if x > 0 \\
+            0, & otherwise \\
+        \end{array} \right.$$
+
+-   *Bessel Kernel* *Bessel* 核：用于函数空间 *Fractional Smoothness* 理论中
+    $$ k(x, y) = \frac {J_{v+1}(\sigma\|x - y\|)} {\|x - y\|^{-n(v + 1)}} $$
+    > - $J$：第一类 *Bessel* 函数
+
+-   *Cauchy Kernel* 柯西核：源自柯西分布，是长尾核，定义域广泛，可以用于原始维度很高的数据
+    $$ k(x, y) = \frac 1 {1 + \frac {\|x - y\|^2} {\sigma}} $$
+
+-   *Chi-Square Kernel* 卡方核：源自卡方分布
+    $$\begin{align*}
+    k(x, y) & = 1 - \sum_{i=1}^d \frac {(x_i - y_i)^2} {\frac 1 2 (x_i + y_i)} \\
+    &= \frac {x^t y} {\|x + y\|}
+    \end{align*}$$
+
+-   *Histogram Intersection/Min Kernel* 直方图交叉核：在图像分类中经常用到，适用于图像的直方图特征
+    $$ k(x, y) = \sum_{i=1}^d min(x_i, y_i) $$
+
+-   *Generalized Histogram Intersection* 广义直方图交叉核：直方图交叉核的扩展，可以应用于更多领域
+    $$ k(x, y) = \sum_{i=1}^m min(|x_i|^\alpha, |y_i|^\beta) $$
+
+-   *Bayesian Kernel* 贝叶斯核：取决于建模的问题
+    $$\begin{align*}
+    k(x, y) & = \prod_{i=1}^d k_i (x_i, y_i) \\
+    k_i(a, b) & = \sum_{c \in \{0, 1\}} P(Y=c | X_i = a) P(Y=c | x_k = b)
+    \end{align*}$$
+
+-   *Wavelet Kernel* 波核：源自波理论
+    $$ k(x, y) = \prod_{i=1}^d h(\frac {x_i - c} a) h(\frac {y_i - c} a) $$
+    > - $c$：波的膨胀速率
+    > - $a$：波的转化速率
+    > - $h$：母波函数，可能的一个函数为 $ h(x) = cos(1.75 x) exp(-\frac {x^2} 2) $
+    -   转化不变版本如下
+        $$ k(x, y) = \prod_{i=1}^d h(\frac {x_i - y_i} a) $$
+
+####    离散数据核函数
+
+-   *String Kernel* 字符串核函数：定义在字符串集合（离散数据集合）上的核函数
+    $$\begin{align*}
+    k_n(s, t) & = \sum_{u \in \sum^n} [\phi_n(s)]_u [\phi_n(t)]_u \\
+    & = \sum_{u \in \sum^n} \sum_{(i,j): s(i) = t(j) = u} \lambda^{l(i)} \lambda^{l(j)}
+    \end{align*}$$
+    > - $[\phi_n(s)]_n = \sum_{i:s(i)=u} \lambda^{l(i)}$：长度大于等于 $n$ 的字符串集合 $S$ 到特征空间 $\mathcal{H} = R^{\sum^n}$ 的映射，目标特征空间每维对应一个字符串 $u \in \sum^n$
+    > - $\sum$：有限字符表
+    > - $\sum^n$：$\sum$ 中元素构成，长度为 $n$ 的字符串集合
+    > - $u = s(i) = s(i_1)s(i_2)\cdots s(i_{|u|})$：字符串 s 的子串 u（其自身也可以用此方式表示）
+    > - $i =(i_1, i_2, \cdots, i_{|u|}), 1 \leq i_1 < i_2 < ... < i_{|u|} \leq |s|$：序列指标
+    > - $l(i) = i_{|u|} - i_1 + 1 \geq |u|$：字符串长度，仅在序列指标 $i$ 连续时取等号（$j$ 同）
+    > - $0 < \lambda \leq 1$：衰减参数
+    -   两个字符串 s、t 上的字符串核函数，是基于映射 $\phi_n$ 的特征空间中的内积
+        -   给出了字符串中长度为n的所有子串组成的特征向量的余弦相似度
+        -   直观上，两字符串相同子串越多，其越相似，核函数值越大
+        -   核函数值可由动态规划快速计算（只需要计算两字符串公共子序列即可）
+    -   应用场合
+        -   文本分类
+        -   信息检索
+        -   信物信息学
 

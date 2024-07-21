@@ -12,7 +12,7 @@ tags:
   - Ring
   - Euler
 date: 2024-01-10 20:53:15
-updated: 2024-07-03 22:05:29
+updated: 2024-07-21 20:55:53
 toc: true
 mathjax: true
 description: 
@@ -52,36 +52,6 @@ description:
     -   多线性函数 $f: x_1 * x_2 * \cdots * x_n \rightarrow W$ 是 $n$ 次齐次函数
     -   欧拉定理：函数 $f: R^n \rightarrow R$ 可导、$k$ 次齐次函数，则有 $x \nabla f(x) = kf(x)$
 
-###    核函数
-
--   （正定）核函数：满足如下条件的函数 $K(x,y)$
-    -   核函数条件
-        -   正定性：$\forall x \in V, \int\int f(x)K(x,y)f(y)dxdy \geq 0$
-        -   对称性：$K(x,y) = K(y,x)$
-
--   *Mercer* 定理（正定核函数充要条件）：设 $K: \mathcal{X * X} \leftarrow R$ 是对称函数，则 $K(x,z)$ 为正定核函数的充要条件是 $\forall x_i \in \mathcal{X}, i=1,2,...,m$，$K(x,z)$ 对应的 *Gram* 矩阵 $K = [K(x_i, x_j)]_{m*m} $ 是半正定矩阵
-    -   必要性证明
-        -   由于 $K(x,z)$ 是 $\mathcal{X * X}$ 上的正定核，所以存在从 $\mathcal{X}$ 到 *Hilbert* 空间 $\mathcal{H}$ 的映射，使得
-            $$ K(x,z) = \phi(x) \phi(z) $$
-        -   则对任意 $x_1, x_2, \cdots, x_m$，构造 $K(x,z)$ 关于其的 *Gram* 矩阵
-            $$ [K_{ij}]_{m*m} = [K(x_i, x_i)]_{m*m} $$
-        -   对任意 $c_1, c_2, \cdots, c_m \in R$，有
-            $$\begin{align*}
-            \sum_{i,j=1}^m c_i c_j K(x_i, x_j) & = \sum_{i,j=1}^m
-                c_i c_j (\phi(x_i) \phi(x_j)) \\
-            & = (\sum_i c_i \phi(x_i))(\sum_j c_j \phi(x_j)) \\
-            & = \| \sum_i c_i \phi(x_i) \|^2 \geq 0
-            \end{align*}$$
-            所以 $K(x,z)$ 关于 $x_1, x_2, \cdots, x_m$ 的 *Gram* 矩阵半正定
-    -   充分性证明
-        -   对给定的 $K(x,z)$，可以构造从 $\mathcal{x}$ 到某个希尔伯特空间的映射
-            $$ \phi: x \leftarrow K(·, x) $$
-        -   且有
-            $$ K(x,z) = \phi(x) · \phi(z) $$
-            所以 $K(x,z)$ 是 $\mathcal{X * X}$ 上的核函数
-
-> - 正定核的充要条件：<https://www.cnblogs.com/qizhou/p/17491302.html>
-
 ### 凸函数
 
 -   凸函数 $f$ 满足
@@ -91,6 +61,41 @@ description:
     $$
     -   强凸函数：不等式严格不等的凸函数
         -   为保证强凸性，常添加二次项保证，如：增广拉格朗日
+
+### *Radial Basis Function*
+
+![rbf_for_interpolation](imgs/rbf_for_interpolation.png)
+
+-   *RBF* 径向基函数：取值仅依赖到原点距离的实值函数，即 $\phi(x) = \phi(\|x\|)$
+    -   说明
+        -   也可以按照距离某中心点 $c$ 的距离定义，即 $\phi(x) = \phi(\|x-c\|)$
+        -   其中距离一般为使用 $L_2$ 范数，即欧式距离
+        -   函数 $\phi$ 一般与 $\|x\|$ 负相关
+    -   径向基函数最初用于解决多变量插值问题
+        -   即以各样本为中心创建多个径向基函数
+        -   多个径向基函数加权加和即得到拟合的函数曲线，可用于函数插值
+
+-   常见径向基函数：记 $r=\|x-x_i\|$
+    -   高斯函数
+        $$ \phi(r) = e^{-(\epsilon r)^2} $$
+    -   *Multiquadric* 多二次函数
+        $$ \phi(r) = \sqrt {1 + (\epsilon r)^2} $$
+    -   *Inverse Quadric* 逆二次函数
+        $$ \phi(r) = \frac 1 {1 + (\epsilon r)^2} $$
+    -   *Polyharmonic Spline* 多重调和样条
+        $$\begin{align*}
+        \phi(r) &= r^k, & k=1,3,5,\cdots \\
+        \phi(r) &= r^k (ln(r))^{}, & k=2,4,6,\cdots  \\
+        \end{align*}$$
+    -   *Thin Plate Spline* 薄板样条（多重调和样条特例）
+        $$ \phi(r) = r^2 ln(r) $$
+
+### 指数、对数函数
+
+-   指数函数：本质是满足 $F(x+y) = F(x)F(y)$ 的光滑函数
+
+-   对数函数：本质是满足 $F(xy) = F(x) + F(y)$ 的光滑函数
+    -   由此定义出发，可以证明对数函数的导函数为倒数函数
 
 #   分析
 
@@ -245,6 +250,72 @@ $$ f(x) = h(f_1(x), \cdots, f_n(x)) $$
 |*t* 分布|$ \frac {\Gamma((v+1)/2)} {\sqrt {\pi v} \Gamma(v/2)} (1 + x^2/v)^{-(v+1)/2} $|
 |卡方分布|
 
+###    特殊分布
+
+####    *P-stable Distributions*
+
+-   *P-stable Distribution*：若 $X_1, X_2, \cdots, X_n$ 为服从独立同分布 $D$ 随机变量，且随机变量 $\sum_i v_i X_i$ 、随机变量 $(\sum_i \|v_i\|^p)^{1/p} X$ 具有相同的分布，其中 $v_1, v_2, \cdots, v_n$ 为任意实数，则称分布 $D$ 为 *P-稳定分布*
+
+-   说明
+    -   $\forall p \in (0, 2]$，*P-稳定分布* 存在
+        -   但仅 $p=1,2$ 时，有解析解
+            -   $p=1$：柯西分布
+                $$ c(x) = \frac 1 \pi \frac 1 {1+x^2} $$
+            -   $p=2$：高斯分布
+                $$ g(x) = \frac 1 {\sqrt {2\pi}} e^{-\frac {x^2} 2} $$
+        -   可以从 $[0,1]$ 上均匀分布获得其他 *P-稳定分布*
+            -   但是概率分布、密度函数没有解析解
+    -   若向量 $a$ 中每个元素独立从 *P-稳定分布* 中抽取，则 $\|v\|_p X = (\sum_i \|v_i\|^p)^{1/p} X$ 和 $<a,v>$ 同分布
+        -   可用较好计算的内积估计 $\|v\|_p$
+        -   考虑到 $a(v_1 - v_2) = av_1 - av_2$，将内积和点之间 $L_p$ 范数距离 $\|v_1 - v_2\|_p$ 相联系
+
+####    *Exponential Family of Distributions*
+
+$$\begin{align*}
+f_X(x|\theta) &= h(x) e^{\eta(\theta) T(x) - A(\theta)} \\
+&= h(x) g(\theta) e^{\eta(\theta) T(x)} \\
+&= e^{\eta(\theta) T(x) - A(\theta) + B(x)}
+\end{align*}$$
+> - $\eta(\theta)$：*Natural Parameter*，自然参数
+> - $T(x)$：*Sufficient Statistic*，随机变量 $X$ 的充分统计量
+> - $h(x)$：*Underlying Measure*，底层观测值
+> - $A(\theta)$：*Log Normalizer*，对数规范化
+
+-   *Exponential Family of Distributions* （单变量）指数分布族
+
+-   说明
+    -   $\eta(\theta), T(x)$：可以是向量，其内积仍为实数
+    -   $\eta(\theta) = \theta$ 时，分布族为 *Canonical* 形式
+        -   总是能够定义 $\eta = \eta(\theta)$ 转为此形式
+    -   对数规范化 $A(\theta)$ 使得概率密度函数满足积分为 1
+        $$\begin{align*}
+        f(x|\theta) e^{A(\theta)} & = h(x) e^{\eta(\theta)T(x)} \\
+        \int e^{A(\theta)} f(x|\theta) dx & = \int h(x) e^{\eta(\theta) T(x)} dx \\
+        e^{A(\theta)} \int f(x|\theta) dx & = \int h(x) e^{\eta(\theta) T(x)} dx \\
+        A(\theta) & = ln \int h(x) e^{\eta(\theta) T(x)} dx
+        \end{align*}$$
+    -   充分统计量 $T(x)$ 可以使用固定几个值，从大量的独立同分布数据中获取信息
+
+-   指数分布族的导出
+    -   *Bernoulli* 分布
+        -   $h(x) = 1$
+        -   $T(x) = x$
+        -   $\eta = log \frac \theta {1 - \theta}$
+        -   $A(\theta) = ln(1+e^{\theta})$
+    -   *Possion* 分布
+        -   $\theta = \lambda$
+        -   $h(x) = \frac 1 {x!}$
+        -   $\eta(\theta) = ln\lambda$
+        -   $T(x) = x$
+        -   $A(\theta) = \lambda$
+    -   *Normal* 分布
+        -   $h(x) = \frac 1 {\sqrt{2\pi\sigma^2}} e^{-\frac {x^2} {2\sigma^2}}$
+        -   $T(x) = \frac x \sigma$
+        -   $A(\theta) = \frac {\mu^2} {2\sigma^2}$
+        -   $\eta(\theta) = \frac \mu \sigma$
+
+> - <https://zhuanlan.zhihu.com/p/148776108>
+
 ##   随机抽样
 
 > - 拒绝采样：<https://gaolei786.github.io/statistics/reject.html>
@@ -253,6 +324,101 @@ $$ f(x) = h(f_1(x), \cdots, f_n(x)) $$
 > - MCMC采样：<https://www.cnblogs.com/pinard/p/6638955.html>
 > - MCMC采样及归一化问题：<https://kexue.fm/archives/8084>
 > - *M-H* 采样：<https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm>
+
+##  杂项
+
+### 概率 *Inequality*
+
+####    *Hoeffding Inequality*
+
+-   *Azuma-Hoeffding Inequality*：设 ${X_i:i=0,1,2,\cdots}$ 是鞅差序列，且 $|X_k - X_{k-1}| < c_k$，则
+    $$\begin{align*}
+    super-martingale: &
+    P(X_N - X_0 \geq t) & \leq exp \left ( \frac {-t^2} {2\sum^N_{k=1} c_k^2} \right ) \\
+    sub-martingale: &
+    P(X_N - X_0 \leq -t) & \leq exp \left ( \frac {-t^2} {2\sum^N_{k=1} c_k^2} \right ) \\
+    martingale: &
+    P(|X_N - X_0| \geq t) & \leq exp \left ( \frac {-t^2} {2\sum^N_{k=1} c_k^2} \right )
+    \end{align*}$$
+
+-   *Hoeffding Inequality*：考虑随机变量序列 $X_1, X_2, \cdots, X_N, X_i \in [a_i, b_i]$
+    -   对随机变量 $\bar X = \frac 1 N \sum_{i=1}^N {X_i}$，对任意 $t>0$ 满足
+        $$\begin{align*}
+        P(\bar X - E \bar X \geq t) \leq exp(\frac {-2N^2t^2} {\sum_{i=1}^N (b_i - a_i)^2} ) \\
+        P(E \bar X - \bar X \geq t) \leq exp(\frac {-2N^2t^2} {\sum_{i=1}^N (b_i - a_i)^2} ) \\
+        \end{align*}$$
+    -   对随机变量 $S_N = \sum_{i=1}^N X_i$，对任意 $t>0$ 满足
+        $$\begin{align*}
+        P(S_N - E S_N \geqslant t) & \leqslant exp \left ( \frac {-2t^2} {\sum_{i=1}^n (b_i - a_i)^2} \right ) \\
+        P(E S_N - S_N \geqslant t) & \leqslant exp \left ( \frac {-2t^2} {\sum_{i=1}^n (b_i - a_i)^2} \right )  \\
+        \end{align*}$$
+
+> - 两不等式可用绝对值合并，但将不够精确
+
+#### *Bretagnolle-Huber-Carol Inequility*
+
+-   *Bretagnolle-Huber-Carol* 不等式：${X_i: i=1,2,\cdots,N} i.i.d. M(p1, p_2, \cdots, p_k)$ 服从类别为 $k$ 的多项分布
+    $$ p{\sum_{i=1}^k |N_i - Np_i| \geq \epsilon} \leq
+        2^k exp \left ( \frac {- n\epsilon^2} 2  \right ) $$
+    > - $N_i$：第 $i$ 类实际个数
+
+### *Likelihood*
+
+$$ L(w|Y) = \alpha P(Y|W=w) $$
+
+> - $Y$：观测所得结果，事件 $Y$
+> - $W$：模型参数
+> - $\alpha$：正常量
+
+-   似然函数：表示统计模型参数中似然性的（参数的）函数
+    -   似然函数可以理解为 **条件概率的逆反**
+        -   似然：在已知某些观测所得结果上，对有关事物性质的参数进行估计
+            -   似然性：某个参数为特定值的可能性
+            -   单独查看某个似然值无价值，要将各种似然值一起比较
+        -   概率：在已知某些参数上，预测之后观测所得到结果
+    -   形式上，似然函数也是条件概率函数，但关注统计模型中参数
+        -   似然函数不满足归一性，乘正常数仍然是似然函数
+        -   同一似然函数代表的模型中，某个参数具有多种可能，如果存在参数使得似然函数值最大，则该值为最合理的参数值
+            -   假设不同模型（经验得到），选择不同的统计模型
+            -   则有不同的概率密度（分布）函数，得到不同的似然函数
+
+-   似然函数的应用
+    -   最大似然估计：选取似然函数，整理之后求最大值点
+        -   实际中一般选取似然函数对数作为求解对象，结果同直接求似然函数最大值点
+        -   似然函数最大值点不一定唯一，也不一定存在
+        -   相较于矩估计
+            -   精度较高，信息损失少
+            -   计算量大
+    -   似然比检验：利用似然函数检测假设、限制是否有效
+        -   将加入某个限制的复杂某些的似然函数最大值和简单模型的似然函数最大值比较，检测某个参数限制是否正确
+            -   若参数限制正确，则不应造成似然函数最大值的大幅变动
+        -   *尼曼-尼尔森引理* 说明：似然比检验是所有具有同等显著性差异的检验中，最有统计效力的检验
+
+####    条件概率分布似然函数
+
+$$\begin{align*}
+L_P(W|X,Y) &= \prod P(Y|X,W) \\
+&= \prod_{x,y} P(Y|X,W)^{N_{x,y}} \\
+&= \prod_{x,y} P(Y|X,W)^{N * \tilde P(X,Y)} \\
+log(L_P(W|X,Y)) &= N \sum_{x,y} \tilde P(X,Y) log(P(Y|X,W))
+\end{align*}$$
+> - $P$：（所选择）统计模型的概率分布函数
+> - $\tilde P$：$X,Y$ 的实际分布
+> - $X,Y$：离散随机变量，$X$ 自变量观察值、$Y$ 因变量观察值
+> - $W$：条件概率分布 $P$ 的参数
+> - $N$，$N_{x,y}$：样本数量，取值为 $x,y$ 的样本数量
+
+-   条件概率分布似然函数
+    -   用 $(X,Y)$ 联合分布同样得到
+        $$\begin{align*}
+        L_P &= \prod P(X,Y|W) \\
+        &= \prod P(Y|X,W) P(X|W) \\
+        &= \prod P(Y|X,W) P(X) \\
+        &= \prod P(Y|X,W) \prod P(X)
+        \end{align*}$$
+        -   考虑 $W$ 是条件分布参数，与 $X$ 分布无关，有 $P(X|W) = P(X)$
+        -   再考虑似然函数乘正常数不改变性质，则结果同上
+    -   对数似然函数中，样本量 $N$ 可省略
 
 #   集合
 
@@ -797,7 +963,21 @@ $$ f(x) = h(f_1(x), \cdots, f_n(x)) $$
 
 -   *Automorphism* 自同构：若一个自同态也是自同构的，那么称为自同构
 
+#  杂项
 
+## 不等式、等式
 
+#### *Holder Inequity*
 
+-   *Holder Inequity*：若 $p, q > 1, \frac 1 p + \frac 1 q = 1$，则 $\forall x \in R^n, y \in R^n$，有
+    $$ \sum_{i=1}^n |x_i||y_i| \leq (\sum_{i=1}^n |x_i|^p)^{\frac 1 p} (\sum_{i=1}^n |y_i|^q)^{\frac 1 q} $$
+
+> - *Holder Inquity*：<https://www.cnblogs.com/yanghh/p/13343787.html>
+
+### *Cauthy-Schwarz* 不等式
+
+> - <https://zhuanlan.zhihu.com/p/22004031>
+> - <https://zhuanlan.zhihu.com/p/129033407>
+> - <https://zhuanlan.zhihu.com/p/70315155>
+> - <https://zhuanlan.zhihu.com/p/85283405>
 

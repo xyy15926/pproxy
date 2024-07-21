@@ -1,5 +1,5 @@
 ---
-title: 环
+title: 抽象代数
 categories:
   - Algebra
   - Abstract Algebra
@@ -13,7 +13,7 @@ tags:
   - Ring
   - Euler
 date: 2021-09-06 11:19:01
-updated: 2024-07-03 21:13:49
+updated: 2024-07-21 16:59:38
 toc: true
 mathjax: true
 description: 
@@ -648,6 +648,19 @@ x \equiv a_n, & (\mod m_n)
     -   欧拉定理常用于化简求解同余
         -   $a,n$ 不互质时，可考虑将 $n$ 拆分为质因子，建立线性同余方程组求解
     -   $a,n$ 互质时，欧拉定理直接有 $a^m \equiv a^{m \mod n} (\mod n)$
+
+### *Lucas* 定理
+
+-   *Lucas* 定理：对质数 $p$，有
+    $$ C(n, m) \% p = (C(n//p, m//p) * C(n\%p, m\%p)) \% p $$
+    > - $C(n, m)$：为 $n$ 中取 $m$ 的组合数，$m=0$ 时取 1
+    》 - 
+
+-   应用说明
+    -   *Lucas* 定理常用于求解大组合数对素数取模问题
+    -   *Lucas* 定理可以链式应用，估计模数 $p$ 范围常为 $p < 10^5$
+
+> - *Lucas* 定理：<https://oi-wiki.org/math/number-theory/lucas/>
 
 # Real Number
 

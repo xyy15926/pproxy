@@ -1,5 +1,5 @@
 ---
-title: Vector
+title: 线性代数
 categories:
   - Math Algebra
   - Linear Algebra
@@ -15,7 +15,7 @@ tags:
   - Derivative
   - Differential
 date: 2019-07-28 00:24:56
-updated: 2024-07-03 21:59:28
+updated: 2024-07-21 17:15:03
 toc: true
 mathjax: true
 comments: true
@@ -569,7 +569,7 @@ $$
         > - $u_k, v_k$：$U, V$的第$k$列向量
         > - $\|M\|_F$：矩阵的Frobenius范数
 
-##  *QR Decomposition*
+###  *QR Decomposition*
 
 -   *QR* 分解：将矩阵分解为正交矩阵、上三角矩阵
     -   几何意义：由单位阵出发，经旋转、切变
