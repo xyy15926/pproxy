@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-11 06:50:31
-updated: 2024-07-16 09:52:54
+updated: 2024-07-23 21:28:14
 toc: true
 mathjax: true
 description: 
@@ -619,16 +619,16 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
         -   权重期望、方差控制可转化为概率分布参数控制
 
 -   常数初始化：将所有权值初始化为常数
-    -	任意常数初始化方法性能都不好，甚至无法训练
-        -	反向传播算法更新参数时，各参数各维度导数一致、更新后权值一致
-        -	各神经元在演化过程中对称，无法学习不同特征，退化为单神经元
-    -	在激活函数选择线性激活函数时
-        -	过大的初始化权重可能导致梯度爆炸
-        -	过小的初始化值可能导致梯度消失
+    -   任意常数初始化方法性能都不好，甚至无法训练
+        -   反向传播算法更新参数时，各参数各维度导数一致、更新后权值一致
+        -   各神经元在演化过程中对称，无法学习不同特征，退化为单神经元
+    -   在激活函数选择线性激活函数时
+        -   过大的初始化权重可能导致梯度爆炸
+        -   过小的初始化值可能导致梯度消失
 
 > - 权重初始化最佳实践：<https://www.cnblogs.com/shine-lee/p/11908610.html>
 
-####	*tanh* 激活函数下
+####    *tanh* 激活函数下
 
 -   *tanh* 激活函数在 0 附近时近似为恒等映射，考虑恒等映射、网络输入期望为 0
     -   *Lecun 1998*：保持前向过程每层输出方差不变，则第 $l$ 权重可按如下高斯分布初始化
@@ -643,7 +643,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 > - *LeCun 1998*：<https://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf>
 > - *Xavier*：<https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>
 
-####	*ReLU* 激活函数下
+####    *ReLU* 激活函数下
 
 -   *ReLU* 系激活函数输出均大于 0，考虑前向、后向传播权重初始化方案均可
     -   *He 2015 for ReLU*
@@ -654,3 +654,246 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
         -   反向：$$ Var(W^{(l)}) ~ N(0,  \frac 2 {(1 + \alpha^2) n^{(l)}}) $$
 
 > - *He*：<https://arxiv.org/abs/1502.01852>
+
+#   *CTR*
+
+-   *Clike Through Rate* 点击预测
+    -   *Stacking* 类模型
+        ![stacking_nn_models_envolution_network](imgs/stacking_nn_models_envolution_network.png)
+
+##  *Deep Crossing*
+
+![deep_crossing_structure](imgs/deep_crossing_structure.png)
+> - *multiple residual units*：残差网络
+
+-   *Deep Crossing*
+    -   深度学习 *CTR* 中最典型、基础性模型
+
+##  *Factorization Machine based Neural Network*
+
+![fnn_structure](imgs/fnn_structure.png)
+
+-   *FNN*
+    -   使用 *FM* 隐层作为 *Embedding* 向量，避免完全从随机状态训练 *Embedding*
+        -   提前训练 *Embedding* 提高模型复杂度、不稳定性
+        -   输入特征为高维稀疏特征，*Embedding* 层与输入层连接数量大、训练效率低、不稳定
+
+##  *Product-based Neural Network*
+
+![pnn_structure](imgs/pnn_structure.png)
+
+-   *PNN*
+    -   在 *Embedding* 层、全连接层间加入内积层，完成针对性特征交叉
+        -   *Product Layer* 内积层：在不同特征域间进行特征组合，定义有 inner、outer product 以捕捉不同的交叉信息，提高表示能力
+        -   传统 *DNN* 中通过多层全连接层完成特征交叉组合，缺乏针对性
+            -   没有针对不同特征域进行交叉
+            -   不是直接针对交叉特征设计
+
+##  *Wide&Deep Network*
+
+![wide_and_deep_structure](imgs/wide_and_deep_structure.png)
+> - *Deep Models*：基于稠密 *Embedding* 前馈神经网络
+> - *Wide Models*：基于稀疏特征、特征交叉、特征转换线性模型
+
+-   *Wide&Deep*
+    -   结合深层网络、广度网络平衡记忆、泛化
+        -   *Memorization* 记忆：学习频繁出现的物品、特征，从历史数据中探索相关性
+            -   基于记忆的推荐通常和用户已经执行直接相关
+        -   *Generalization* 泛化：基于相关性的 *Transitivity*，探索较少出现的新特征组合
+            -   基于泛化的推荐更有可能提供多样性的推荐
+
+> - <https://arxiv.org/pdf/1606.07792.pdf>
+
+### *Google App Store* 实现
+
+![wide_and_deep_logit_structure](imgs/wide_and_deep_logit_structure.png)
+
+-   模型结构
+    -   *LR* 部分
+        $$ P(Y=1|x) = \sigma(w_{wide}^T[x, \phi(x)] + w_{deep}^T \alpha^{l_f} + b) $$
+    -   *Wide* 部分：*Cross Product Transformation*
+        -   输入
+            -   已安装 Apps
+            -   Impression Apps
+            -   特征工程交叉特征
+        -   优化器：带 *L1* 正则的 *FTRL*
+    -   *Deep* 部分：左侧 *DNN*
+        -   输入
+            -   类别特征 *Embedding*：32 维
+            -   稠密特征
+            -   拼接：拼接后 1200 维（多值类别应该需要将 *Embedding* 向量平均、极大化）
+        -   优化器：*AdaGrad*
+        -   隐层结构
+            -   激活函数 *Relu* 优于 *tanh*
+            -   3 层隐层效果最佳
+            -   隐层使用塔式结构
+
+##  *DeepFM*
+
+![deepfm_structure](imgs/deepfm_structure.png)
+> - *Dense Embeddings*：*FM* 中各特征隐向量，*FM*、*DNN* 公用
+> - *FM Layer*：*FM* 內积、求和层
+
+$$\begin{align*}
+y_{FM} &= <w, x> + \sum_i \sum_j <v_i, v_j> x_i x_j + b \\
+\hat y_{DeepFM} &= \sigma(y_{FM} + y_{DNN})
+\end{align*}$$
+
+-   *DeepFM*：用 *FM* 替代 *Wide&Deep* 中 *Wide* 部分，提升其表达能力
+    -   *FM*、*DNN* 部分共享 *Embedding* 层
+        -   *FM* 负责一阶特征、二阶特征交叉：权重始终为 1
+        -   *DNN* 负责更高阶特征交叉、非线性
+    -   *LR* 同时组合 *Wide*、二阶交叉、*Deep* 三部分结构，增强模型表达能力
+    -   说明
+        -   *Deep&Wide* 中 *Wide* 部分有特征交叉，但依靠特征工程实现
+
+-   实现说明
+    -   *DNN* 部分隐层
+        -   激活函数 *Relu* 优于 *tanh*
+        -   3 层隐层效果最佳
+        -   神经元数目在 200-400 间为宜，略少于 *Wide&Deep*
+        -   在总神经元数目固定下，*constant结构最佳
+    -   *FM Embedding* 层
+        -   实验中维度为 10
+
+##  *Deep&Cross Network*
+
+![deep_and_cross_structure](imgs/deep_and_cross_structure.png)
+
+-   *Deep&Cross*：用 *Cross* 网络替代 *Wide&Deep* 中 *Wide* 部分，提升其表达能力，提取高阶交叉特征
+    -   *Cross* 网络
+        -   交叉网络可以使用较少资源提取高阶交叉特征
+        -   相较于 *Wide&Deep* 无需特征工程
+        -   相较于 *DeepFM* 不局限于二阶交叉特征
+
+> - <https://arxiv.org/pdf/1708.05123.pdf>
+
+### 交叉网络
+
+![cross_network_cross_layer](imgs/cross_network_cross_layer.png)
+
+$$\begin{align*}
+x_{l+1} & = f(x_l, w_l, b_l) + x_l \\
+& = x_0 x_l^T w_l + b_l + x_l
+\end{align*}$$
+> - $x_l$：第$l$交叉层输出
+> - $w_l, b_l$：第$l$交叉层参数
+
+-   *Cross* 交叉网络：以有效地方式应用显式特征交叉，由多个交叉层组成
+    -   借鉴残差网络思想
+        -   交叉层完成特征交叉后，会再加上其输入
+        -   则映射函数 $f(x_l, w_l, b_l)$ 即拟合残差
+    -   特征高阶交叉
+        -   每层 $x_0 x_l^T$ 都是特征交叉
+        -   交叉特征的阶数随深度 $l$ 增加而增加，最高阶为 $l+1$
+    -   复杂度（资源消耗）
+        -   随输入向量维度、深度、线性增加
+        -   受益于 $x_l^T w$ 为标量，由结合律无需存储中间过程矩阵
+
+##  *Nueral Factorization Machine*
+
+![nfm_structure](imgs/nfm_structure.png)
+
+$$\begin{align*}
+\hat y_{NFM}(x) & = w_0 + \sum_{i=1}^m w_i x_i + f_{DNN}(x) \\
+& = w_0 + \sum_{i=1}^m + h^T f_{\sigma}(f_{BI}(\varepsilon_x))
+\end{align*}$$
+> - $f_{DNN}(x)$：多层前馈神经网络，包括 *Embedding Layer*、*Bi-Interaction Layer*、*Hidden Layer*、*Prediciton Layer*
+> - $h^T$：*DNN* 输出层权重
+
+-   *NFM*：用带二阶交互池化层的 *DNN* 替换 *FM* 中二阶交叉项，提升 *FM* 的非线性表达能力
+    -   *Embedding Layer*：将每个特征映射为稠密向量表示
+        $$ \varepsilon_x = \{x_1v_1, x_2v_2, \cdots, x_mv_m\} $$
+        > - $v_i$：$k$ 维 *Embedding* 向量
+        -   只需要考虑非 0 特征，得到一组特征向量
+        -   特征向量会乘以特征值以反映真实值特征（一般 *Embedding* 特征取 0、1，等价于查表）
+    -   *Bi-Interaction Layer*：将一组 *Embedding* 向量转换为单个向量
+        $$\begin{align*}
+        f_{BI}(\varepsilon_x) & = \sum_{i=1} \sum_{j=i+1} x_i v_i \odot x_j v_j \\
+        & = \frac 1 2 (\|\sum_{i=1}^m x_i v_i\|_2^2 - \sum_{i=1}^m \|x_i v_i\|_2^2)
+        \end{align*}$$
+        > - $\odot$：逐元素乘积
+        -   没有引入额外参数，可在线性时间 $\in O(kM_x)$ 内计算
+        -   可以捕获在低层次二阶交互影响，较拼接操作更 *Informative*，方便学习更高阶特征交互
+        -   将 *BI* 层替换为拼接、同时替换隐层为塔型 *MLP*（残差网络）则可以得到 *Wide&Deep*、*DeepCross*
+            -   拼接操作不涉及特征间交互影响，都交由后续深度网络学习，实际操作中比较难训练
+    -   *Hidden Layer* 隐层：普通多层嵌套权重、激活函数
+        $$ f_{\sigma} = \sigma_l(\beta_l (\cdot \sigma_1(\beta_l f_{BI}(\varepsilon_X) + b_1)) + b_l) $$
+        > - $l=0$ 没有隐层时，$f_{\sigma}$ 原样输出，取 $h^T$ 为全 1 向量，即可得 *FM* 模型
+
+##  *Attentional Factorization Machines*
+
+![afm_structure](imgs/afm_structure.png)
+
+$$\begin{align*}
+\hat y_{AFM} & = w_0 + \sum_{i=1}^m w_i x_i +
+    f_{AFM}(\varepsilon) \\
+& = w_0 + \sum_{i=1}^m w_i x_i + p^T \sum_{i=1}^m \sum_{j=i+1}^m
+    a_{i,j} (v_i \odot v_j) x_i x_j
+\end{align*}$$
+> - $\varepsilon$：隐向量集，同上
+> - $p^T$：*Attention* 网络输出权重
+
+-   *AFM*：引入 *Attention* 网络替换 *FM* 中二阶交互项，学习交互特征的重要性，剔除无效的特征组合（交互项）
+    -   *Pair-Wise Interaction Layer* 成对交互层：将 $m$ 个 *Embedding* 向量扩充为 $m(m-1)/2$ 个交互向量
+        $$ f_{PI}(\varepsilon) = \{(v_i \odot v_j) x_i x_j\}_{(i,j) \in R_X} $$
+        > - $R_X = \{(i,j) | i \in X, j \in X, j > i \}$
+        > - $v_i$：$k$维embedding向量
+    -   *Attention-based Pooling* 注意力池化层：压缩交互作用为单一表示时，给交互作用赋不同权重
+        $$ f_{Att}(f_{PI}(\varepsilon)) = \sum_{(i,j) \in R_X} a_{i,j} (v_i \odot v_j) x_i x_j $$
+        > - $a_{i,j}$：交互权重 $w_{i,j}$ 的注意力得分
+        > - $\odot$：逐元素乘积
+        -   考虑到特征高维稀疏，注意力得分不能直接训练，使用 *MLP Attention Network* 参数化注意力得分
+            $$\begin{align*}
+            a_{i,j}^{'} & = h^T ReLU(W((v_i \odot v_j) x_i x_j) + b) \\
+            a_{i,j} & = \frac {exp(a_{i,j}^{'})} {\sum_{(i,j) \in R_X} exp(a_{i,j}^{'})}
+            \end{align*}$$
+            > - $W \in R^{t*k}, b \in R^t, h \in R^T$：模型参数
+            > - $t$：attention network隐层大小
+
+##  *Deep Interest Network*
+
+![din_stucture](imgs/din_structure.png)
+
+-   *DIN*：融合 *Attention* 机制作用于DNN
+    -   *Activation Unit* 激活单元
+        $$\begin{align*}
+        v_U(A) & = f_{au}(v_A, e_1, e_2, \cdots, e_H) \\
+        & = \sum_{j=1}^H a(e_j, v_A) e_j \\
+        & = \sum_{j=1}^H w_j e_j
+        \end{align*}$$
+        -   相较于 *AFM* 仅多了直接拼接的用户、上下文特征
+            ![din_stucture_comparision](imgs/din_structure_comparision.png)
+
+-   模型训练
+    -   *Mini-batch Aware Regularization*：以 batch 内参数平均近似 $L_2$ 约束
+        $$\begin{align*}
+        L_2(W) & = \sum_{i=1}^M \sum_{j=1}^B \sum_{(x,y) \in B_j}
+            \frac {I(x_i \neq 0)} {n_i} \|W_i\|_2^2 \\
+        & \approx \sum_{i=1}^M \sum_{j=1}^B \frac {\alpha_{j,i}} {n_i} \|W_i\|_2^2
+        \end{align*}$$
+        > - $W \in R^{K * M}, W_i$：*Embedding* 字典、第 $i$ *Embedding* 向量
+        > - $K, M$：*Embedding* 向量维数、特征数量
+        > - $B, B_j$：batch 数量、第 $j$ 个 batch
+    -   则参数迭代
+        $$ W_i \leftarrow w_j - \eta[\frac 1 {|B_j|} \sum_{(x,y) \in B_j}
+            \frac {\partial L(p(x), y)} {\partial W_j} + \lambda \frac {\alpha_{j,i}} {n_i} W_i] $$
+    -   *Data Adaptive Activation Function*
+        $$\begin{align*}
+        f(x) & = \left \{ \begin{array}{l}
+                x, & x > 0 \\
+                \alpha x, & x \leq 0
+            \end{array} \right. \\
+        & = p(x) * x + (1 - p(x)) * x \\
+        p(x) & = I(x > 0)
+        \end{align*}$$
+        -   *PReLU* 在 0 点处硬修正，考虑使用其他对输入自适应的函数替代，以适应不同层的不同输入分布
+            $$ p(x)  \frac 1 {1 + exp(-\frac {x - E[x]} {\sqrt{Var[x] + \epsilon}})} $$
+
+##  *Deep Interest Evolution Network*
+
+![dien_structure](imgs/dien_structure.png)
+
+-   *DIEN*：引入序列模型 *AUGRU* 模拟行为进化过程
+    -   *Interest Extractor Layer*：使用 *GRU* 单元建模历史行为依赖关系
+
