@@ -8,7 +8,7 @@ tags:
   - Markup Language
   - Markdown
 date: 2019-03-21 17:27:37
-updated: 2023-08-09 18:43:05
+updated: 2024-08-09 17:13:59
 toc: true
 mathjax: true
 comments: true
@@ -763,5 +763,23 @@ root((mindmap))
 
 > - *Mindmap*：<https://mermaid.js.org/syntax/mindmap.html>
 
+### *XYChart*
 
+-   *XYChart* 条线图：`xychart-beta` 指定
+    -   `title TITLE`：标题
+    -   `x-axis TITLE [LABLE, ]`：*X 轴* 坐标刻度
+    -   `y-axis TITLE MIN --> MAX`：*Y 轴* 坐标刻度
+    -   `bar [VAL, ]`：条形图值
+    -   `line [VAL, ]`：线图值
+
+```mermaid
+xychart-beta
+    title "Sales Revenue"
+    x-axis [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec]
+    y-axis "Revenue (in $)" 4000 --> 11000
+    bar [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
+    line [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
+```
+
+> - *XYChart*：<https://mermaid.js.org/syntax/xyChart.html>
 
