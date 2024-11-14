@@ -7,7 +7,7 @@ tags:
   - Data Structure
   - Problems
 date: 2024-01-06 18:32:01
-updated: 2024-07-09 10:53:51
+updated: 2024-11-14 22:02:29
 toc: true
 mathjax: true
 description: 
@@ -1527,29 +1527,149 @@ float i_sqrt(float a){
 > - <http://www.lomont.org/papers/2003/InvSqrt.pdf>
 > - <https://zhuanlan.zhihu.com/p/33543750>
 
-##  随机
+##  随机抽样
 
-### 均匀分布随机数
-#TODO
+-   采样：从整体中抽取满足 **给定概率分布 $p(x)$ ** 的样本
+    -   离散分布采样：按给定概率分布函数构造样本即可
+    -   连续分布采样：连续分布无法按概率分布直接抽样，需要按一定逻辑采样
 
-#### 线性同余法
+> - 常见概率分布与采样方法：<https://www.cnblogs.com/makefile/p/prob-sample.html>
+> - 任意分布随机数：<https://zhuanlan.zhihu.com/p/449486423>
 
-线性同余法：产生伪随机数最常用方法
+### 特定分布
+
+####    线性同余发生器：线性同余法
 
 $$\left \{ \begin{array}{l}
 a_0 = & d \\
 a_n = & (ba_{n-1} + c) % m, & n=1,2,\cdots
 \end{array} \right.$$
-
 > - $d \leq m$：随机序列种子
 > - $b \geq 0, c \geq 0, m \geq 0$：关系到产生随机序列的随机性能
 > > -   $m$：应该取得充分大
 > > -   $gcd(m ,b)=1$：可以取 b 为素数
 
-### *Monte Carlo*
+-   线性同余法：产生 $[0, m-1]$ 之间的伪随机数
+    -   线性同余发生器产生的线性同余序列必然存在周期 $P$
+    -   线性同余法中参数选择关系到随机序列的周期、分布特点、计算效率
+        -   模数 $m$ 应尽可能大，利于产生较长周期
+        -   乘数 $b$ 需要保证周期较长的同时，保证序列的随机性
 
+> - 线性同余发生器与伪随机数：<https://www.cnblogs.com/qcblog/p/8450427.html>
+
+####    正态分布：*Box-Muller* 变换
+
+-   *Box-Muller* 定理：若 $U_1$、$U_2$ 相互独立且服从 $U(0,1)$ 上均匀分布，令 $R=\sqrt {-2logU_1}, \theta = 2\pi U_2$，取
+    $$\left \{ begin{array}{l}
+    X = R cos \Theta \\
+    Y = R sin \Theta
+    \end{array} \right.$$
+    则 $X,Y$ 服从标准正态分布且相互独立
+
+-   *Box-Muller* 变换（极坐标变换）：生成服从标准正态分布的随机变量
+    -   算法步骤
+        -   生成服从标准均匀分布的随机变量 $U_1, U_2$
+        -   令 $R=\sqrt {-2logU_1}, \theta = 2\pi U_2$
+        -   则 $X = R cos \Theta, Y = R cos \Theta$ 服从标准正态分布
+
+> - *Box-Muller* 变换生成正态分布随机数：<https://fengchao.pro/blog/box-muller-transformation/>
+
+## *Monte Carlo*
+
+-   蒙特卡罗方法（统计模拟方法）：通过随机抽样的方法，以随机事件出现的频率估计其概率，得到随机变量的数字特征
+    -   适用场景
+        -   问题本身具有内生随机性，借助计算机模拟随机过程
+        -   问题可以转化为具有某种随机分布的特征数，如随机事件概率、随机变量期望、随机变量分布
+    -   核心逻辑
+        -   对待解决问题
+        -   创建均匀的抽样空间
+        -   抽样，判断是否满足
+
+> - 蒙特卡罗方法：<https://zh.wikipedia.org/wiki/%E8%92%99%E5%9C%B0%E5%8D%A1%E7%BE%85%E6%96%B9%E6%B3%95>
+> - 蒙特卡罗方法：<https://www.cnblogs.com/pinard/p/6625739.html>
+
+### *Rejection Sampling*
+
+![alg_monte_carlo_rejection_sampling](imgs/alg_monte_carlo_rejection_sampling.png)
+
+-   拒绝采样：从简单可获取的分布中抽样，按拒绝概率确定是否保留（即从 $0-1$ 均匀分布抽样与接受概率比较），得到满足目标分布的样本点
+    -   算法步骤
+        -   随机变量 $X$ 概率密度函数为 $p(x)$，目标分布概率密度函数为 $q(x)$
+        -   从随机变量 $X$ 中获取采样点 $x_t$，计算接受概率 $\alpha_t = \frac {q(x)} {K p(x)}$
+            -   其中 $K >= 1$ 为常量，以确保 $K p(x)$ 处处不小于 $q(x)$
+        -   从均匀分布 $U(0,1)$ 中抽样 $u_t$
+            -   若 $u_t < \alpha_t$ 则保留样本点
+            -   否则拒绝样本点
+        -   重复直至获得足够数量样本点，样本点分布
+    -   抽样分布 $p(x)$ 与目标分布 $q(x)$ 越接近，$K$ 下确界越小，算法采样效率越高
+        -   采样过程中始终有采样点被拒绝，效率较低
+
+> - 拒绝采样：<https://gaolei786.github.io/statistics/reject.html>
 
 ### *Markow chain Monte Carlo*
+
+-   *MCMC* 采样：为目标分布 $q(X)$ 构建满足 **细致平稳条件**、易于采样（即条件概率易采样）的 “转移矩阵” $Pr(X|Y)$
+    -   算法思路：对目标分布 $q(x)$，任意转移分布 $Pr(y|x)$
+        -   记 $\alpha(X|Y) = Pr(Y|X)q(X)$，则有
+            $$ \forall x,y, \alpha(y|x) Pr(y|x) q(x) = \alpha(x|y) Pr(x|y) q(y) $$
+        -   记 $\tilde {Pr}(X|Y) = \alpha(X|Y) Pr(X|Y) $，并 “视为” 转移概率，则其对应平稳分布为 $q(X)$
+            -   $\tilde {Pr}(X|Y)$ （各列）未归一化，不是合法的转移概率
+            -   $\tilde {Pr}(X|Y)$ 直接归一化，则细致平稳条件不一定成立，也无法保证转移概率相同
+        -   依转移矩阵 $\tilde {Pr}(X|Y)$ 拒绝采样得到满足目标分布序列
+            -   从条件概率分布 $Pr(Y|x_t)$ 中采样得到候选点 $y$
+            -   以 $\alpha(y|x_t)$ 作为拒绝阈值决定是否接受 $y$
+
+-   事实上，*MCMC* 中最终使用的转移概率（未实际计算）为
+    $$\begin{align*}
+    Pr^{*}(X|Y) &= \tilde Pr(X|Y) + (1 - \sum_Y \tilde {Pr}(Y|X)) \sigma(Y|X) \\
+    \sigma(Y|X) &= \left \{ \begin{array}{l}
+        1, & Y = X \\
+        0, & Y \neq X
+    \end{array} \right.
+    \end{align*}$$
+    -   即，算法未对也无需对 $\tilde {Pr}(X|Y)$ 归一化，而是调整 **转移至自身概率** 以实现归一化
+        -   对离散分布，即调整转移矩阵对角线元素保证列概率和为 1
+        -   考虑 $alpha < 1$，显然转移概率和小于 1，则转移概率 $Pr^{*}$ 非负
+    -   显然，调整后 $Pr^{*}(X|Y)$ 满足细致平稳条件
+
+> - 从 *MCMC* 到模拟退火：<https://kexue.fm/archives/8084>，归一化逻辑，*MCMC* 逻辑
+> - 马尔可夫链：<https://www.cnblogs.com/pinard/p/6632399.html>
+> - *MCMC* 采样：<https://www.cnblogs.com/pinard/p/6638955.html>
+> - *MCMC* 采样及归一化问题：<https://kexue.fm/archives/8084>
+> - *M-H* 采样：<https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm>
+
+####    *Metropolis* 算法
+
+-   *Metropolis* 算法（*MCMC* 方法）：思路即 *MCMC* 采样思路
+    -   算法第 $t+1$ 步采样步骤
+        -   采样 $y \sim Pr(Y|x_t)$ ：$Pr(Y|X)$ 为易采样条件概率分布
+        -   采样 $u_t \sim U(0, 1)$
+        -   计算 $\alpha(y|x_t) = Pr(x_t|y)q(y)$
+            -   若 $u_t \leq \alpha(y|x_t)$，则取 $x_{t+1} = y$
+            -   否则，取 $x_{t+1} = x_t$：*Metropolis* 算法与拒绝采样最大区别
+    -   *Metropolis* 算法问题
+        -   需要知道目标分布（概率密度函数）精确表达式
+        -   接受率 $\alpha(Y|X)$ 可能过小，达到平稳时间过长，甚至因为精度、初值而无法达到稳定状态
+
+####    *Metropolis-Hastings* 算法
+
+-   *MH* 算法：在 *Metropolis* 算法基础上调整拒绝率
+    -   算法思路
+        -   考虑 *MCMC* 中 $alpha(X|Y)$ 为满足细致平稳条件构造的恒等式
+            $$ \forall x,y, \alpha(y|x) Pr(y|x) q(x) = \alpha(x|y) Pr(x|y) q(y) $$
+        -   则，对恒等式两侧同除 $\max\{\alpha(y|x), \alpha(x|y)\}$ 仍满足细致平稳条件
+            -   确保概率和小于 1，即 $Pr^{*}$ 非负，即 “调整后” 转移矩阵中对角线非负
+        -   则可使用如下接受率
+            $$ \alpha^{*}(Y|X) = \min(1, \frac {Pr(X|Y)q(Y)} {Pr(Y|X)q(X)}) $$
+    -   算法第 $t+1$ 步采样步骤
+        -   采样 $y \sim Pr(Y|x_t)$：$Pr(Y|X)$ 为易采样条件概率分布
+        -   采样 $u_t \sim U(0, 1)$
+        -   计算 $\alpha^{*}(y|x_t) = \min(1, \frac {Pr(x_t|y)q(y)} {Pr(y|x_t)q(x_t)})$
+            -   若 $u_t \leq \alpha^{*}(y|x_t)$，则取 $x_{t+1} = y$
+            -   否则，取 $x_{t+1} = x_t$
+    -   *MH* 算法特点
+        -   接受率较高，算法收敛至稳定速度快
+        -   接受率无需计算目标分布绝对值
 
 ##  数值运算
 
