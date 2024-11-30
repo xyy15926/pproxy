@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-09-21 17:16:05
-updated: 2024-11-12 15:59:00
+updated: 2024-11-30 20:25:31
 toc: true
 mathjax: true
 description: 
@@ -132,6 +132,9 @@ description:
 | `RectChart.add_dataset(source,dimensions,source_header)` | 添加数据集      |
 
 -   直角坐标系图表均继承自 `charts.RectChart`
+    -   `RectChart.overlap` 方法似乎是合并 Y 轴数据、绘制
+        -   `overlap` 返回结果为覆盖图表
+        -   被重叠图表的全局配置整体被覆盖，同覆盖图表
 
 | 图表       | 类                                |
 |------------|-----------------------------------|
@@ -201,6 +204,14 @@ description:
 | 顺序分页 | `charts.Page(page_title,js_host,interval,layout)` |
 | 选项卡   | `charts.Tab(page_title,js_host)`                  |
 | 顺序轮播 | `charts.Timeline(init_opts)`                      |
+
+-   组合图表整体数据组合渲染
+    -   组合中多个图表的的坐标共用坐标轴序号，绑定数据时注意全局考虑序号
+
+| 配置项类                        | 含义              |
+|---------------------------------|-------------------|
+| `global_options.GridOpts`       | `Grid` 配置项     |
+| `charts_options.PageLayoutOpts` | `Page` 布局配置项 |
 
 > - *PyEcharts* 组合图表：<https://pyecharts.org/#/zh-cn/composite_charts>
 
