@@ -7,7 +7,7 @@ tags:
   - Setuptools
   - Pip
 date: 2025-01-19 20:13:19
-updated: 2025-02-07 21:48:49
+updated: 2025-02-08 16:33:08
 toc: true
 mathjax: true
 description: 
@@ -92,11 +92,11 @@ description:
 | 包、应用     | 说明                                                 |
 |--------------|------------------------------------------------------|
 | `distutils`  | 标准库，后续所有打包工具的依赖，通过 `setup.py` 配置 |
-| `setuptools` | `distutils` 增强版，最常用的打包分发工具             |
+| `setuptools` | `distutils` 增强版，最常用的打包工具                 |
 | `distribute` | `setuptools` 分支，现已合并回 `setuptools`           |
 | `distutils2` | 试图加入标准库失败，已废弃                           |
 | `packaging`  | 打包核心模块                                         |
-| `build`      | 兼容 *PEP 517* 的构建后端                            |
+| `build`      | 兼容 *PEP 517* 的构建前端                            |
 | `twine`      | 上传包至 *PyPI*                                      |
 
 -   *Python* 打包：需要根据项目受众、运行环境选择相应的打包技术
@@ -117,18 +117,65 @@ description:
 -   标准构建工具涉及内容、目标
     -   *Source Tree* 源码树
         -   标准构建应支持直接从源码安装（类似 `$ pip install -e <SOME-DIR>`）
-        -   *Configuration File* 配置文件
+        -   *Configuration File* 配置文件（`pip`、`build` 等构建前端所需）
             -   `pyproject.toml`：*PEP 518* 中定义的标准规范
-            -   `setup.py`：基于代码的、传统配置方式（适用于 `setuptools` 等包）
-    -   *Source Distribution*、*sdists* 源码静态快照
-    -   *Build Frontend* 构建前端：从源码树、快照构建 *wheels* 的工具
-    -   *Build Backend* 构建后端：实际执行构建的工具
-    -   *Integration Frontend* 集成前端：环境依赖管理工具，集成包定位、构建、安装功能
+            -   `setup.py`：基于代码的、可直接执行（构建后端）、传统配置方式
+    -   *Distribution* 分发内容
+        -   *Source Distribution*、*sdists* 源码静态快照
+        -   *Wheel*
+    -   工具链（角色）：同一工具可能具备多种功能、承担不同角色（如 `pip` 可作为构建前端、集成前端）
+        -   *Build Frontend* 构建前端：从源码树、快照构建 *wheels* 的工具
+        -   *Build Backend* 构建后端：实际执行构建的工具
+        -   *Integration Frontend* 集成前端：环境依赖管理工具，集成包定位、构建、安装功能
 
 > - Python 软件发布生态系统目前由 *Python Packaging Authority* 管理
 > - *PEP 517 - A build-system independent format for source trees*：<https://peps.python.org/pep-0517/#terminology-and-goals>
 > - *Python 打包指南*：<https://packaging.pythonlang.cn/en/latest/guides/>
 > - *Python Packaging Guide*：<https://packaging.python.org/en/latest/guides/>
+
+####    `pyproject.toml`
+
+```toml
+[project]
+name = "pyproj"
+version = 0.0.1
+authors = [
+    { name="author", email="author@example.com" },
+]
+description = "Description"
+readme = "Readme"
+requires-python = ">= 3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"],
+dependencies = [
+    "Request",
+]
+[project.optional-dependencies]
+cli = [
+    "rich",
+]
+
+[project.urls]
+Homepage = "https://example.com"
+Issues = "https://example.com/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool]
+# Build backend specific.
+```
+
+-   `pyproject.toml`：打包工具所需的配置文件（代码检查工具等也使用此配置文件）
+    -   `[project]` 表：包含构建工具所需的项目基本元信息
+    -   `[build-system]` 表：指定构建后端
+    -   `[tool]` 表：包含与工具相关的子表，具体配置依赖构建工具
+
 > - *Writing your pyproject.toml*：<https://packaging.python.org/en/latest/guides/writing-pyproject-toml/>
 
 ## *Pip*
@@ -163,8 +210,17 @@ description:
         -   指定 Python 版本
         -   可执行脚本生成：*Entry Points*
         -   *C/C++* 扩展
-    -   *Setuptools* 核心即 `setuptools.setup` 函数
-        -  常至于项目根目录 `setup.py` 文件中，带参数执行文件（调用 `setup` 函数）即可完成打包工作（不再推荐）
+    -   `setuptools.setup` 函数：打包配置函数
+        -   `setup` 函数参数即打包配置：类似 `pyproject.toml` 中 `[project]`、`[tool.setuptools]` 表
+            -   `name`：项目名
+            -   `packages`：待打包包（子包需要分别独立指定）
+            -   `package_dir`：包所在目录（仅在包不位于根目录、或包结构与目录结构不对应时需配置）
+        -   传统配置 `setup.py` 文件核心即此函数
+            -   带参数执行文件（即调用 `setup` 函数）即可完成打包工作（不再推荐）
+-   `setuptools` 功能
+    -   （命名空间）包自动发现：`setuptools` 支持两种常见的项目层次下的包、命名空间包自动发现
+        -   `src-layout`：`<PROJECT-ROOT>/src/pkg/.../`
+        -   `flat-layout`：`<PROJECT-ROOT>/pkg/.../`
 
 > - *Setuptools User Guide*：<https://setuptools.pypa.io/en/latest/userguide/index.html>
 > - 构建与发布：<https://pyloong.github.io/pythonic-project-guidelines/guidelines/project_management/distribution/>
