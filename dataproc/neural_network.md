@@ -1,11 +1,14 @@
 ---
-title: 
+title: Nueral Network
 categories:
-  - 
+  - ML Theory
 tags:
-  - 
+  - Machine Learning
+  - Nueral Network
+  - ResNet
+  - Transformer
 date: 2024-07-11 06:50:31
-updated: 2024-07-23 21:28:14
+updated: 2025-05-16 19:26:33
 toc: true
 mathjax: true
 description: 
@@ -15,9 +18,49 @@ description:
 
 ##   *Back Propogation*
 
-###  梯度消失
+### 链式法则
 
-#   网络结构
+$$ \frac {\partial z} {\partial x} = \frac {\partial z} {\partial t} \frac {\partial t} {\partial x} $$
+
+-   *Chain Rule* 链式法则：复合函数的导数可由构成复合函数的各函数导数乘积表示
+    -   神经网络（计算图）即可视为复合函数
+        -   输入张量即函数自变量
+        -   网络节点即构成复合函数的函数：根节点即损失函数
+        -   网络边即函数、参数（输入张量、函数输出）带出执行关系
+    -   *Forward-Mode Differentiation* 前向模式微分：按链式法则求根节点（复合函数）对各参数的偏导解析式，带入输入值计算（考虑均可微）
+        -   直接求解析式带入求值，符合常规思路
+        -   导数计算量为 $O(\prod E_i)$（$E_i$ 为第 $i$ 层网络边数）
+            -   网络各层全链接时，
+            -   在节点、关联多的复杂网络中计算量大
+    -   *Reverse-Mode Differentiation* 反向模式微分：考虑各节点函数值已在正向传播中计算得出，按链式法则从根节点反向、依次计算对（中间）函数、（直至目标）参数偏导
+        -   反向传播简化 **参数梯度数值解** 计算
+            -   仅需分别给出（简单）中间函数（内）参数偏导，应用链式法则、从根节点开始累积梯度即可
+            -   类似动态规划暂存结果，正向传播计算函数值即构造动态规划表，反向传播计算导数即查表、求值
+        -   对反向传播中某个（中间）函数（运算），**其中参数梯度仅依赖输入，即数学上的梯度的数值化带入计算**
+            -   即，需要上下文暂存输入、中间结果（用于简化计算）
+            -   而，函数输出对当前函数中参数梯度计算往往无意义，而作为下层函数输入
+            -   事实上，图根节点绝对值无意义，仅因其作为极小化目标（损失）而在正向传播中计算
+
+> - *BP* 算法详解之链式法则：<https://zhuanlan.zhihu.com/p/44138371>
+
+###  梯度爆炸、梯度消失
+
+-   反向传播过程中，梯度以指数形式传播，梯度消失（趋于 0）、梯度爆炸（过大）问题随网络深度增加而更加明显
+    -   梯度消失、爆炸原因
+        -   网络深度：大于 1、小于 1 的梯度在深层网络因连乘而导致梯度消失、爆炸
+        -   激活函数：*Sigmoid* 激活函数梯度不大于 0.25
+        -   参数初始化：参数初始化过大、过小，导致梯度爆炸、梯度消失
+    -   解决方法
+        -   *Pre-Training + Fine-Tuning*：逐层预训练，再整体微调
+        -   梯度剪切：设置梯度上限做截断，避免梯度爆炸
+        -   参数正则化罚：避免梯度爆炸
+        -   激活函数调整：换用 *ReLU* 等不会导致梯度消失、爆炸的激活函数
+        -   *Batch Normalization*：输出批正则化，避免参数过大、过小导致的梯度爆炸、消失
+        -   残差网络：添加跨层短接捷径，避免梯度消失
+
+> - 梯度消失和梯度爆炸及解决方法：<https://zhuanlan.zhihu.com/p/72589432>
+
+#   *Feed-forward Nueral Newtork*
 
 ##  *Convolutional NN*
 
@@ -43,19 +86,61 @@ description:
                 > - $\sigma$：尺度变化参数，越大图像的越平滑、尺度越粗糙
     -   说明
         -   卷积实践中常用于图像数据处理
-
-> - *Receptive Field*：感受野，视觉皮层中对视野小区域单独反应的神经元，相邻细胞具有相似和重叠的感受野，感受野大小、位置在皮层之间系统地变化，形成完整的视觉空间图
-> - 1980 年 *Neocognitron* 新认知机是第一个初始卷积神经网络，是感受野感念在人工神经网络首次应用，将视觉模式分解成许多子模式（特征），然后进入分层递阶式的特征平面处理
-> - 尺度空间理论：在图像领域模拟人眼观察物体的概念、方法（近大远小、近清晰远模糊），模拟图像数据多尺度特征
+        -   *Receptive Field*：感受野，视觉皮层中对视野小区域单独反应的神经元，相邻细胞具有相似和重叠的感受野，感受野大小、位置在皮层之间系统地变化，形成完整的视觉空间图
+        -   1980 年 *Neocognitron* 新认知机是第一个初始卷积神经网络，是感受野感念在人工神经网络首次应用，将视觉模式分解成许多子模式（特征），然后进入分层递阶式的特征平面处理
+        -   尺度空间理论：在图像领域模拟人眼观察物体的概念、方法（近大远小、近清晰远模糊），模拟图像数据多尺度特征
 
 ### *CNN*
 
 -   *CNN* 卷积神经网络
-    -   结构
-        -   多核卷积：卷积核代表（提取）某特征，多各卷积核获取不同特征
-        -   权值共享：给定通道、卷积核，共用滤波器参数
-            -   卷积层的参数取决于：卷积核、通道数
-            -   参数量远小于全连接神经网络
+    -   多核卷积：卷积核代表（提取）某特征，多各卷积核获取不同特征
+        -   卷积核输入通道数应为原始输入的通道数
+            -   *RGB* 图像即 3 通道：单个卷积核大小（参数量）为 $3 * H * W$
+            -   灰度图像即单通道：单个卷积核大小（参数量）为 $1 * H * W$
+        -   卷积核数量即卷积层输出通道数，每个通道即为提取不同特征的 *Feature Map*
+    -   权值共享：输入整体共用相同的卷积核参数
+        -   卷积层的参数仅取决于：卷积核数量、卷积核大小
+        -   参数量远小于全连接神经网络
+
+###  *Pooling*
+
+-   *Pooling* 池化：在每个区域中选择只保留一个值
+    -   **下采样** 以减小数据处理量同时保留有用的信息
+        -   相邻区域特征类似，单个值能表征特征、同时减少数据量
+        -   直观上即模糊图像，丢掉一些不重要的细节
+    -   池化取值逻辑
+        -   *Max Pooling* 最大值采样：使用区域中最大值作为代表
+        -   *Average Pooling* 平均值采样：使用池中平均值作为代表
+
+##  *Residual Block*
+
+![resnet_residual_block](imgs/resnet_residual_block.png)
+
+$$\begin{align*}
+X_{l+1} &= X_l + F(X_l, W_l) \\
+\frac {\partial L} {\partial X_l} &= \frac {\partial L} {\partial X_{l+1}} \frac {\partial X_{l+1}} {\partial X_l} \\
+&= \frac {\partial L} {\partial X_{l+1}} (1 + \frac {\partial F} {\partial X_l})
+\end{align*}$$
+
+-   *Residual Block* 残差块：短接链接、被短接的网络层构成残差块，即在原函数中增加恒等映射项 $X_{l+1} = X_l + F(X_l, W_l)$
+    -   网络退化：随网络深度增加，（充分训练后）训练误差先迅速减少、随后增加
+        -   按常理考虑，深层网络不应比浅层网络表现更差
+            -   考虑 $L$ 层网络是最优网络层数，则可以构造更深的网络，使得 $L$ 后续层仅为 $L$ 层输出的恒等映射
+            -   若 $L$ 层网络不是最优网络，则深层网络应可以取得更好结果
+        -   网络退化原因分析
+            -   网络退化不是由过拟合导致，过拟合不应导致训练误差增加
+            -   网络退化不是由梯度爆炸、消失导致，单纯的添加正则化层无法缓解问题
+            -   则猜测，**恒等映射不容易学习**
+        -   *ResNet* 即不直接学习输入到输出的 *Underlying Mapping* $H(X)$，而是学习 *Residual Mapping* $F(X) := H(X) - X$
+    -   残差块中映入恒等映射项
+        -   缓解梯度消失：恒等映射在偏导中带来常数项 1，避免梯度连乘导致的梯度消失
+        -   解决网络问题退化问题：恒等映射在原模型基础上改变网络结构，学习 *Residual Mapping*，缓解网络退化问题
+        -   缓解梯度破碎问题：降低网络中梯度相关性下降速度，避免梯度随深度增加而表现为白噪声，缓解梯度破碎问题
+
+> - 网络退化问题与 *ResNet*：<https://zhuanlan.zhihu.com/p/492062028>
+> - *Transformer* 相关——残差模块：<https://ifwind.github.io/2021/08/17/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%885%EF%BC%89%E6%AE%8B%E5%B7%AE%E6%A8%A1%E5%9D%97/#%E6%AE%8B%E5%B7%AE%E6%A8%A1%E5%9D%97%E7%9A%84%E7%BB%93%E6%9E%84>
+
+#  *Recursive Nueral Network*
 
 ##  *Recurrent NN*
 
@@ -94,48 +179,6 @@ description:
 
 -   *Gated Feedback RNN*：循环隐层会对下期其他隐层产生影响
     ![rnn_gated_feedback](imgs/rnn_gated_feedback.png)
-
-##  *Embedding*
-
--   *Embedding* 嵌入层：将高维空间中离散变量映射为低维稠密 *embedding* 向量表示
-    -   *Embedding* 可视为查（向量）表 $Ex$
-        -   *Embedding* 向量矩阵 $E$ 列向量即 *embedding* 向量
-            -   对 0-1 特征，即直接使用对表中对应向量代替
-            -   对一般特征，即使用数据值加权后表中向量代替
-        -   *Embedding* 向量矩阵可有多个，对应不同类型特征
-    -   *embedding* 向量优势
-        -   更能体现样本之间关联
-            -   內积（內积）体现样本之间接近程度
-            -   可通过可视化方法体现样本差异
-        -   更适合某些模型训练
-            -   模型不适合高维稀疏向量
-            -   *embedding* 向量矩阵可以联合模型整体训练，相当于提取特征
-            -   *embedding* 向量也可能类似迁移学习独立训练之后直接融入模型中
-
-> - *Embedding*：将度量空间中对象映射到另个（低维）度量空间，并尽可能**保持不同对象之间拓扑关系**，如 *Word-Embedding*
-
-##  *Pooling*
-
--   *Pooling* 池化：在每个区域中选择只保留一个值
-    -   **下采样** 以减小数据处理量同时保留有用的信息
-        -   相邻区域特征类似，单个值能表征特征、同时减少数据量
-        -   直观上即模糊图像，丢掉一些不重要的细节
-    -   池化取值逻辑
-        -   *Max Pooling* 最大值采样：使用区域中最大值作为代表
-        -   *Average Pooling* 平均值采样：使用池中平均值作为代表
-
-##  *Interaction*
-
--   *Interaction* 交互作用：人工设置特征之间交互方式
-    -   *Flatten* 展平：直接拼接不同特征、展平
-        -   对同特征域特征处理方式
-            -   平均
-            -   最大
-    -   二阶交互：特征向量之间两两逐元素交互
-        -   可在低层次捕获二阶交互影响，训练简单
-        -   交互方式
-            -   内积
-            -   池化
 
 ##  *Long Short Term Memory*
 
@@ -219,71 +262,293 @@ h^{(t)} & = (1 - z^{(t)}) \odot h^{(t-1)} + z^{(t)} \odot \tilde h^{(t)}, & new 
 > - $h^{(t)}$：原细胞状态、隐层输出合并
 > - $\tilde{h}_t$：第 $t$ 期更新备选信息
 > - $r^{(t)}$：重置门权重输出，重置上期状态 $h_{t-1}$ 再作为更新门输入
-> - $z^{(t)]$：更新门权重输出，当期状态 $h_t$ 中 $h_{t-1}$、 $\tilde{h}_t$ 占比（遗忘、更新的结合）
+> - $z^{(t)}$：更新门权重输出，当期状态 $h_t$ 中 $h_{t-1}$、 $\tilde{h}_t$ 占比（遗忘、更新的结合）
 
 -   *GRU*
     -   合并细胞状态、隐层输出
     -   合并遗忘门、输出门为更新门
 
-##  *Seq2Seq*
+##  *Encoder-Decoder*
 
-$$\begin{align*}
-p(y_1, \cdots, y_{T^{'}} | x_1, \cdots, x_T) & = \prod_{t=1}^T p(y_t|c, y_1, \cdots, y_{t-1}) \\
-c & = q(\{h_1, \cdots, h_T\}) \\
-h_t & = f(x_t, h_{t-1})
-\end{align*}$$
-> - $T^{'} \neq T$：输出序列长度、输入序列长度
-> - $p(y_t|\cdots)$：一般为softmax函数计算字典中各词概率
-> - $c$：定长向量
-> - $h_t$：隐状态
-> - $q$：将隐状态映射为定长向量存储信息，如：
-    $q(\cdots) = h_T$
-> - $f$：根据输入映射为隐状态，如：RNN、LSTM
-
+![encoder_decoder_structure](imgs/encoder_decoder_structure.png)
 ![seq2seq_structure](imgs/seq2seq_structure.png)
 
--   *Seq2Seq*/*Encoder-Decoder*：以 *RNN*、*LSTM* 做基元存储输入信息
-    -   允许任意长度序列输入、输出学习
-        -   *encoder*：将输入序列映射为定长向量
-        -   *decoder*：将该定长向量映射为目标输出（通过将联合概率有序分解来定义翻译概率）
-    -   采用 *LSTM*、*RNN* 结构的 *Seq2Seq* 结构很难将输入序列转化为定长向量而保存所有有效信息
-        -   序列末尾对定长向量影响更大，难以学习长距离依赖
-        -   随着输入序列长度增加，预测效果显著下降
+-   *Encoder-Decoder*：编码器将输入序列编码为上下文（中间）向量，再由解码器将上下文向量解码为输出序列的结构
+    -   可根据任务的不同选择不同编码器、解码器（常为 *RNN*、*LSTM*、*GRU*）
+        -   *Encoder* 编码器：将输入序列映射为定长的上下文向量 $c$（与输入、输出长度无关）
+            -   简单编码：以编码器最终隐状态作为上下文向量
+            -   *Attention* 编码：以编码器处理序列过程中各隐状态作为（生成）上下文向量
+        -   *Decoder* 解码器：将该上下文向量映射为目标输出（通过将联合概率有序分解依次输出）
+            -   上下文向量解码：根据上下文向量解码
+            -   输出回馈解码：首个输出依赖上下文向量，后续输出依赖上个输出
+            -   上下文向量+输出回馈解码：结合上下文向量、上个输出解码
+    -   上下文向量 $c$ 定长：希望其能较好的概括整个输入序列语义
+        -   但考虑到编码向量容量，输入信息过长时会丢失信息
+        -   采用 *LSTM*、*RNN* 结构的 *Seq2Seq* 结构很难将输入序列转化为定长向量而保存所有有效信息
+            -   序列末尾对定长向量影响更大，难以学习长距离依赖
+            -   随着输入序列长度增加，预测效果显著下降
+        -   当然，上下文向量的定长限制并不必须，*Attention* 机制中往往将输入编码为向量序列，此时依然被称为 *Encoder-Decoder* 结构
+
+![encoder_decoder_decode_pattern](imgs/encoder_decoder_decode_pattern.png)
+
+> - *Encoder-Decoder* 框架：<https://ifwind.github.io/2021/08/15/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%881%EF%BC%89Encoder-Decoder%E6%A1%86%E6%9E%B6>
+> - *Encoder-Decoder* 和 *Seq2Seq*：<https://easyai.tech/ai-definition/encoder-decoder-seq2seq/>
+
+### *Seq2Seq*
+
+-   *Seq2Seq*：允许任意长度（可不同）输入序列、输出序列的模型
+    -   *Seq2Seq* 模型序列生成过程时有多种可能候选项，需按某种方案确定生成序列
+        -   *Gready Search* 贪婪搜索：每步选择生成最可能符号，直到生成终结符为止
+        -   *Beam Search* 束搜索：每步中选择最可能的 $K$（束大小）个符号作为候选，为每个符号计算后续符号并从中选择 $K$ 个作为候选
+            -   介于局部最优（贪婪）和全局最优束大小的折中
+            -   复杂度随束大小 $K$ 增加，也越有可能生成最优序列
+    -   *Seq2Seq* 的具体实现基本都属于 *Encoder-Decoder* 结构
+        -   *Seq2Seq* 更强调目的，而 *Encoder-Decoder* 更强调方法
+        -   若输入、输出序列长度要求相同，则为 *Sequence Labeling* 任务
+
+> - *Seq2Seqw* 模型：<https://ifwind.github.io/2021/08/16/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%882%EF%BC%89Seq2Seq%E6%A8%A1%E5%9E%8B/>
+> - 序列到序列模型 *Seq2Seq*：<https://0809zheng.github.io/2020/04/21/sequence-2-sequence.html>
+> - 使用 *Seq2Seq* 实现中英文翻译：<https://zhuanlan.zhihu.com/p/76550719>
+
+##  *Attention Mechanism*
+
+![attention_structure](imgs/attention_structure.png)
+
+-   *Attention Mechanism* 注意力机制：计算查询向量 $q$ 对各键向量 $k_i$ 权重（注意力得分），对值向量 $v_i$ 加权求和
+    -   *Attention/Alignment Score Function* 注意力/相似得分函数
+        ![attention_global_local](imgs/attention_global_local.png)
+        -   *Soft/Global Attention* 软性、全局注意力：同时考虑所有输入序列的所有隐状态
+            -   平滑、可微，但是输入序列较长时计算成本较高
+            -   注意力得分一般使用 *Softmax* 函数归一化，后对值向量加权求和
+        -   *Local Attention* 局部注意力：考虑输入序列一部分隐状态
+            -   进一步缩小关注区域，计算量更小
+        -   *Hard Attention* 硬性注意力：只考虑输入序列某个隐状态
+            -   无法通过反向传播训练，需用方差缩减、强化学习训练
+    -   $Q,K,V$ 向量的设计即注意力机制的核心设计，不同结构中设计思路不同
+        -   $Q$ 查询向量（矩阵）：常为输入（*Embedding*）向量、线性变换（变换参数即待训练参数）
+            -   当然，仿射变换也可视为注意力得分函数中的待训练参数
+        -   $K,V$ 键值对向量（矩阵）：常为 *RNN* 等结构中隐状态、线性变换（变换参数待训练参数）
+            -   $K,V$ 向量对即代表上下文，即注意力分配的对象
+            -   $K,V$ 向量对来源（依赖）必然相同，在部分设计中 $K,V$ 取相同值
+
+| *Score Function*                | 说明                             |
+|---------------------------------|----------------------------------|
+| $v^T tanh(Wq + Uk_i)$           | 加性函数，$v,W,U$ 为参数         |
+| $q^T k_i$                       | 点积函数                         |
+| $\frac {q^T k_i} {\sqrt {d_k}}$ | 缩放点积，$d_k$ 为查询值维度     |
+| $q^T W k_i$                     | 双线性，$W$ 为参数，引入非对称性 |
+| $cos(q, k_i)$                   | 余弦相似度，基于上下文           |
+| $W q$                           | 线性，$W$ 为参数，无查询值向量   |
+
+> - *Attention* 机制：<https://ifwind.github.io/2021/08/16/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89Attention%E6%9C%BA%E5%88%B6>
+> - *Attention* 机制：<https://easyai.tech/ai-definition/attention/>
+> - 序列到序列模型中注意力机制：<https://0809zheng.github.io/2020/04/22/attention.html>
 
 ### *Seq2Seq with Attention*
 
+![attention_in_seq2seq](imgs/attention_in_seq2seq.png)
+
+$$\begin{align*}
+p(y_t | y_1, \cdots, y_{t-1}, x) & = g(y_{t-1}, s_t, c_t) \\
+s_t & = f(s_{t-1}, y_{t-1}, c_t) \\
+c_t & = \sum_{j=1}^J \alpha_{t,j} h_j \\
+\alpha_{t,j} & = softmax(e_{t,j}) \\
+    & = \frac {exp(e_{t,j})} {\sum_{j=1}^J exp(e_{t,j})} \\
+e_{t,j} & = a(s_{t-1}, h_j)
+\end{align*}$$
+> - $y_t$：当前 $t$ 时刻输出
+> - $p(y_t|\cdots)$：$t$ 时刻输出条件概率
+> - $s_t$：解码器 $t$ 时刻隐状态
+> - $h_j$：编码器 $j$ 时刻隐状态，$J$ 输入序列长度
+> - $c_t$：解码 $t$ 时刻上下文向量
+> - $e_{t,j}, \alpha_{t,j}$：（*Softmax* 归一化前后）输入 $j$ 对输出 $t$ 重要性，反映模型注意力分布
+> - $a$：注意力得分函数，*Attention* 机制核心
+
 -   *Seq2Seq with Attention*
-    -   使用 *Attention机制的 *Seq2Seq* 无需多期迭代传递信息，不存在长距离依赖
+    -   序列到序列注意力结构
+        -   查询向量为解码器上一步隐状态 $s_j$
+        -   注意力向量键、值相同，均为各输入时点 *RNN*、*LSTM* 编码器隐状态 $h_i$
+        -   上下文向量 $C_j$ 根据由编码器隐状态 $h_i$ 根据查询向量 $s_j$ 加权计算
+        -   解码器依赖上一步隐状态 $s_j$、上下文向量 $C_j$ 解码
+    -   *Attention* 机制解决了长距离依赖问题
+        -   直接存储各时点隐状态，无需多期迭代传递信息，不存在长距离依赖
+        -   但，输出依赖上个输出，无法并行训练
+        -   而且，*Attention* 机制集中在输入、输出序列之间，未关注到输入、输出序列自身内部信息
 
--   *BiRNN2RNN with Attention*
-    -   编码器：*Bi-RNN*
-    -   解码器：*Attention* 机制加权的 *RNN*
-    ![seq2seq_birnn2rnn_with_attention](imgs/seq2seq_birnn2rnn_with_attention.png)
-    $$\begin{align*}
-    p(y_t | y_1, \cdots, y_{t-1}, x) & = g(y_{t-1}, s_t, c_t) \\
-    s_t & = f(s_{t-1}, y_{t-1}, c_t) \\
-    c_t & = \sum_{j=t}^T \alpha_{j=1}^T \alpha_{t,j} h_j \\
-    \alpha_{t,j} & = softmax(e_{t,j}) \\
-        & = \frac {exp(e_{t,j})} {\sum_{k=1}^T exp(e_{t,k})} \\
-    e_{t,j} & = a(s_{t-1}, h_j)
-    \end{align*}$$
-    > - $y_t$：当前$t$时刻输出
-    > - $p(y_t|\cdots)$：$t$时刻输出条件概率
-    > - $s_t$：解码器$t$时刻隐状态
-    > - $h_j$：编码器$j$时刻隐状态
-    > - $c_t$：*expected annotation*，对输出$t$的上下文向量
-    > - $T$：输入序列长度
-    > - $e_{t,j}, \alpha_{t,j}$：输入$j$对输出$t$重要性，反映模型注意力分布
-    > - $a$：*alignment model*，输入输出相关性模型，同整个系统联合训练的前向神经网络，*Attention* 机制核心
+> - *Attention* 机制：<https://ifwind.github.io/2021/08/16/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89Attention%E6%9C%BA%E5%88%B6>
+> - *Seq2Seq* 中的 *Attention*：<https://zhuanlan.zhihu.com/p/47063917>
+> - 序列到序列模型中注意力机制：<https://0809zheng.github.io/2020/04/22/attention.html>
 
-##  *Batch Normalization*
+### *Self-Attention*
+
+![attention_self_attention](imgs/attention_self_attention.png)
+
+$$\begin{align*}
+SelfAttention(Q, K, V) &= softmax(\frac {QK^T} {\sqrt {d}}) V \\
+Q &= X W^Q \\
+K &= X W^K \\
+V &= X W^V
+\end{align*}$$
+> - $X$：输入向量矩阵（**行向量代表各输入向量**）
+> - $Q, K, V$：查询向量矩阵、键向量矩阵、值向量矩阵
+> - $W^Q, W^K, W^V$：查询向量、键向量、值向量对输入序列向量的仿射变换权重，即待训练参数
+
+-   *Self-Attention* 自注意力：序列自身对自身，即序列内部向量之间计算注意力
+    -   自注意力机制更多关注 **序列内部向量之间信息**
+        -   即，查询、键值对向量矩阵 $Q,K,V$ 均由（序列内）向量做线性变换得到
+        -   且，注意力得分函数一般为缩放点积 $\alpha_{i,j} = \frac {q_i k_j} {\sqrt d}$
+        -   其中，$q_i k_j^T$ 即向量 $i$ 对 $j$ 注意力，$QK^T$ （*Softmax* 后结果）也被称为 *Attention* 矩阵
+    -   故，自注意力支持并行计算：计算内部向量之间注意力不会相互影响
+        -   但同时，序列向量（元素）之间的 **排序（位置）信息丢失**
+        -   也因此，序列向量（元素）之间直接计算注意力，**没有长距离依赖**
+        -   实务中序列过长时，可考虑截断注意力计算窗口，即仅对当前向量附近窗口向量计算注意力
+        -   自注意力机制可通过串联堆叠提取高阶信息
+    -   关于权重矩阵的说明
+        -   权重矩阵 $W^Q, W^K, W^V$ 高必为输入向量维度
+        -   权重矩阵 $W^Q, W^K$ 维度（宽）必须相等以计算注意力，但不影响注意力输出维度
+        -   权重矩阵 $W^V$ 维度（宽）即注意力输出维度，虽不必但一般与 $W^Q, W^K$ 维度相同
+    -   说明
+        -   *CNN* 可看作是简化版的 *Self-Attention*
+            -   *CNN* 中卷积核局限在（局部）感受野内信息，感受野即规定的卷积核大小
+            -   *Self-Attention* 在序列全局学习，或学习感受野范围
+        -   *Self-Attention* 和 *RNN* 都用于提取序列内部信息
+            -   但，*Self-Attention* 在速度上相较于 *RNN* 系结构计算效率高、没有长距离依赖
+            -   实际中，*Self-Attention* 在全面替代 *RNN*
+
+> - *Attention* 机制：<https://ifwind.github.io/2021/08/16/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89Attention%E6%9C%BA%E5%88%B6>
+> - 从 *Seq2Seq* 到 *Attention* 模型到 *Self-Attention*（一）：<https://www.jianshu.com/p/8beafdf30f70>
+> - 从 *Seq2Seq* 到 *Attention* 模型到 *Self-Attention*（二）：<https://www.jianshu.com/p/cd5b47e3cce9>
+> - *Transformer* 原理深入浅出：<https://www.jianshu.com/p/c36bfb8c1a17>
+> - 自注意力机制：<https://0809zheng.github.io/2020/04/24/self-attention.html>
+> - *Self-Attention* 与 *Transformer*：<https://zhuanlan.zhihu.com/p/47282410>
+
+### *Multihead Self-Attention*
+
+![attention_multihead_procedure](imgs/attention_multihead_procedure.png)
+
+$$\begin{align*}
+Z_i &= softmax(\frac {Q_i K_i^T} {\sqrt {d}}) V_i \\
+Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
+\end{align*}$$
+> - $Q_i, K_i, V_i, Z_i$：第 $i$ 头注意力查询向量矩阵、键向量矩阵、值向量矩阵、输出向量矩阵
+> - $W^O$：多头注意力中多头注意力拼接结果仿射变换权重
+> - $Z$：多注意力最终输出结果
+
+-   *Multihead Self Attention* 多头注意力：对相同输入的多个并行自注意力机制
+    -   相较于（单头）自注意力，多头注意力通过多组权重学习不同注意力模式
+        -   即，多组查询向量、键值向量对输入向量的仿射变换权重，类似 *CNN* 中多卷积核
+        -   直接使用更高维 $W^Q, W^K, W^V$ 替代多头（原多头横向扩展），将失去各头输出 $Z_i$ 各自计算权重的自由度
+            -   考虑作为极端情况的硬注意力，多头允许对值向量分段选择、拼接，而高维单头只能选择单一值向量
+        -   另外，按想象（观察）注意力矩阵（理论真实）应较为“稀疏”（非严格稀疏，表接近 0）
+            -   即，序列中某向量（元素）仅关注少量其他元素
+            -   即，注意力矩阵可能可由低秩矩阵近似，即 $QK^T$（计算结果）中 $Q,K$ 宽无需很大即可拟合
+            -   即，权重矩阵 $W^Q_i, W^K_i$ 宽度无须很效果也足够好
+    -   实务中，多头注意力输出维度（输出向量长度）会保持与输入维度一致
+        -   实现上，通过拼接多头结果 $Z_i$ 再乘权重矩阵 $W^O$ 线性变换确保
+
+> - *Attention* 机制：<https://ifwind.github.io/2021/08/16/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89Attention%E6%9C%BA%E5%88%B6>
+> - *BERT* 中，Multihead `768*64*12` 与直接使用 `768*768` 矩阵统一计算优化什么区别：<https://www.zhihu.com/question/446385446/answer/1752279087>
+> - 自注意力机制：<https://0809zheng.github.io/2020/04/24/self-attention.html>
+> - *Self-Attention* 与 *Transformer*：<https://zhuanlan.zhihu.com/p/47282410>
+
+#   数据处理
+
+##  *Embedding*
+
+-   *Embedding* 嵌入层：将高维空间中离散变量映射为低维稠密 *embedding* 向量表示
+    -   *Embedding* 可视为查（向量）表 $Ex$
+        -   *Embedding* 向量矩阵 $E$ 列向量即 *embedding* 向量
+            -   对 0-1 特征，即直接使用对表中对应向量代替
+            -   对一般特征，即使用数据值加权后表中向量代替
+        -   *Embedding* 向量矩阵可有多个，对应不同类型特征
+    -   *embedding* 向量优势
+        -   更能体现样本之间关联
+            -   內积（內积）体现样本之间接近程度
+            -   可通过可视化方法体现样本差异
+        -   更适合某些模型训练
+            -   模型不适合高维稀疏向量
+            -   *embedding* 向量矩阵可以联合模型整体训练，相当于提取特征
+            -   *embedding* 向量也可能类似迁移学习独立训练之后直接融入模型中
+
+> - *Embedding*：将度量空间中对象映射到另个（低维）度量空间，并尽可能**保持不同对象之间拓扑关系**，如 *Word-Embedding*
+
+##  *Interaction*
+
+-   *Interaction* 交互作用：人工设置特征之间交互方式
+    -   *Flatten* 展平：直接拼接不同特征、展平
+        -   对同特征域特征处理方式
+            -   平均
+            -   最大
+    -   二阶交互：特征向量之间两两逐元素交互
+        -   可在低层次捕获二阶交互影响，训练简单
+        -   交互方式
+            -   内积
+            -   池化
+
+## *Position Encoding*
+
+-   *Position Encoding* 位置编码：用向量表示每个位置，再与序列向量相加
+    -   位置编码由人工设计，最好满足
+        -   值域固定
+        -   差值相同：两相同位置在不同（长度）序列中位置编码差值相同
+-   常见位置编码方案
+    -   简单位置编码
+        -   位置直接作为编码：无上界，过大值可能导致元素向量本身值丢失
+        -   位置使用序列长度归一化：长序列、短序列中相同位置差值的编码差值不同
+    -   周期性函数 $sin(\frac {pos} {x})$ 等：参数 $x$ 取值影响效果
+    -   *GPT-3* 中相对位置函数
+        $$p_t^{(m)} = \begin{cases}
+            sin(w^{(k)} t), & m=2k \\
+            cos(w^{(k)} t), & m=2k+1
+        \end{cases}$$
+        > - $m$：向量中各分量位置，各分量使用频率不同
+        > - $w^{(k)} = \frac 1 {10000^{2k/d}}$：向量各分量位置编码函数中频率，$d$ 为向量维度
+    -   作为网络参数学习
+
+> - *Transformer Position-Encoding*：<https://ifwind.github.io/2021/08/17/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%884%EF%BC%89Poisition%20encoding>
+> - *Transformer* 的 *Position Encoding* 的总结：<https://zhuanlan.zhihu.com/p/95079337>
+
+## *Mask* 机制
+
+-   *Mask* 机制：利用遮蔽矩阵标记不（应）参与计算的元素
+    -   避免影响计算结果：遮蔽不定长序列中的 *padding* 元素
+        -   在对不定长序列 *padding* 的同时生成遮蔽矩阵
+        -   此时，遮蔽矩阵被用于无需 *padding* 参与计算的场合：损失函数计算、结果输出
+    -   控制序列元素（作为标签的）可见性：遮蔽序列中 **应保持未知** 的元素
+        -   *NLP* 任务中的不同语言模型训练过程中对元素序列的可见性要求不同
+            -   为实现并行计算，需用遮蔽矩阵控制序列元素可见性
+            -   即类似，将目标序列复制多份、遮蔽，得到多份可用于训练的标签序列
+        -   *Transformer* 中 *Decoder* 部分的 *Mask Multihead Self-Attention* 中：输入为待预测内容整体，在并行训练时需要分步遮蔽，确保每步不泄露需预测标签信息
+            ![transformer_decoder_mask](imgs/transformer_decoder_mask.png)
+
+> - *Transformer Mask* 机制：<https://ifwind.github.io/2021/08/17/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%887%EF%BC%89Mask%E6%9C%BA%E5%88%B6/>
+
+#   *Regularization*
+
+##  *Normlization*
+
+![normalizations_comparison](imgs/normalizations_comparison.png)
+
+-   *Normalization* 正则化：稳定数据分布，降低拟合难度、过拟合风险，加速模型收敛
+    -   神经网络训练过程即学习数据分布，而（*Batch* 中）数据分布若不一致
+        -   从网络整体看，网络需要（在各 *Batch* 间）找到、学习满足数据整体分布的平衡点
+        -   从网络某层看，输入数据分布在变化，各层网络也需（在各 *Batch* 间）找到平衡点
+        -   正则化即，通过舍弃部分 “不重要” 信息（方差），稳定数据分布
+    -   基于数据可、需稳定分布的假设不同，不同正则化方法中正则化范围（数据轴方向）不同，基本流程类似
+        -   沿给定轴计算均值、方差
+        -   归一化至均值 0、方差 1
+        -   变化重构：归一化结果线性变换（参数训练中学习）
+
+> - 常用 *Normalization* 方法：<https://www.cvmart.net/community/detail/1569>
+> - 深度学习中的五种归一化：<https://www.cnblogs.com/ariel-dreamland/p/13275897.html>
+
+###  *Batch Normalization*
 
 $$\begin{align*}
 y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
 \hat z & = \frac {z - E(z)} {\sqrt {Var(z) + \epsilon}}
 \end{align*}$$
-> - $B$：mini-batch
-> - $z, y$：**某层**输入向量、规范化后输入向量（即以个神经元中激活前标量值 $z=Wx+b$ 为一维）
+> - $z, y$：**某层** 输入向量、规范化后输入向量（即以个神经元中激活前标量值 $z=Wx+b$ 为一维）
 > - $\odot$：逐元素乘积
 > - $E(x)$：均值使用移动平均均值
 > - $Var(x)$：方差使用移动平均无偏估计
@@ -291,16 +556,7 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
 > - $\epsilon$：为数值计算稳定性添加
 
 -   *Batch Normalization*：规范化 batch 数据，使样本各特征标准化，即均值为 0、方差为 1
-    -   *BN* 可以视为 *whitening* 的简化
-        -   简化计算过程：避免过高的运算代价、时间
-        -   保留数据信息：未改变网络每层各特征之间相关性
-    -   *BN* 提高模型泛化性能，减少对 *Dropout* 的需求
-        -   不同 batch 均值、方差有所不同，为网络学习过程增加随机噪声
-        -   类似 *Dropout* 关闭神经元，能给网络带来噪声
-        -   事实上，实际中 *BN* 效果优于 *Dropout*
-
--   *BN* 正则化缓解了 *ICS* 问题
-    -   使得每层输入数据分布稳定
+    -   *BN* 使得每层输入数据分布稳定，缓解了 *ICS* 问题
         -   实现网络层与层之间的解耦
             -   方便迁移学习
             -   加速模型学习速度：后层网络无需不断适应输入分布变化，利于提高神经网络学习速度
@@ -317,16 +573,25 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
             -   梯度反向传播更稳定，权重 $W$ 的 *Jacobian* 矩阵将包含接近 1 的奇异值，保持梯度稳定反向传播
         -   允许网络使用饱和激活函数（*sigmoid*、*tanh*等），而不至于停滞在饱和处，缓解梯度消失问题
             -   深度网络的复杂性容易使得网络变化积累到上层网络中，导致模型容易进入激活函数梯度饱和区
-    -   也导致数据表达能力的缺失
-        -   输入数据分布均值为 0、方差为 1 时，经过 sigmoid、tanh 激活函数时，容易陷入其线性区域
+    -   *BN* 也导致数据表达能力的缺失
+        -   输入数据分布均值为 0、方差为 1 时，经过 *Sigmoid*、tanh 激活函数时，容易陷入其线性区域
         -   可引入可学习参数 $\gamma, \beta$ 以恢复数据表达能力
             -   参数 $\gamma, \beta$ 独立学习，将数据分布与之前网络计算解耦
             -   $\gamma = \sqrt {Var(z)}, \beta = E(z)$ 时为等价变换，并保留原始输入特征分布信息
+    -   *BN* 提高模型泛化性能，减少对 *Dropout* 的需求
+        -   不同 batch 均值、方差有所不同，为网络学习过程增加随机噪声
+        -   类似 *Dropout* 关闭神经元，能给网络带来噪声
+        -   事实上，实际中 *BN* 效果优于 *Dropout*
+    -   *BN* 可以视为 *Whitening* 白化在 *Batch* 训练场合的简化
+        -   *Whitening* 白化：对输入数据变换使得各特征同均值、同方向、不相关，如 *PCA* 白化、*ZCA* 白化
+        -   简化计算过程：仅使用 *Batch* 内进行归一化，避免过高的运算代价、时间
+        -   保留数据信息：未改变网络每层各特征之间相关性
 
-> - *Whitening*：白化，对输入数据变换使得各特征同均值、同方向、不相关，可以分为 *PCA* 白化、*ZCA* 白化
+> - *Batch normalization: Accelerating deep network training by reducing internal covariate shift*：<https://arxiv.org/abs/1502.03167>
+> - 模型优化之 *Batch Normalization*：<https://zhuanlan.zhihu.com/p/54171297>
 > - 常用 *Normalization* 方法：<https://www.cvmart.net/community/detail/1569>
 
-### *Internal Covariate Shift*
+#### *Internal Covariate Shift*
 
 -   *ICS*：由于网络参数变化，引起内部节点（输入）数据分布发生变化的过程
     -   网络中层与层之间高度耦合，具有强关联性
@@ -347,13 +612,15 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
                 -   训练过程中参数更新更有可能使得输入移向激活函数饱和区
                 -   且该效应随着网络深度加深被进一步放大
             -   参数初始化需要更复杂考虑
+-   
 
 > - 换用 *RELU* 等非饱和激活函数等也可避免陷入梯度饱和区
+> - *How Does Batch Normalization Help Optimization?*：<https://arxiv.org/abs/1805.11604>
 
-### 训练、预测
+#### 训练、预测
 
 -   *BN* 的训练、预测
-    -   训练过程中，以 batch 统计量作为整体训练样本均值、方差估计
+    -   训练过程中，以 *Batch* 统计量作为整体训练样本均值、方差估计
         -   每层均需存储均值、方差的移动平均统计量用于测试时归一化测试数据
         -   *BN* 应在全连接或卷积之后、激活函数之前，即 $ReLU(BN(input))$
         -   考虑卷积特性，可为每个 *Feature Map* 的卷积后激活函数设置不同的 *BN*
@@ -362,10 +629,11 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
         -   使用训练总体的无偏统计量对测试数据变换（训练时存储）
             $$\begin{align*}
             \mu_{test} & = E(\mu_{batch}) \\
-            \sigma^2_{test} = \frac m {m-1} E(\sigma^2_{batch})
+            \sigma^2_{test} & = \frac m {m-1} E(\sigma^2_{batch})
             \end{align*}$$
+        -   实现中会通过滑动均值、滑动方差替代，避免记录每个 *Batch* 均值、方差
 
-##  *Layer Normalization*
+###  *Layer Normalization*
 
 $$\begin{align*}
 \mu^l & = \frac 1 H \sum_{i=1}^H h_i^l \\
@@ -483,9 +751,11 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 | *MaxOut*       | $$ maxout(X) = \|X\|_{\inf} $$                              |              |
 
 -   激活函数：根据输入内容最终决定神经元输出内容的函数
-    -   激活函数通常为非线性函数，在网络中添加非线性
+    -   非线性：激活函数通常为非线性函数，在网络中添加非线性
+        -   线性区域：*Sigmoid* 系函数 0 点附近即为线性区域，函数趋近于线性函数，非线性效果不好
     -   梯度消失：激活函数导数太小（$<1$），压缩误差（梯度）变化
-        -   饱和：输入值趋近正（右饱和）、负（左饱和）无穷大时，激活函数梯度趋于零的现象
+    -   梯度饱和：输入值趋近正（右饱和）、负（左饱和）无穷大时，激活函数梯度趋于零的现象
+        -   *Sigmoid* 系列激活函数两侧即为梯度饱和区域，容易导致梯度消失
     -   说明
         -   一般，激活函数输入 $z$ 常为仿射变换结果 $z= wx+b$，但仿射变换不是激活函数的范畴
         -   池化（极大值池化）也可以视为激活函数
@@ -504,7 +774,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
         -   可用于隐层激活、输出层输出
     -   缺点
         -   激活函数计算量大，*BP* 算法求误差梯度时，求导涉及除法
-        -   误差反向传播时容易出现梯度消失
+        -   存在梯度饱和区域（梯度趋于 0），反向传播时容易出现梯度消失
         -   函数收敛缓慢
 
 -   *Tanh* 双曲正切函数
@@ -538,7 +808,6 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
     $$ maxout(x) = \|X\|_{\inf} $$
     -   说明
         -   *ReLU* 可视为 $max(0, x)$ 的极大值池化版本
-
 
 > - *Swish* 激活函数：<https://juejin.cn/post/6955443033169281032>
 
@@ -655,9 +924,101 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 > - *He*：<https://arxiv.org/abs/1502.01852>
 
+#   *NLP*
+
+## *Transformer*
+
+![transformer_structure](imgs/transformer_structure.png)
+
+-   *Transformer*：*N* 个 *Encoder* 层和 *N* 个 *Decoder* 层串联组合
+    -   编码器层结构相同，多个解码器层结构相同
+        -   编码器层、解码器层输入均为向量序列，且向量维度相同、序列长度相同（串联必要条件）
+        -   编码器、解码器内部各层（划分后）输出向量维度也始终保持不变
+            -   *Multi-Head Self Attention* 部分权重矩阵形状
+            -   *Feed-Forward Network* 中权重矩阵形状
+        -   编码器输入为原序列、解码器输入为目标序列
+    -   编解码器均利用 *Multi-Head Self Attention* 提取序列信息
+        -   利用 *Positional Encoding* 补足 *Self-Attention* 缺失的位置信息
+        -   解码器通过 *Masked Multi-Head Self Attention* 实现序列各位置并行训练
+        -   编解码器间的 *Cross Attention* 提取目标序列对原序列的注意力
+
+> - *Transformer* 实战：<https://ifwind.github.io/2021/08/31/Transformer-BERT-%E5%AE%9E%E6%88%98/>
+> - *Transformer* 模型：<https://ifwind.github.io/2021/08/18/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%888%EF%BC%89Transformer%E6%A8%A1%E5%9E%8B>
+> - *Self-Attention* 与 *Transformer*：<https://zhuanlan.zhihu.com/p/47282410>
+> - *Attention* 模型的应用：<https://zhuanlan.zhihu.com/p/47613793>
+> - *Transformer* 模型详解：<https://zhuanlan.zhihu.com/p/338817680>
+> - *Illustrated-Transformer*：<https://jalammar.github.io/illustrated-transformer/>
+> - *A Survery of Transformers*：<https://arxiv.org/abs/2106.04554>
+> - *Transformer* 的兄弟姐妹：<https://zhuanlan.zhihu.com/p/381899756>
+
+### *Transformer Encoder*
+
+![transformer_encoder_structure](imgs/transformer_encoder_structure.png)
+
+-   *Encoder* 编码器
+    -   *Input Embedding* 向量嵌入
+        -   对原序列输入，词嵌入后即得到 2 维矩阵（每行为词向量）
+    -   *Positional Encoding* 位置编码：对序列位置编码，并与词向量序列直接相加
+        -   应用注意力补充信息前，补充缺失的位置信息
+    -   *Multi-Head Attention* 多头自注意力
+        -   注意力 $Q, K, V$ 均来自输入向量序列（矩阵）：与对应权重矩阵（第 $i$ 头） $W^Q_i, W^K_i, W^V_i$ 乘积
+            -   首层自注意力输入：位置编码叠加后的词向量（首层）
+            -   后续自注意力输入：前序多头自注意力模块输出
+        -   使用缩放点积 $\frac {QK} {\sqrt d}$ 计算注意力得分
+        -   额外的权重矩阵 $W^O_i$ 将被用于与拼接后的多头输出相乘，恢复输出向量的维度
+    -   *Add & Norm* 残差（迭加原值）、层正则化
+        -   缓解梯度弥散、网络退化
+    -   *Position-Wise Feed-foward Network* 逐（序列）位置前馈：$ FFN(x) = ReLU(xW_1 + b_1)W_2 + b_2 $
+        -   逐位置：对自注意力序列输出向量序列（叠加、正则化后）逐向量分别全连接（前馈）
+            -   即，对输入矩阵逐行应用共享权值的线性变换、激活、线性变换
+            -   事实上，$FFN(x)$ 可直接带入前一层输出矩阵进行计算
+        -   将输入序列视为 `D * L * 1`（`D` 为向量维度、通道数，`L` 为序列长度、特征图高），则可视为两层卷积
+            -   首层卷积：卷积核大小 `D * 1 * 1`，卷积核数 `N` 即首次卷积后向量维度（通道数），即 $ W_1 \in R^D * R^N $
+            -   二层卷积：卷积核大小 `N * 1 * 1`，卷积核数为 `D` 以 **恢复到原向量维度**，即 $ W_2 \in R^N * R^D $
+        -   *FFN* 是赋予模型非线性的核心
+    -   *Add & Norm*：残差模块、层正则化
+
+### *Transformer Decoder*
+
+-   *Decoder* 解码器
+    -   *Output Embedding* 向量嵌入
+        -   对目标序列输入，词嵌入后即得到 2 维矩阵（每行为词向量）
+    -   *Positional Enocoding* 位置编码
+    -   *Masked Multi-Head Attention* 带遮蔽的多头自注意力：当前位置只能计算与前序位置向量注意力
+        ![attention_self_attention_vs_masked](imgs/attention_self_attention_vs_masked.png)
+        -   每层解码器都包含带遮蔽的多头自注意力，都保证当前位置向量不包含后续位置向量信息
+        -   即，每层输出的向量序列中各向量都仅提取应已知信息
+        -   确保模型的并行化训练能力：通过遮蔽将目标序列拆分为多个可并行训练的样本
+    -   *Add & Norm* 残差、层正则化
+    -   *Cross Attention* 编、解码器交互注意力：*Decoder* 中目标序列向量对 *Encoder* 输出向量序列的注意力
+        -   $Q$ 由 *Decoder* 各层输出向量序列计算
+        -   传统 *Transformer* 中，$K, V$ 由最后 *Encoder* 输出向量序列计算，但也有其他交互方式
+            ![transformer_encoder_decoder_cross_attention](imgs/transformer_encoder_decoder_cross_attention.png)
+    -   *Add & Norm* 残差、层正则化
+    -   *Position-Wise Feed-foward Network* 逐（序列）位置前馈：$ FFN(x) = ReLU(xW_1 + b_1)W_2 + b_2 $
+    -   *Add & Norm* 残差、层正则化
+
+### *Transformer* 训练
+
+-   *Transformer* 训练
+    -   优化目标
+        -   *Decoder* 最终输出经过 *Softmax* 得到各位置取各类别值的概率分布
+            -   序列中每个位置的预测视为一次多分类任务
+            -   单个序列本身即包含多个分类任务
+        -   以预测概率分布与真实目标序列的交叉熵作为损失，极小化损失
+    -   *Teacher Forcing*：训练时以真实目标序列作为 *Decoder* 输入
+        -   训练时，*Decoder* 始终能使用正确的前置序列预测当前位置
+        -   但实际预测中，*Decoder* 无法获取正确的前置序列，只有自身对前序的预测结果，可能累计错误
+    -   *Scheduled Sampling* 计划采样：训练时按概率选择预测结果、真实序列元素，用于预测下个位置元素
+        -   选择真实序列元素的概率可随训练轮次衰减
+        -   但，计划采样无法并行训练：必须得到上个位置预测结果才能预测下个位置元素
+
+> - 训练 *Transformer*：<https://ifwind.github.io/2021/08/18/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%889%EF%BC%89%E8%AE%AD%E7%BB%83Transformer>
+> - *Scheduled Sampling for Sampling*：<https://arxiv.org/abs/1906.07651>
+
 #   *CTR*
 
--   *Clike Through Rate* 点击预测
+-   *Click Through Rate* 点击预测
     -   *Stacking* 类模型
         ![stacking_nn_models_envolution_network](imgs/stacking_nn_models_envolution_network.png)
 
