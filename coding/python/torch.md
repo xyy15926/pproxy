@@ -7,7 +7,7 @@ tags:
   - Torch
   - Machine Learning
 date: 2025-03-11 15:26:53
-updated: 2025-03-25 11:18:12
+updated: 2025-06-17 10:53:48
 toc: true
 mathjax: true
 description: 
@@ -42,6 +42,77 @@ description:
         -   通过 `Tensor.numpy`、`torch.from_numpy` 在 `Tensor`、`np.ndarray` 间切换
 
 > - *Tensors*：<https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html>
+
+####    张量布局
+
+-   张量：张量在物理存储器中的布局总是线性的
+    -   `device` 存储位置：内存、显存
+    -   行、列优先存储
+        -   张量形状 $(d_1, d_2, \cdots, d_D)$ 在二维时表示为 $(d_{col}, d_{row})$，则
+            -   *Row-major Order*、*C-style Order* 行优先存储：维度级别从右往左增加
+            -   *Column-major Order* 行优先存储：维度级别从左往右增加
+        -   张量中元素延物理存储顺序遍历时，低级别维度 **优先变化**
+    -   *Stride* 步长：某个维度上相邻的元素的物理存储上的间隔
+        -   步长用于确定访问某维度上下个元素应跳过的元素数量
+        -   规则张量的各维度步长可直接通过低级别维度长累乘得到
+            -   连续张量即从右向左累乘维度长
+    -   *Contiguous* 连续性：张量中元素逻辑存储顺序是否与物理存储顺序（行优先）一致
+        -   连续张量可能带来高效的内存访问
+            -   很多低级别优化都假设数据连续
+        -   部分张量操作可能导致张量不再连续：`.transpose()`
+        -   部分张量操作可能要求张量连续：`.view()`
+            -   `Tensor.is_contiguous()`：判断张量是否连续
+            -   `Tensor.contiguous()`：转换为连续张量
+
+> - 张量在内存中的布局：<https://zhuanlan.zhihu.com/p/721855580>
+
+####	`torch.nested`
+
+| `torch.nested`                       | 说明                                         |
+|--------------------------------------|----------------------------------------------|
+| `nested.nested_tensor()`             | 从张量列表创建嵌套张量                       |
+| `nested.as_nested_tensor()`          | 允许保留、反向传播张量梯度（依然有数据复制） |
+| `nested.nested_tensor_from_jagged()` | 根据数据张量组件、偏移量创建 *NJT*           |
+| `nested.narrow()`                    | 从张量创建 **非连续** 的 *NJT* 视图          |
+| `NestedTensor.to_padded_tensor()`    | 填充 *NJT* 不规则维度转换为密集张量          |
+| `NestedTensor.values()`              | *NJT* 数据张量组件                           |
+| `NestedTensor.offsets()`             | *NTJ* 偏移量组件                             |
+| `NestedTensor.unbind()`              | *NJT* 沿不规则维度拆分的视图                 |
+
+-   `NestedTensor` 嵌套张量：允许不规则维度（维度大小不同）上的张量
+    -   嵌套张量可简化对不规则数据的操作
+        -   减少填充、掩码工作：嵌套张量适合用于表示序列数据，序列元素本身不规则
+            -   *NLP* 中，句子长度可能不同
+            -   *CV* 中，图像形状可能不同
+        -   嵌套张量 *API* 与普通张量类似，但是需要额外实现，目前支持操作有限
+            -   索引、查看：`.unbind`
+            -   形状变换：`.transpose`、`.reshape`、`.unsqueeze`、`.unflatten`、`torch.cat`、`torch.stack`
+            -   运算：`linear`、`bmm`、`matmul`
+            -   `nn.functional`：`F.dropout`、`F.softmax`、`F.scaled_dot_product_attention`
+        -   目前支持两种布局张量
+            -   `torch.strided` 默认布局：支持多个不规则维度，`type` 类型为普通 `torch.Tensor`
+            -   `torch.jagged` 锯齿布局 *NJT*：目前仅支持一个不规则维度，*API* 支持更好
+
+![torch_nested_jagged_tensor](imgs/torch_nested_jagged_tensor.png)
+
+-   *Nested Jagged Tensor* 锯齿布局嵌套张量
+    -   `NestedTensor.values()`：数据张量组件，打包存储在 **连续** 的内存块中
+        -   数据张量组件中元素可比 *NJT* 中元素多，即 *NJT* 可只是数据组件的部分视图（`nested.narrow`）
+        -   `NestedTensor.is_contiguous()` 连续性仅指物理存储是否连续，与是否与逻辑存储顺序一致无关
+    -   `NestedTensor.offsets()`：偏移量组件，指定不规则维度的边界划分
+    -   *NJT* 有确定的形状 `..., j<N>, ...`，其中 `j<N>` 为不规则维度
+        -   目前，仅支持 `offsets` 组件相同 *NJT* 共同运算，即使不规则维度构造相同也不支持
+            -   即，`j<N>` 中编号 `N` 需相同
+            -   可通过 `nested.nested_tesnor_from_jagged` 指定 `offsets` 参数共享 `offsets` 组件
+        -   *NJT* 维度总是较其 `values` 组件维数多 1
+            -   `values` 组件中不规则维度被 **融合进前 1 个维度**
+
+> -	`torch.nested`：<https://docs.pytorch.org/docs/stable/nested.html>
+> - `torch.nested`：<https://pytorch.ac.cn/docs/stable/nested.html>
+> - *Getting Started with Nested Tensors*：<https://docs.pytorch.org/tutorials/prototype/nestedtensor.html>
+> - 嵌套张量入门：<https://pytorch.ac.cn/tutorials/prototype/nestedtensor.html>
+> - *Accelerating Transformers wiht Nested Tensors*：<https://pytorch.ac.cn/tutorials/intermediate/transformer_building_blocks.html>
+> - 使用 *Nested Tensors* 加速 *Transformer*：<https://pytorch.ac.cn/tutorials/intermediate/transformer_building_blocks.html>
 
 ### `torch.autograd` 自动微分
 
