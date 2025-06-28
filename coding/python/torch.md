@@ -7,7 +7,7 @@ tags:
   - Torch
   - Machine Learning
 date: 2025-03-11 15:26:53
-updated: 2025-06-17 10:53:48
+updated: 2025-06-28 19:25:54
 toc: true
 mathjax: true
 description: 
@@ -15,7 +15,12 @@ description:
 
 ##  PyTorch
 
--   *PyTorch*：基于 *GPU*、*CPU* 用于
+-   *PyTorch*：基于 *GPU*、*CPU* 用于深度学习的计算框架
+    -   深度学习框架训练基本流程
+        -   根据模型搭建计算图
+        -   根据输入计算损失
+        -   计算损失对模型中参数梯度：计算框架的核心，自动微分计算、更新梯度
+        -   根据提梯度优化、更新模型参数
     -   *PyTorch* 核心功能（模块）
         -   `torch.Tensor` 张量
         -   `torch.autograd` 自动微分
@@ -27,7 +32,42 @@ description:
         -   支持在不同设备之间移动张量
         -   `torchvision`、`torchaudio`、`torchtext` 等包生态
 
-### `torch.Tensor` 张量
+###    *Computational Graphs*
+
+-   计算图：张量、`Function` 代表节点，张量和 `Function` 之间（输入、输出）关系代表边
+    -   *PyTorch* 为动态图机制，训练中 **每次迭代** 均会构建新计算图
+        -   张量、函数计算即建立 *DAG*
+        -   语句动态在计算图中动态添加节点、边，**并立即执行（前向传播）**
+            -   *PyTorch* 通计算图捕获尝试从全局视角优化计算，在迭代的靠前（首个）轮次需要即时编译，可能较慢
+        -   计算图默认在反向传播后立即被销毁
+            -   即，无法二次调用 `Tensor.backward()`
+    -   叶子节点 `is_leaf`：直接创建（非 `Function` 运算结果）、`require_grad` 置位的张量
+        -   反向传播过程中，仅叶子节点梯度 `.grad` 被保留（用户一般只关心直接创建的张量的梯度）
+        -   而，非叶子节点梯度 `.grad` 将默认被清空（仅在计算过程中被用到）
+            -   置位 `retain_grad` 将保留非叶子节点梯度
+            -   可利用 `Tensor.register_hook()` 注册钩子查看反向传播过程中梯度
+    -   图中张量更应视为 **对应子图代表的（复合）函数**（及函数在具体输入下的取值）
+        -   张量反向传播即 **复合函数链式求导**
+            -   事实上，图根节点绝对值无意义，仅因其作为极小化目标（损失）而在正向传播中计算
+            -   即，为极小化目标函数（根节点值）将参数沿负梯度方向优化
+        -   对反向传播中某个（中间）函数（运算），**其中参数梯度仅依赖输入，即数学上的梯度的数值化带入计算**
+            -   即，需要上下文暂存输入、中间结果（用于简化计算）
+            -   而，函数输出对当前函数中参数梯度计算往往无意义，而作为下层函数输入
+        -   反向传播简化 **参数梯度数值解** 计算
+            -   仅需分别给出（简单）中间函数（内）参数偏导，应用链式法则、从根节点开始累积梯度即可
+            -   否则，需得到根节点（复合函数）对各参数的偏导解析式、带入计算，即正向求解
+    -   *Double Backward* 二次反向（传播）：在首次反向传播得到的计算图上再次反向传播，即二阶梯度
+        -   要求计算图中 `Function` 均支持二次反向传播
+        -   即，自定义函数 `Backward` 中运算均可被自动微分机制记录
+
+> - 动态计算图：<https://jackiexiao.github.io/eat_pytorch_in_20_days/2.%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/2-3%2C%E5%8A%A8%E6%80%81%E8%AE%A1%E7%AE%97%E5%9B%BE/>
+> - *How Computational Graphs are Constructed in PyTorch*：<https://pytorch.org/blog/computational-graphs-constructed-in-pytorch/>
+> - *PyTorch* 中计算图是如何构建的：<https://pytorch.ac.cn/blog/computational-graphs-constructed-in-pytorch/>
+> - 计算图捕获：<https://zhuanlan.zhihu.com/p/644590863>
+> - *Double Backward with Custom Functions*：<https://pytorch.org/tutorials/intermediate/custom_function_double_backward_tutorial.html>
+
+
+## `torch.Tensor` 张量
 
 -   `torch.Tensor` 张量：类似 `np.ndarray` 记录模型输入、输出、参数的数据结构，支持包括 GPU 在内的硬件加速
     -   `Tensor` 支持类似于 `np.ndarray` 的各种 API
@@ -43,7 +83,25 @@ description:
 
 > - *Tensors*：<https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html>
 
-####    张量布局
+### `Tensor` 自动微分
+
+| 微分属性、方法                                    | 描述                                            |
+|---------------------------------------------------|-------------------------------------------------|
+| `Tensor.grad`                                     | 梯度                                            |
+| `Tensor.grad_fn`                                  | 反向传播函数                                    |
+| `Tensor.requires_grad`                            | 梯度跟踪（计算）标志                            |
+| `Tensor.is_leaf`                                  | 叶子节点标志，直接创建、`requires_grad` 置位    |
+| `Tensor.requires_grad_()`                         | 切换梯度跟踪标志                                |
+| `Tensor.detach()`                                 | 创建张量副本（脱离原图）                        |
+| `Tensor.detach_()`                                | 从图中分离张量（即置为叶子节点，不再跟踪梯度）  |
+| `Tensor.register_hook(hook)`                      | 注册反向传播钩子（钩子函数入参为 `.grad` 梯度） |
+| `Tensor.register_post_accumulate_grad_hook(hook)` | 注册（反向传播中）梯度累加完后后钩子            |
+| `Tensor.retain_grad()`                            | 保留（非叶子）节点梯度                          |
+| `Tensor.backward([gradient,...])`                 | 反向传播                                        |
+
+> - *Tensor autograd functions*：<https://docs.pytorch.org/docs/stable/autograd.html#tensor-autograd-functions>
+
+###    张量布局
 
 -   张量：张量在物理存储器中的布局总是线性的
     -   `device` 存储位置：内存、显存
@@ -66,7 +124,7 @@ description:
 
 > - 张量在内存中的布局：<https://zhuanlan.zhihu.com/p/721855580>
 
-####	`torch.nested`
+###	`torch.nested`
 
 | `torch.nested`                       | 说明                                         |
 |--------------------------------------|----------------------------------------------|
@@ -114,24 +172,16 @@ description:
 > - *Accelerating Transformers wiht Nested Tensors*：<https://pytorch.ac.cn/tutorials/intermediate/transformer_building_blocks.html>
 > - 使用 *Nested Tensors* 加速 *Transformer*：<https://pytorch.ac.cn/tutorials/intermediate/transformer_building_blocks.html>
 
-### `torch.autograd` 自动微分
+##  `torch.autograd` 自动微分
 
-| 微分属性、方法                                    | 描述                                            |
-|---------------------------------------------------|-------------------------------------------------|
-| `autograd.backward(tensors, grad_tensors, ...)`   | 反向传播                                        |
-| `autograd.grad(outputs, inputs, ...)`             | 计算梯度                                        |
-| `Tensor.grad`                                     | 梯度                                            |
-| `Tensor.grad_fn`                                  | 反向传播函数                                    |
-| `Tensor.requires_grad`                            | 梯度跟踪（计算）标志                            |
-| `Tensor.is_leaf`                                  | 叶子节点标志，直接创建、`requires_grad` 置位    |
-| `Tensor.requires_grad_()`                         | 切换梯度跟踪标志                                |
-| `Tensor.detach()`                                 | 创建张量副本（脱离原图）                        |
-| `Tensor.detach_()`                                | 从图中分离张量（即置为叶子节点，不再跟踪梯度）  |
-| `Tensor.register_hook(hook)`                      | 注册反向传播钩子（钩子函数入参为 `.grad` 梯度） |
-| `Tensor.register_post_accumulate_grad_hook(hook)` | 注册（反向传播中）梯度累加完后后钩子            |
-| `Tensor.retain_grad()`                            | 保留（非叶子）节点梯度                          |
-| `Tensor.backward([gradient,...])`                 | 反向传播                                        |
-| `torch.no_grad()`                                 | 禁止梯度跟踪（上下文环境）                      |
+| `torch.autograd` 模块、包 | 描述                       |
+|---------------------------|----------------------------|
+| `autograd.function`       | 计算图函数                 |
+| `autograd.functional`     | 计算图反向传播             |
+| `autograd.gradcheck`      | 数值方法梯度检查           |
+| `autograd.anomaly_mode`   | 自动求导时检测错误产生路径 |
+| `autograd.grad_mode`      | 梯度模式控制               |
+| `autograd.profiler`       | 函数统计信息               |
 
 -   `torch.autograd` 自动微分模块：*PyTorch* 内建的微分引擎，支持任意（计算） *DAG* 的自动微分
     -   从根节点回溯（反向传播）至叶子节点，即可通过链式法则自动计算梯度
@@ -144,13 +194,11 @@ description:
             -   维护（累加）张量 `.grad` 梯度属性
             -   依据链式法则反向传播至叶子节点
     -   *DAG* 中非叶子节点（边）即张量运算（函数），负责在前向传播中执行张量运算、在反向传播中计算梯度
-        -   `autograd.Function` （计算图）函数类可用于自定义张量运算函数
+        -   `autograd.Function` （计算图）函数类：自定义张量运算函数基类
             -   子类需实现 `forward(ctx, i)`、`backward(ctx, grad_output)` 两个静态方法
             -   执行运算时应调用 `apply` 静态方法（而不是直接调用 `forward`）
-        -   *PyTorch* 预定义张量运算函数有多种类型（并非 `autograd.Function` 子类）
-            -   `builtin_function_method`：`torch.add`、`torch.matmul`
-            -   `function`：`nn.functional.binary_cross_entropy_with_logits`
-            -   预定定义运算回自动存储所需张量用于反向传播中计算梯度，可通过相应张量 `.grad_fn._saved_<XXX>` 访问
+        -   `builtin_function_method` *Torch C* 扩展函数：`torch.add`、`torch.matmul`
+        -   `function` *Python* `def` 定义函数：（基于上述 *C* 扩展函数定义）`nn.relu`、`nn.functional.binary_cross_entropy_with_logits`
     -   对不可微函数，按如下顺序取梯度
         -   可微，直接取梯度
         -   凸函数（局部），取最小范数次梯度，即最速下降方向
@@ -159,30 +207,84 @@ description:
         -   若函数未定义，取任意值，通常为 `NaN`
         -   非函数映射在反向传播时将报错
 
-> - *AutoMatic Differentiation with `torch.autograd`*：<https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html>
+> - *Automatic Differentiation with `torch.autograd`*：<https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html>
 > - *Autograd Mechanics*：<https://pytorch.org/docs/stable/notes/autograd.html>
 > - *Automatic Differentiation Packaged - `torch.autograd`*：<https://pytorch.org/docs/stable/autograd.html>
-> - 自动微分机制：<https://jackiexiao.github.io/eat_pytorch_in_20_days/2.%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/2-2%2C%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86%E6%9C%BA%E5%88%B6/>
 > - *Extending torch.autograd*：<https://pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>
+> - *PyTorch* 源码解读之 `torch.autograd`：<https://zhuanlan.zhihu.com/p/321449610>
 
-####    *Grad Modes*
+### 自动微分
 
--   梯度模式：*PyTorch* 包含可通过上下文管理器切换、影响自动梯度计算逻辑的梯度模式
-    -   `grad` 梯度（默认）模式
-        -   `requires_grad` 设置仅在此模式下生效，在其他模式下均被覆盖为 `False`
-    -   `with torch.no_grad()` 无梯度模式：不记录运算
-        -   适合不应记录运算本身，但需要运算结果场合
-            -   如在优化器中更新参数时，不应记录更新操作，但需更新参数用于后续轮次前向
-    -   `with torch.inference_mode()` 推断模式：不记录运算，且推断模式中创建的张量不能无法在退出后被使用
-        -   极端无梯度模式，开销较无梯度模式更小
-    -   注意，`nn.Module.eval()`、`nn.Module.train(False)` 为将模型切换至评估模式，与梯度模式无关
-        -   评估模式适用于模式依赖 `nn.Dropout`、`nn.BatchNorm2d` 场合，避免模型更新数据统计值
-        -   梯度模式决定是否在前向传播中记录运算，供反向传播时更新梯度
-        -   而评估模式决定特定层（模型）在 **前向传播是否更新参数**
+| `torch.autograd` 函数                                           | 描述                           |
+|-----------------------------------------------------------------|--------------------------------|
+| `autograd.backward(tensor[,grad_tensors,retain_graph,...])`     | 计算给定节点至图叶子节点的梯度 |
+| `autograd.grad(outputs,inputs[,grad_outputs,retain_graph,...])` | 计算输入对输出的梯度           |
 
-> - *Autograd Grad Modes*：<https://pytorch.org/docs/stable/notes/autograd.html#grad-modes>
+> - 自动微分机制：<https://jackiexiao.github.io/eat_pytorch_in_20_days/2.%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/2-2%2C%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86%E6%9C%BA%E5%88%B6/>
+> - 深度学习利器之自动微分1：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
+> - 深度学习利器之自动微分2：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
 
-####    *Autograd Function*
+### `autograd.function`
+
+| 类、函数                         | 描述                                                            |
+|----------------------------------|-----------------------------------------------------------------|
+| `function.Function`              | 自定义可前向、反向传播函数基类                                  |
+| `function.FunctionCtx`           | 函数上下文暂存类                                                |
+| `function.once_differentiable()` | 装饰 `Function.backward` 方法，声明计算图函数仅支持一次反向传播 |
+
+-   `autograd.function` （计算图）反向传播函数类模块：定义计算图中支持正向、反向传播函数基类，及相关功能类
+    -   `autograd.function.Function` （计算图）函数基类：用于自定义张量运算函数
+        -   *PyTorch* 预定义张量运算函数有多种类型（并非 `autograd.Function` 子类），基本满足使用所需
+            -   `builtin_function_method` *Torch C* 扩展函数：`torch.add`、`torch.matmul`
+            -   `function` *Python* `def` 定义函数：（基于上述 *C* 扩展函数定义）`nn.relu`、`nn.functional.binary_cross_entropy_with_logits`
+            -   预定定义运算会自动存储所需张量用于反向传播中计算梯度，可通过相应张量 `Tensor.grad_fn._saved_<XXX>` 访问
+        -   故一般，`function.Function` 类（继承）常用于实现不可微张量运算、或运算依赖非 *PyTorch* 库（提升效率、减少开销）
+            -   仅需继承 `function.Function`，实现 `.forward()`、`.backward()`、`.setup_context()`（可选） 三个 **类方法** 即可
+            -   可视为，`function.Function` 仅简单提供命名空间组合前向、反向传播
+                -   避免实例化开销
+                -   需要额外上下文对象 `function.FunctionCtx` 维护函数的多次调用状态，供前向、反向传播共享信息
+
+> - *Autograd Function*：<https://pytorch.org/docs/stable/autograd.html#function>
+> - *Extending torch.autograd*：<https://pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>
+> - 自定义操作 `torch.autograd.Function`：<https://zhuanlan.zhihu.com/p/344802526>
+> - *Double Backward with Custom Functions*：<https://pytorch.org/tutorials/intermediate/custom_function_double_backward_tutorial.html>
+
+####    `function.Function` （计算图）函数类
+
+| `function.Function` 类方法           | 描述                        |
+|--------------------------------------|-----------------------------|
+| `Function.forward([ctx,]...])`       | 函数前向传播计算执行        |
+| `Function.backward(ctx,...])`        | 函数反向传播计算执行        |
+| `Function.setup_context([ctx,]...])` | 上下文设置                  |
+| `Function.apply(...)`                | 调用 `forward` 在输入上应用 |
+
+> - `ctx` 为 `autograd.function.FunctionCtx` 实例，暂存信息用于反向传播的上下文对象
+
+-   `autograd.function.Function` 类方法说明
+    -   `forward([ctx,]...)` 前向传播：执行运算，**原函数**
+        -   `forward` 支持任意数量、类型参数，未实现 `setup_context` 方法时，首个参数须为 `ctx`
+        -   `forward` 可返回任意值，无需仅为运算结果
+        -   `forward` 中运算不会被记录至图中
+            -   也即，其中运算不会被自动微分机制记录，不会在反向传播时被触发对应梯度计算
+            -   仅输入张量参数（不包含列表、字典等容器中张量元素）、函数类整体将被注册至计算图中
+        -   `forward` 方法不应被直接调用，应使用 `apply` （静态）方法触发
+    -   `setup_context(ctx, input, output)` 设置上下文：仅负责维护 `ctx` 上下文变动，不执行计算
+        -   `setup_context` 可省略，并整合至 `forward`，此时 `forward` 首个参数应为 `ctx` 上下文对象，并且负责上下文
+        -   （*PyTorch 2.0* 后）`setup_context` 与 `forward` 拆分更接近 *PyTorch* 原生运算工作方式，子系统兼容性更好
+    -   `backward(ctx, ...)` 反向传播：计算梯度，**导数函数**
+        -   `backward` 首个参数须为 `ctx`，后续参数为 `forward` 输出张量的梯度（即反向传播中按链式规则计算的外层梯度）
+            -   `backward` 不应在位修改入参
+        -   `backward` 应计算、并返回 `forward` 输入对应梯度
+            -   即，返回值数量应同 `forward` 入参
+            -   即，`backward` 实现函数自身梯度逻辑，并（应）结合链式法则计算 `forward` 输入对应梯度
+            -   无需计算梯度入参、非张量入参、不可微类型（整形）张量可（须）对应输出 `None`
+        -   `backward` 方法也不应被直接调用，常在张量（损失） `Tensor.backward()` 引起的反向传播中被链式触发
+            -   注意，`Function.backward` 不是 `Tensor.backward`
+            -   事实上，`Function.backward` 方法将被包装为 `forward` 方法输出的张量的 `grad_fn` 属性
+        -   张量 `Tensor.backward()` 反向传播参数 `create_graph` 置位时，`Function.backward()` 中运算会被记录
+            -   若 `backward` 方法中运算可被自动微分机制记录，则 `Function` 支持二次反向传播
+            -   即，`Function` 导函数支持求导，即支持二阶梯度
+            -   可使用 `autograd.function.once_differentiable()` 装饰 `.backward` 方法，申明反向传播仅允许一次（不支持二阶梯度）
 
 ```python
 class MyCube(torch.autograd.Function):
@@ -215,40 +317,7 @@ def my_cube(x):
     return result
 ```
 
--   `autograd.function.Function` （计算图）函数类：用于自定义张量运算函数，常用于实现不可微张量运算、或运算依赖非 *PyTorch* 库（提升效率、减少开销）
-    -   `forward([ctx,]...)` 前向传播：执行运算，**原函数**
-        -   `forward` 支持任意数量、类型参数，未实现 `setup_context` 方法时，首个参数须为 `ctx`
-        -   `forward` 可返回任意值，无需仅为运算结果
-        -   `forward` 中运算不会被记录至图中
-            -   也即，其中运算不会被自动微分机制记录，不会在反向传播时被触发对应梯度计算
-            -   仅输入张量参数（不包含列表、字典等容器中张量元素）、函数类整体将被注册至计算图中
-        -   `forward` 方法不应被直接调用，应使用 `apply` （静态）方法触发
-    -   `setup_context(ctx, input, output)` 设置上下文：仅负责维护 `ctx` 上下文变动，不执行计算
-        -   `setup_context` 可省略，并整合至 `forward`，此时 `forward` 首个参数应为 `ctx` 上下文对象，并且负责上下文
-        -   （*PyTorch 2.0* 后）`setup_context` 与 `forward` 拆分更接近 *PyTorch* 原生运算工作方式，子系统兼容性更好
-    -   `backward(ctx, ...)` 反向传播：计算梯度，**导数函数**
-        -   `backward` 首个参数须为 `ctx`，后续参数为 `forward` 输出张量的梯度（即链式法则反向传播梯度）
-            -   `backward` 不应在位修改入参
-        -   `backward` 应计算、并返回 `forward` 输入对应梯度
-            -   即，返回值数量应同 `forward` 入参
-            -   即，`backward` 实现函数自身梯度逻辑，并（应）结合链式法则计算 `forward` 输入对应梯度
-            -   无需计算梯度入参、非张量入参、不可微类型（整形）张量可（须）对应输出 `None`
-        -   `backward` 方法也不应被直接调用，常在张量 `Tensor.backward()` 引起的反向传播中被链式触发
-            -   注意，`Function.backward` 不是 `Tensor.backward`
-            -   事实上，`Function.backward` 方法将被包装为 `forward` 方法输出的张量的 `grad_fn` 属性
--   `autograd.function.Function` 实现、说明
-    -   `ctx` 为 `autograd.function.FunctionCtx` 实例，暂存信息用于反向传播的上下文对象
-    -   *PyTorch* 预定义张量运算函数有多种类型（并非 `autograd.Function` 子类）
-        -   `builtin_function_method`：`torch.add`、`torch.matmul`
-        -   `function`：`nn.functional` 中定义函数，如 `F.binary_cross_entropy_with_logits`
-    -   二次反向传播
-        -   `create_graph` 置位时，`backward` 中运算会被记录
-            -   若 `backward` 中运算可被自动微分机制记录，则 `Function` 支持二次反向传播
-            -   即，`Function` 导函数支持求导，即支持二阶梯度
-        -   可使用 `autograd.function.once_differentiable()` 装饰 `backward` 申明反向传播仅允许一次（不支持二阶梯度）
-    -   逻辑检查
-        -   可使用 `autograd.gradcheck()` 方法检查 `backward` 中的梯度计算逻辑
-        -   可使用 `autograd.gradgradcheck()` 方法检查 `backward` 二阶梯度计算支持、逻辑
+####    `function.FunctionCtx`
 
 | `FunctionCtx` 方法、属性             | 描述                                                             |
 |--------------------------------------|------------------------------------------------------------------|
@@ -258,57 +327,101 @@ def my_cube(x):
 | `ctx.needs_input_grad`               | 元组，指示 `forward` 各入参是否需计算梯度                        |
 | `ctx.saved_tensors`                  | 元组，`save_for_backward` 方法暂存的张量                         |
 
-> - *Autograd Function*：<https://pytorch.org/docs/stable/autograd.html#function>
-> - *Extending torch.autograd*：<https://pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>
-> - 自定义操作 `torch.autograd.Function`：<https://zhuanlan.zhihu.com/p/344802526>
-> - *Double Backward with Custom Functions*：<https://pytorch.org/tutorials/intermediate/custom_function_double_backward_tutorial.html>
+### `autograd.functional`
 
-####    *Computational Graphs*
+| `functional` 中函数                                   | 描述                           |
+|-------------------------------------------------------|--------------------------------|
+| `functional.jacobian(func,inputs[,create_graph,...])` | 计算雅可比矩阵                 |
+| `functional.hessian(func,inputs[,create_graph,...])`  | 计算海瑟矩阵                   |
+| `functional.vjp(func,inputs[,v,create_graph,strict])` | 计算 *Vector-Jacobian Product* |
+| `functional.jvp(func,inputs[,v,create_graph,strict])` | 计算 *Jacobian-Vector Product* |
+| `functional.vhp(func,inputs[,v,create_graph,strict)`  | 计算 *Vector-Hessian Product*  |
+| `functional.hvp(func,inputs[,v,create_graph,strict])` | 计算 *Hessian-Vector Product*  |
 
--   计算图：张量、`Function` 代表节点，张量和 `Function` 之间（输入、输出）关系代表边
-    -   *PyTorch* 为动态图机制，训练中 **每次迭代** 均会构建新计算图
-        -   语句动态在计算图中动态添加节点、边，**并立即执行（前向传播）**
-            -   *PyTorch* 通计算图捕获尝试从全局视角优化计算，在迭代的靠前（首个）轮次需要即时编译，可能较慢
-        -   计算图默认在反向传播后立即被销毁
-            -   即，无法二次调用 `Tensor.backward()`
-    -   叶子节点 `is_leaf`：直接创建（非 `Function` 运算结果）、`require_grad` 置位的张量
-        -   反向传播过程中，仅叶子节点梯度 `.grad` 被保留（用户一般只关心直接创建的张量的梯度）
-        -   而，非叶子节点梯度 `.grad` 将默认被清空（仅在计算过程中被用到）
-            -   置位 `retain_grad` 将保留非叶子节点梯度
-            -   可利用 `Tensor.register_hook()` 注册钩子查看反向传播过程中梯度
-    -   图中张量更应视为 **对应子图代表的（复合）函数**（及函数在具体输入下的取值）
-        -   张量反向传播即 **复合函数链式求导**
-            -   事实上，图根节点绝对值无意义，仅因其作为极小化目标（损失）而在正向传播中计算
-            -   即，为极小化目标函数（根节点值）将参数沿负梯度方向优化
-        -   对反向传播中某个（中间）函数（运算），**其中参数梯度仅依赖输入，即数学上的梯度的数值化带入计算**
-            -   即，需要上下文暂存输入、中间结果（用于简化计算）
-            -   而，函数输出对当前函数中参数梯度计算往往无意义，而作为下层函数输入
-        -   反向传播简化 **参数梯度数值解** 计算
-            -   仅需分别给出（简单）中间函数（内）参数偏导，应用链式法则、从根节点开始累积梯度即可
-            -   否则，需得到根节点（复合函数）对各参数的偏导解析式、带入计算，即正向求解
-    -   *Double Backward* 二次反向（传播）：在首次反向传播得到的计算图上再次反向传播，即二阶梯度
-        -   要求计算图中 `Function` 均支持二次反向传播
-        -   即，自定义函数 `Backward` 中运算均可被自动微分机制记录
+-   `autograd.functional` （计算图）反向传播相关、梯度计算函数：定义计算图反向传播相关函数
+    -   `inputs` 参数应只包含 **需计算梯度的张量** `Tensor.requires_grad`
+        -   其他参数可考虑通过 `lambda` 封装、置为默认参数
 
-> - 动态计算图：<https://jackiexiao.github.io/eat_pytorch_in_20_days/2.%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/2-3%2C%E5%8A%A8%E6%80%81%E8%AE%A1%E7%AE%97%E5%9B%BE/>
-> - *How Computational Graphs are Constructed in PyTorch*：<https://pytorch.org/blog/computational-graphs-constructed-in-pytorch/>
-> - *PyTorch* 中计算图是如何构建的：<https://pytorch.ac.cn/blog/computational-graphs-constructed-in-pytorch/>
-> - 计算图捕获：<https://zhuanlan.zhihu.com/p/644590863>
-> - *Double Backward with Custom Functions*：<https://pytorch.org/tutorials/intermediate/custom_function_double_backward_tutorial.html>
+> - *Autograd functional higher level API*：<https://docs.pytorch.org/docs/stable/autograd.html#functional-higher-level-api>
+> - 反向传播算法实现：<https://zhuanlan.zhihu.com/p/673963942>
+> - 机器学习工具自动微分之：VJP、JVP和JAX：<https://zhuanlan.zhihu.com/p/570554452>
 
-### `torch.nn` 神经网络
+### `autograd.gradcheck`
+
+| `gradcheck` 中函数                                              | 描述                 |
+|-----------------------------------------------------------------|----------------------|
+| `gradcheck.gradcheck(func,inputs[,*,eps,...])`                  | 数值计算检查一阶梯度 |
+| `gradcheck.gradgradcheck(func,inputs[,grad_outputs,*,eps,...])` | 数值计算检查二阶梯度 |
+
+-   `autograd.gradcheck`（数值计算法）梯度检查：数值计算检查 `Function.backward()` 方法中梯度（二阶梯度）计算
+
+> - `torch.autograd.gradcheck.gradcheck`：<https://docs.pytorch.org/docs/stable/generated/torch.autograd.gradcheck.gradcheck.html>
+> - `torch.autograd.gradcheck.gradgradcheck`：<https://docs.pytorch.org/docs/stable/generated/torch.autograd.gradcheck.gradgradcheck.html>
+
+### `autograd.anomaly_mode`
+
+| `anomaly_mode` 中函数               | 描述                       |
+|-------------------------------------|----------------------------|
+| `anomaly_mode.detect_anomaly()`     | 自动微分时检测错误产生路径 |
+| `anomaly_mode.set_detect_anomaly()` | 启停错误产生路径检测       |
+
+### `autograd.grad_mode`
+
+| `grad_mode` 中函数             | 描述                           |
+|--------------------------------|--------------------------------|
+| `grad_mode.set_grad_enabled()` | 切换梯度模式上下文管理         |
+| `grad_mode.enable_grad()`      | 梯度模式上下文管理             |
+| `grad_mode.no_grad()`          | 无梯度模式上下文管理           |
+| `grad_mode.inference_mode()`   | 无梯度、清理张量模式上下文管理 |
+
+-   `autograd.grad_mode` 梯度模式上下文管理器：管理模块运行梯度模式
+
+####    *Grad Modes* 梯度模式
+
+-   *Grad Modes* 梯度模式：*PyTorch* 包含可通过上下文管理器切换、影响自动梯度计算逻辑的梯度模式
+    -   `grad` 梯度（默认）模式
+        -   `requires_grad` 设置仅在此模式下生效，在其他模式下均被覆盖为 `False`
+    -   `with torch.no_grad()` 无梯度模式：不记录运算
+        -   适合不应记录运算本身，但需要运算结果场合
+            -   如在优化器中更新参数时，不应记录更新操作，但需更新参数用于后续轮次前向
+    -   `with torch.inference_mode()` 推断模式：不记录运算，且推断模式中创建的张量不能无法在退出后被使用
+        -   极端无梯度模式，开销较无梯度模式更小
+    -   注意，`nn.Module.eval()`（`nn.Module.train(False)`）为将模型切换至 **评估模式**，与梯度模式无关
+        -   评估模式：决定特定层（模型）在 **前向传播过程中是否更新参数**
+            -   适用于模式依赖 `nn.Dropout`、`nn.BatchNorm2d` 场合，避免模型更新数据统计值
+        -   梯度模式：决定是否在前向传播中记录运算，供反向传播时更新梯度
+
+> - *Autograd Grad Modes*：<https://pytorch.org/docs/stable/notes/autograd.html#grad-modes>
+
+### `autograd.profiler`
+
+| `profiler` 中函数    | 描述                       |
+|----------------------|----------------------------|
+| `profiler.profile()` | 函数执行统计信息上下文管理 |
+
+-   `autograd.profiler` 函数统计信息模块：提供函数级别统计信息
+
+## `torch.nn` 神经网络
+
+| 模块            | 说明                 |
+|-----------------|----------------------|
+| `nn.modules`    | 神经网络模块包       |
+| `nn.paremeter`  | 参数、缓冲区模块     |
+| `nn.functional` | 神经网络模块函数模块 |
 
 -   `torch.nn` 中包含构建神经网络所需的基本模块
     -   `nn` 命名空间已引入
         -   `nn.modules` 包、子包中定义的常用模块类
-        -   `nn.parameters` 中参数类
+        -   `nn.parameter` 中参数类
     -   `nn.functioncal` 中函数未被引入 `nn` 命名空间
+
 
 > - *What is `torch.nn` really*：<https://pytorch.org/tutorials/beginner/nn_tutorial.html>
 > - `torch.nn` *API*：<https://pytorch.org/docs/stable/nn.html>
 > - `torch.nn.functional` *API*：<https://pytorch.org/docs/stable/nn.functional.html>
+> - *Pytorch Source Code*：<https://github.com/pytorch/pytorch/tree/main/torch/nn>
 
-####    `nn.modules.module.Module`
+###    `nn.modules.module.Module`
 
 ```python
 def DigitsRecogNeuralNetwork(nn.Module):
@@ -329,9 +442,11 @@ def DigitsRecogNeuralNetwork(nn.Module):
         return logits
 ```
 
--   `nn.Module` 模块基类：*PyTorch* 中所有模块（层）均为此子类
-    -   模块支持嵌套，即将其他模块实例作为自身属性
-    -   `nn.Module` 类似 `autograd.Function` 可（用于）自定义数据运算
+-   `nn.Module` 模块基类：*PyTorch* 中所有神经网络模块（层）类基类
+    -   `nn.Module` 支持嵌套，即将其他模块实例作为自身属性
+        -   通过重载 `__setattr__`、`__getattr__` 等方法对模块、参数、缓冲类型的特殊属性增筛查改特殊处理
+        -   使用 `OrderedDict` 维护特殊属性
+    -   `nn.Module` 实现有 `.__call__()` 方法，类似 `autograd.Function` 可（用于）自定义数据运算
         -   但，**拥有并维护状态**，即更新、维护内部参数
         -   事实上，`nn.modules` 包、子包中预定义模块类实现即调用对应 `F.<Function>`
             -   模块类包含、维护函数所需参数，可与容器模块嵌套使用、注册钩子函数监控前后向传播
@@ -339,28 +454,493 @@ def DigitsRecogNeuralNetwork(nn.Module):
         -   一般的，任选模块、函数均可
             -   需维护参数（模型）、超参（函数配置参数）、与容器模块嵌套时，**模块实例化** 可能更方便
             -   但，注意 `nn.Dropout`、`nn.BatchNorm2D` 受 `Module.eval()` 切换评估模式影响，而 `F.dropout`、`F.BatchNorm2D` 不会
-    -   `nn.Parameter` 参数：`torch.Tensor` 子类
-        -   作为模块属性的 `Parameter` 实例将被注册至模块参数列表，可通过 `Module.parameters()` 访问
-        -   依赖 `nn.Parameter` 参数类，被嵌套模块参数可被嵌套模块统一管理（运算由自动微分机制记录）
-    -   除预定义模块外，可继承实现自定义模块
-        -   `Module.forward` 前向传播（方法）
-            -   不应直接调用，向模型实例传入数据将自动调用此方法
-
-| 模块相关类         | 描述                                       |
-|--------------------|--------------------------------------------|
-| `nn.Sequential`    | 顺序封装，可视为单独模块                   |
-| `nn.ModuleList`    | 模块列表，不被视为单独模块，仅用于注册参数 |
-| `nn.ModuleDict`    | 模块字典，同上                             |
-| `nn.ParameterList` | 参数列表，同上                             |
-| `nn.ParameterDict` | 参数字典，同上                             |
+    -   除预定义模块外，可继承实现自定义模块，最简单仅需重载 `.__init__()`、`.forward()` 方法
+        -   `.__init__()` 方法负责初始化模块
+            -   `.__init__()` 最初必须调用 `super().__init__()` 调用基类 `Module.__init__()` 初始化
+            -   注册子模块、参数、缓冲、钩子等
+        -   `.forward()` 即前向传播，定义模块前向传播的计算执行
+            -   模块实例的 `.forward()` 不应被直接调用，应向模型实例传入数据由 `.__call__()` 负责调用
+    -   `nn.Module` 支持多个环节设置钩子干预模块执行流程
+        -   前向、反向传播
+        -   模块状态存取
 
 > - *Build the Neural Network*：<https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html>
 > - `torch.nn` *API*：<https://pytorch.org/docs/stable/nn.html>
 > - `nn` 与 `nn.functional` 区别：<https://www.zhihu.com/question/66782101>
 > - `nn.Parameter`：<https://pytorch.org/docs/stable/generated/torch.nn.parameter.Parameter.html>
 > - `torch.nn.functional` *API*：<https://pytorch.org/docs/stable/nn.functional.html>
+> - *PyTorch* 源码解读之 `nn.Module`：核心网络模块接口详解：<https://zhuanlan.zhihu.com/p/340453841>
 
-####    常用模块、函数
+####    `nn.Module` 属性
+
+| `Module` 实例属性、方法                | 描述                                                                      |
+|----------------------------------------|---------------------------------------------------------------------------|
+| `Module.training`                      | 模型训练、推理状态标志                                                    |
+| `Module._parameters`                   | 训练时在反向传播过程中更新的参数                                          |
+| `Module._buffers`                      | 训练时不在反向传播过程中更新的参数                                        |
+| `Module._non_persistent_buffers_set`   | 无需持久化缓冲                                                            |
+| `Module._backward_hooks`               | 反向传播后调用的钩子                                                      |
+| `Module._forward_hooks`                | 正向传播后调用的钩子                                                      |
+| `Module._forward_pre_hooks`            | 正向传播前调用的钩子                                                      |
+| `Module._state_dict_hooks`             | 载入 `state_dict` 后调用的钩子                                            |
+| `Module._load_state_dict_pre_hooks`    | 载入 `state_dict` 前调用的钩子                                            |
+| `Module._modules`                      | 神经网络子模块                                                            |
+
+```python
+class Module:
+    def __init__(self):
+        self.training = True
+        self._parameters = OrderedDict()
+        self._buffers = OrderedDict()
+        self._non_persistent_buffer_set = set()
+        self._modules = OrderedDict()
+        self._backward_hooks = OrderedDict()
+        self._forward_hooks = OrderedDict()
+        self._forward_pre_hooks = OrderedDict()
+        self._state_dict_hooks = OrderedDict()
+        self._load_state_dict_pre_hooks = OrderedDict()
+```
+
+####    `nn.Module` 训练、推理状态
+
+| `Module` 实例属性、方法 | 描述                                               |
+|-------------------------|----------------------------------------------------|
+| `Module.train(mode)`    | 切换模型训练、推理状态，可重载以分模块设置训练状态 |
+| `Module.eval()`         | 切换模型至推理状态                                 |
+
+-   `nn.Module` 通过 `self.training` 区分训练、推理状态
+    -   `Module.forward` 可根据模块训练、推理状态有不同行为
+    -   `Module.train()`、`module.eval()` 方法可用于切换模块训练、推理状态
+        -   `.train()` 方法默认递归调用子模块 `.train()` 方法控制子模块训练状态
+        -   可通过重载 `.train()` 方法分模块设置训练状态：冻结部分模块参数、微调参数
+
+```python
+class Module:
+    def training(self: T, mode: bool=True) -> T:
+        self.training = mode
+        for module in self.children():
+            module.train(mode)
+        return self
+
+    def eval(self: T) -> T:
+        return self.training(False)
+```
+
+####    `nn.Module` 属性增删查改
+
+```python
+class Module:
+    def __setattr__(self, name: str, value: Union[Tensor, 'Module']):
+        def remove_from(*dicts_or_sets):
+            for d in dicts_or_sets:
+                if name in d:
+                    if isinstance(d, dict):
+                        del d[name]
+                    else:
+                        d.discard(name)
+
+        params = self.__dict__.get('_parameters')
+        if isinstance(value, Parameter):
+            # 检查子模块是否有通过 `super().__init__()` 初始化
+            if params is None:
+                raise AttributeError(
+                    "cannot assign parameters before Module.__init__() call")
+            remove_from(self.__dict__, self._buffers, self._modules, self._non_persistent_buffers_set)
+            self.register_parameter(name, value)
+        elif params is not None and name in params:
+            if value is not None:
+                raise TypeError("cannot assign '{}' as parameter '{}' "
+                                "(torch.nn.Parameter or None expected)"
+                                .format(torch.typename(value), name))
+            self.register_parameter(name, value)
+        else:
+            modules = self.__dict__.get('_modules')
+            if isinstance(value, Module):
+                # 检查子模块是否有通过 `super().__init__()` 初始化
+                if modules is None:
+                    raise AttributeError(
+                        "cannot assign module before Module.__init__() call")
+                remove_from(self.__dict__, self._parameters, self._buffers, self._non_persistent_buffers_set)
+                modules[name] = value
+            elif modules is not None and name in modules:
+                if value is not None:
+                    raise TypeError("cannot assign '{}' as child module '{}' "
+                                    "(torch.nn.Module or None expected)"
+                                    .format(torch.typename(value), name))
+                modules[name] = value
+            else:
+                buffers = self.__dict__.get('_buffers')
+                if buffers is not None and name in buffers:
+                    if value is not None and not isinstance(value, torch.Tensor):
+                        raise TypeError("cannot assign '{}' as buffer '{}' "
+                                        "(torch.Tensor or None expected)"
+                                        .format(torch.typename(value), name))
+                    buffers[name] = value
+                else:
+                    # 缺省直接设置属性
+                    object.__setattr__(self, name, value)
+
+    # 按照 Python 属性 `.` 查找链，`__getattr__` 仅在默认属性访问（`__getattribute__`）失败时被触发
+    # 即，其中无需处理默认属性访问（资料器属性、`__dict__` 查找等）
+    def __getattr__(self, name: str) -> Union[Tensor, 'Module']:
+        if '_parameters' in self.__dict__:
+            _parameters = self.__dict__['_parameters']
+            if name in _parameters:
+                return _parameters[name]
+        if '_buffers' in self.__dict__:
+            _buffers = self.__dict__['_buffers']
+            if name in _buffers:
+                return _buffers[name]
+        if '_modules' in self.__dict__:
+            modules = self.__dict__['_modules']
+            if name in modules:
+                return modules[name]
+        raise ModuleAttributeError("'{}' object has no attribute '{}'".format(
+            type(self).__name__, name))
+
+    def __delattr__(self, name):
+        if name in self._parameters:
+            del self._parameters[name]
+        elif name in self._buffers:
+            del self._buffers[name]
+            self._non_persistent_buffers_set.discard(name)
+        elif name in self._modules:
+            del self._modules[name]
+        else:
+            object.__delattr__(self, name)
+
+    def __dir__(self):
+        module_attrs = dir(self.__class__)
+        attrs = list(self.__dict__.keys())
+        parameters = list(self._parameters.keys())
+        modules = list(self._modules.keys())
+        buffers = list(self._buffers.keys())
+        keys = module_attrs + attrs + parameters + modules + buffers
+        # Eliminate attrs that are not legal Python variable names
+        keys = [key for key in keys if not key[0].isdigit()]
+        return sorted(keys)
+```
+
+| 实例属性类型       | `nn.Parameter`              | `nn.Buffer`                                         | `nn.Module`                                     |
+|--------------------|-----------------------------|-----------------------------------------------------|-------------------------------------------------|
+| `OrderedDict` 存储 | `self._parameters`          | `self._buffers`、`self._non_persistent_buffers_set` | `self._modules`                                 |
+| 注册方法           | `self.register_parameter()` | `self.register_buffer()`                            | `self.add_module()`                             |
+| 遍历访问方法       | `self.parameters()`         | `self.buffers()`                                    | `self.children()`、`self.modules()`             |
+| 具名遍历访问       | `self.named_parameters()`   | `self.named_buffers()`                              | `self.named_children()`、`self.named_modules()` |
+
+-   `nn.Module` 针对 `nn.Parameter`、`nn.Buffer`、`nn.Module` 类型属性特殊处理
+    -   `self._parameters`、`self._buffers`（`self._non_persistent_buffers_set`）、`self._modules` 等属性分别维护对应类型特殊属性
+        -   `self._apply()` 等方法仅处理被特殊维护的模块实例属性
+        -   并实现对应注册方法 `.register_<XXX>`、迭代访问方法 `.named_<XXX>`
+    -   为此，`nn.Module` 重载 `__setattr__`、`__getattr__`、`__delattr__`、`__dir__` 等魔术方法，方便属性新增、修改、删除、暴露
+        -   `__setattr__` 针对 `nn.Parameter`、`nn.Buffer`、`nn.Module` 类属性（复制）特殊处理
+            -   检查 `nn.Module`（父类） 是否被正确初始化
+            -   处理名称重复属性：属性被 `self._parameters`、`self.__dict__` 等分别维护
+            -   赋 `nn.Parameter` 类型值时，`__setattr__` 总会调用 `self.register_parameter()` 方法，其他属性则直接更新对应 `OrderedDict`（或 `__dict__`）
+            -   注意，`nn.Buffer` 属性只能通过显式调用 `self.register_buffer()` 新增
+                -   `__setattr__` 只能将已有缓冲重赋值为 `None`、`torch.Tensor`
+                -   因为，缓冲的初始化类型就是 `torch.Tensor`、`None`，无法区分
+                -   故，`self.<ATTR> = torch.Tensor` 直接为模块增加的张量属性为普通属性，在 `self._apply()` 处理状态转换时将被遗漏
+    -   `nn.Module` 属性遍历访问方法说明
+        -   `.named_parameters()`、`.named_buffers()` 基于 `self._named_members()` 方法实现
+        -   `.parameters()` 基于 `.named_parameters()` 实现（忽略名称），`.buffers()`、`.modules()`、`.children()`类似
+        -   `.named_children()` 仅遍历直接子模块，`.named_modules()` 递归遍历所有子模块
+
+```python
+class Module:
+    def _named_members(self, get_member_fn,  prefix="", recurse=True):
+        memo = set()
+        # 递归访问则调用 `named_modules` 递归获取所有子模块
+        modules = self.named_modules(prefix=prefix) if recurse else [(prefix, self)]
+        for module_prefix, module in modules:
+            members = get_members_fn(module)
+            for k, v in members:
+                if v is None or v in memo:
+                    continue
+                memo.add(v)
+                name = module_prefix + ("." if module_prefix else "") + k
+                yield name, v
+
+    def named_modules(self, memo: Optional[Set["Module"]] = None, prefix: str = ""):
+        if memo is None:
+            memo = set()
+        # 递归遍历子模块（计算图），需要维护、判断当前模块遍历状态
+        if self not in memo:
+            memo.add(self)
+            yield prefix, self
+            for name, module in self._modules.items():
+                if module is None:
+                    contiue
+                    submodule_prefix = prefix + ("." + if prefix else "") + name
+                    for m in module.named_modules(memo, submodule_prefix):
+                        yield m
+
+    def modules(self):
+        for name, module in self.named_modules():
+            yield module
+
+    def parameters(self, recurse: bool = True) -> Iterator[Parameter]:
+        for name, param in self.named_parameters(recurse=recurse):
+            yield param
+
+    def named_parameters(self, prefix: str = '', recurse: bool = True) -> Iterator[Tuple[str, Tensor]]:
+        # 基于 `self._named_members` 实现
+        gen = self._named_members(
+            lambda module: module._parameters.items(),
+            prefix=prefix, recurse=recurse)
+        for elem in gen:
+            yield elem
+```
+
+####    `nn.Module` 参数、缓冲、模块控制
+
+| `Module` 实例属性、方法   | 描述                                   |
+|---------------------------|----------------------------------------|
+| `Module.CPU()`            | 将参数、缓存转移至 *CPU*               |
+| `Module.CUDA()`           | 将参数、缓存转移至 *GPU*               |
+| `Module.type()`           | 将参数、缓存转换至其他类型             |
+| `Module.float()`          | 将浮点参数、缓存转换至 `float32` 类型  |
+| `Module.double()`         | 将浮点参数、缓存转换至 `double` 类型   |
+| `Module.half()`           | 将浮点参数、缓存转换至 `float16` 类型  |
+| `Module.bfloat16()`       | 将浮点参数、缓存转换至 `bfloat16` 类型 |
+| `Module.to()`             | 模块移动、类型转换                     |
+| `Module._apply(function)` | 对模块、子模块中参数、缓存递归遍历应用 |
+| `Module.apply(function)`  | 对模块、子模块递归应用                 |
+
+-   `nn.Module` 通过 `Module._apply()` 方法控制参数转移、转移
+    -   `.CPU()`、`.type()` 等常用方法均通过 `._apply()` 实现
+    -   `._apply(function)` 为 `nn.Module` 专门为模块内 `Parameter`、`Buffer` 实现的私有方法
+        -   通过 `self.children()` 递归处理子模块
+        -   应用 `function` 处理 `self._parameters` 中参数及其梯度、`self._buffers` 中缓冲
+    -   `.apply(function)` 以处理模块函数作为参数，递归处理全部子模块
+
+```python
+class Module:
+    def _apply(self: T, fn) -> T:
+        # 递归处理子模块
+        for module in self.children():
+            module._apply(fn)
+        # 处理 `self._parameters` 中参数
+        for key, param in self._parameters.items():
+            if param is not None:
+                with torch.no_grad():
+                    param_applied = fn(param)
+                should_use_set_data = compute_should_use_set_data(param, param_applied)
+                if should_use_set_data:
+                    param.data = param_applied
+                else:
+                    assert isinstance(param, Parameter)
+                    assert param.is_leaf
+                    self._parameter[key] = Parameter(param_applied, param.requires_grad)
+                if param.grad is not None:
+                    with torch.no_grad():
+                        grad_applied = fn(param.grad)
+                    should_use_set_data = compute_should_use_set_data(param.grad, grad_applied)
+                    if should_use_set_data:
+                        param.grad.data = grad_applied
+                    else:
+                        assert param.grad.is_leaf
+                        self._parameter[key].grad = grad_applied.requires_grad_(param.grad.requires_grad)
+        # 处理 `self._buffers` 中缓冲
+        for key, buf in self._buffers.items():
+            if buf is not None:
+                self._buffers[key] = fn(buf)
+        return self
+
+    def apply(self: T, fn: Callable[["Module"], None]) -> T:
+        for module in self.children():
+            module.apply(fn)
+        fn(self)
+        return self
+```
+
+####    `nn.Module` 前向、反向传播
+
+-   模块前向传播仅需实现模块 `.forward()` 方法，反向传播由 *PyTorch* 负责
+    -   `Module.forward()` 方法不应被直接调用，向模型实例传入数据将自动调用此方法
+        -   不应直接`Module.__call__()` 中会调用 `.forward()` 方法，同时负责触发相应钩子
+    -   `nn.Module` 为前向、反向传播设置了 6 组钩子
+
+| `nn.Module` 钩子注册方法                    | 钩子维护 `OrderedDict`             | 描述                   |
+|---------------------------------------------|------------------------------------|------------------------|
+| `Module.register_backward_hook()`           | `Module._backward_hooks`           | 当前模块反向传播钩子   |
+| `Module.register_forward_pre_hook()`        | `Module._forward_pre_hooks`        | 当前模块前向传播前钩子 |
+| `Module.register_forward_hook()`            | `Module._forward_hooks`            | 当前模块前向传播钩子   |
+| `module.register_module_backward_hook()`    | `module._global_backward_hooks`    | 全局模块反向传播钩子   |
+| `module.register_module_forward_pre_hook()` | `module._global_forward_pre_hooks` | 全局模块前向传播前钩子 |
+| `module.register_module_forward_hook()`     | `module._global_forward_hooks`     | 全局模块前向传播钩子   |
+
+```python
+def _call_impl(self, *input, **kwargs):
+    # Pre forward hooks.
+    for hook in itertools.chain(
+            _global_forward_pre_hooks.values(),
+            self._forward_pre_hooks.values()):
+        result = hook(self, input)
+        if result is not None:
+            if not isinstance(result, tuple):
+                result = (result, )
+            input = result
+
+    # For JIT.
+    if torch._C._get_tracing_state():
+        result = self._slow_forward(*input, **kwargs)
+    else:
+        result = self.forward(*input, **kwargs)
+
+    # Forward hooks.
+    for hook in itertools.chain(
+            _global_forward_hooks.values(),
+            self._forward_hook.values()):
+        hook_result = hook(self, input, result)
+        if hook_result is not None:
+            if not isinstance(result, tuple):
+                result = hook_result
+
+    # Backward hooks.
+    if (len(self._backward_hooks) > 0) or (len(_global_backward_hooks) > 0):
+        var = result
+        # Get the "first" tensor.
+        while not isinstance(var, torch.Tensor):
+            if isinstance(var, dict):
+                var = next((v for v in var.values() if isinstance(v, torch.Tensor)))
+            else:
+                var = var[0]
+        grad_fn = var.grad_fn
+        if grad_fn is not None:
+            for hook in itertools.chain(
+                    _global_backward_hooks.values(),
+                    self._backward_hooks.values()):
+                wrapper = functools.partial(hook, self)
+                functools.update_wrapper(wrapper, hook)
+                # Register hook to `<first_tensor>.grad_fn`
+                grad_fn.register_hook(wrapper)
+    return result
+__call__: Callable[..., Any] = _call_impl
+```
+
+####    `nn.Module` 梯度处理
+
+| `Module` 实例属性、方法                | 描述                 |
+|----------------------------------------|----------------------|
+| `Module.requires_grad_(requires_grad)` | 设置模块参数梯度需求 |
+| `Module.zero_grad(set_to_none)`        | 模块参数清空         |
+
+```python
+    def requires_grad_(self: T, requires_grad: bool = True) -> T:
+        for p in self.parameters():
+            p.requires_grad_(requires_grad)
+        return self
+
+    def zero_grad(self: T, set_to_none: bool = False) -> None:
+        for p in self.parameters():
+            if p.grad is not None:
+                if set_to_none:
+                    p.grad = None
+                else:
+                    if p.grad.grad_fn is not None:
+                        p.grad.detach_()
+                    else:
+                        p.grad.requires_grad_(False)
+                    p.grad.zero_()
+
+```
+
+####    `nn.Module` 状态存取
+
+| `Module` 实例属性、方法          | 描述                                                  |
+|----------------------------------|-------------------------------------------------------|
+| `Module.state_dict()`            | 获取模块完整状态                                      |
+| `Module._save_to_state_dict()`   | 存储 `self._parameters`、`self._buffers` 中持久化缓冲 |
+| `Module.load_state_dict()`       | 载入模块状态（存档点）                                |
+| `Module._load_from_state_dict()` | 加载 `self._parameters`、`self._buffers`              |
+
+-   模块存取说明
+    -   可以通过重载 `._save_to_state_dict()`、`._load_from_state_dict()` 方法满足特定状态存取需求
+
+| `nn.Module` 钩子注册方法                      | 钩子维护 `OrderedDict`              | 描述 |
+|-----------------------------------------------|-------------------------------------|------|
+| `Module._register_state_dict_hook()`          | `Module._load_state_dict_pre_hooks` |      | 
+| `Module._regsiter_load_state_dict_pre_hook()` | `Module._load_state_dict_pre_hooks` |      |
+
+```python
+class Module:
+    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
+                              missing_keys, unexpected_keys, error_msgs):
+        for hook in self._load_state_dict_pre_hooks.values():
+            hook(state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, errors_msg)
+        persistent_buffers = {k: v for k, v in self._buffers.items() if k not in self._non_persistent_buffers_set}
+        local_name_params = itertools.chain(self._parameters.items(), persistent_buffers.items())
+        local_state = {k: v for k, v in local_name_params if v is not None}
+
+        for name, param in local_state.items():
+            key = prefix + name
+            if key in state_dict:
+                input_param = state_dict[key]
+                if len(param.shape) == 0 and len(input_param.shape) == 1:
+                    input_param = input_param[0]
+                if input_param.shape != param.shape:
+                    error_msgs.append('size mismatch for {}: copying a param with shape {} from checkpoint, '
+                                  'the shape in current model is {}.'
+                                  .format(key, input_param.shape, param.shape))
+                    continue
+                try:
+                    with torch.no_grad():
+                        param.copy_(input_param)
+                except Except as ex:
+                    error_msgs.append('While copying the parameter named "{}", '
+                                  'whose dimensions in the model are {} and '
+                                  'whose dimensions in the checkpoint are {}, '
+                                  'an exception occurred : {}.'
+                                  .format(key, param.size(), input_param.size(), ex.args))
+            elif strict:
+                missing_keys.append(key)
+        if strict:
+            for key in state_dict.keys():
+                if key.startwith(prefix):
+                    input_name = key[len(prefix):]
+                    input_name = input_name.split(".", 1)[0]
+                    if input_name not in self._modules and input_name not in local_state:
+                        unexpected_keys.append(key)
+
+    def load_state_dict(self, state_dict: Union[Dict[str, Tensor], Dict[str, Tensor]], strict: bool = True):
+        missing_keys = []
+        unexpected_keys = []
+        error_msgs = []
+        # copy state_dict so _load_from_state_dict can modify it
+        metadata = getattr(state_dict, '_metadata', None)
+        state_dict = state_dict.copy()
+        if metadata is not None:
+            state_dict._metadata = metadata
+
+        def load(module, prefix=''):
+            local_metadata = {} if metadata is None else metadata.get(prefix[:-1], {})
+            module._load_from_state_dict(
+                state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs)
+            for name, child in module._modules.items():
+                if child is not None:
+                    load(child, prefix + name + '.')
+
+        load(self)
+        load = None  # break load-&gt;load reference cycle
+        if strict:
+            if len(unexpected_keys) &gt; 0:
+                error_msgs.insert(
+                    0, 'Unexpected key(s) in state_dict: {}. '.format(
+                        ', '.join('"{}"'.format(k) for k in unexpected_keys)))
+            if len(missing_keys) &gt; 0:
+                error_msgs.insert(
+                    0, 'Missing key(s) in state_dict: {}. '.format(
+                        ', '.join('"{}"'.format(k) for k in missing_keys)))
+        if len(error_msgs) &gt; 0:
+            raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+                               self.__class__.__name__, "\n\t".join(error_msgs)))
+        return _IncompatibleKeys(missing_keys, unexpected_keys)
+```
+
+### `nn.modules`
+
+![pytorch_nn_modules](imgs/pytorch_nn_modules.png)
 
 | 函数                             | 模块                     | 描述             |
 |----------------------------------|--------------------------|------------------|
@@ -390,10 +970,45 @@ def DigitsRecogNeuralNetwork(nn.Module):
 | `F.scaled_dot_product_attention` |                          | 注意力点乘       |
 |                                  | `nn.Transformer`         | *Transformer*    |
 
+-   `nn` 模块内函数、模型类实现、组织说明
+    -   处理不同维数输入的、同类型模型类往往继承自同一基类
+        -   `nn.Conv1d`、`nn.Conv2d`、`nn.Conv3d`、`nn.ConvTransposeNd` 继承自 `_ConvNd`
+        -   `nn.MaxPool1d`、`nn.MaxPool2d`、`nn.MaxPool3d` 继承自 `nn._MaxPoolNd`
+    -   各模块类在 `nn.functional` 模块下都有对应的函数（`autograd.Function` 实例）
+        -   模块类中定义维护模块所需 `nn.Parameter`
+        -   模块类 `.forward` 方法中调用对应 `nn.functional` 中函数类
+
+![pytorch_nn_modules2](imgs/pytorch_nn_modules2.png)
+
 > - `torch.nn` *API*：<https://pytorch.org/docs/stable/nn.html>
 > - `torch.nn.functional` *API*：<https://pytorch.org/docs/stable/nn.functional.html>
+> - *PyTorch* 源码解读之 `nn.Module`：<https://zhuanlan.zhihu.com/p/340453841>
 
-####    `torch.optim.Optimizer`
+####    容器模块
+
+| 模块相关类         | 描述                                       |
+|--------------------|--------------------------------------------|
+| `nn.Sequential`    | 顺序封装，可视为单独模块                   |
+| `nn.ModuleList`    | 模块列表，不被视为单独模块，仅用于注册参数 |
+| `nn.ModuleDict`    | 模块字典，同上                             |
+| `nn.ParameterList` | 参数列表，同上                             |
+| `nn.ParameterDict` | 参数字典，同上                             |
+
+-   容器模块继承自 `nn.Module`，其实例作为模块实例属性时会被特殊处理
+    -   使用 `list`、`dict` 维护子模块将导致子模块不可被父模块感知，在参数控制、状态存取时被忽略
+
+####    *BatchNorm*
+
+
+> - *PyTorch* 源码解读之 *BN&SyncBN*：<https://zhuanlan.zhihu.com/p/337850513>
+
+### `nn.parameter.Parameter`
+
+-   `nn.Parameter` 参数：`torch.Tensor` 子类
+    -   作为模块属性的 `Parameter` 实例将被注册至模块参数列表，可通过 `Module.parameters()` 访问
+    -   依赖 `nn.Parameter` 参数类，被嵌套模块参数可被嵌套模块统一管理（运算由自动微分机制记录）
+
+##    `torch.optim.Optimizer`
 
 | `Optimizer` 常用方法 | 描述               |
 |----------------------|--------------------|
@@ -432,10 +1047,13 @@ def DigitsRecogNeuralNetwork(nn.Module):
 
 > - `torch.optim`：<https://pytorch.org/docs/stable/optim.html>
 > - *Optimizer in PyTorch*：<https://zhuanlan.zhihu.com/p/684067397>
+> - *PyTorch* 源码解读之 `torch.optim`：<https://zhuanlan.zhihu.com/p/346205754>
 
-### 交互
+#TODO
 
-#### 数据加载
+## 交互
+
+### 数据加载
 
 ```python
 class CustomImageDataset(Dataset):
@@ -483,8 +1101,11 @@ train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
 
 > - *Datasets & DataLoader*：<https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>
 > - `torch.utils.data`：<https://pytorch.org/docs/stable/data.html>
+> - *PyTorch* 源码解读之 `torch.utils.data`：<https://zhuanlan.zhihu.com/p/337850513>
 
-####    可视化
+#TODO
+
+###    可视化
 
 | `SummaryWriter` 方法                                                  | 描述                     |
 |-----------------------------------------------------------------------|--------------------------|

@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-05-16 19:26:33
+updated: 2025-06-28 16:54:48
 toc: true
 mathjax: true
 description: 
@@ -16,34 +16,116 @@ description:
 
 #   神经网络
 
-##   *Back Propogation*
+##  *Automatic Differentiation*
 
-### 链式法则
+![differentiation_methods](imgs/differentiation_methods.png)
 
-$$ \frac {\partial z} {\partial x} = \frac {\partial z} {\partial t} \frac {\partial t} {\partial x} $$
-
--   *Chain Rule* 链式法则：复合函数的导数可由构成复合函数的各函数导数乘积表示
-    -   神经网络（计算图）即可视为复合函数
-        -   输入张量即函数自变量
-        -   网络节点即构成复合函数的函数：根节点即损失函数
-        -   网络边即函数、参数（输入张量、函数输出）带出执行关系
-    -   *Forward-Mode Differentiation* 前向模式微分：按链式法则求根节点（复合函数）对各参数的偏导解析式，带入输入值计算（考虑均可微）
+-   适用于编程的微分方法
+    -   *Manual Differentiation* 手动微分：人力根据目标函数给出微分方程、编码
         -   直接求解析式带入求值，符合常规思路
         -   导数计算量为 $O(\prod E_i)$（$E_i$ 为第 $i$ 层网络边数）
             -   网络各层全链接时，
             -   在节点、关联多的复杂网络中计算量大
-    -   *Reverse-Mode Differentiation* 反向模式微分：考虑各节点函数值已在正向传播中计算得出，按链式法则从根节点反向、依次计算对（中间）函数、（直至目标）参数偏导
-        -   反向传播简化 **参数梯度数值解** 计算
-            -   仅需分别给出（简单）中间函数（内）参数偏导，应用链式法则、从根节点开始累积梯度即可
-            -   类似动态规划暂存结果，正向传播计算函数值即构造动态规划表，反向传播计算导数即查表、求值
-        -   对反向传播中某个（中间）函数（运算），**其中参数梯度仅依赖输入，即数学上的梯度的数值化带入计算**
-            -   即，需要上下文暂存输入、中间结果（用于简化计算）
-            -   而，函数输出对当前函数中参数梯度计算往往无意义，而作为下层函数输入
-            -   事实上，图根节点绝对值无意义，仅因其作为极小化目标（损失）而在正向传播中计算
+    -   *Symbolic Differentiation* 符号微分：依赖代数软件对 **函数表达式** 计算微分方程
+        -   即，以来实现有微分规则的软件替代人力给出函数表达式的微分方程解析解，属于符号计算的范畴
+        -   但，要求问题的函数表达式必须为 *Closed-Formed*
+            -   即，问题必须可用完整数学表达式表示（不能包含循环、条件结构）
+            -   则，问题可转换为纯数学符号问题，可用代数软件进行符号微分求解
+        -   另外，复杂表达式可能因未被简化，导致求解中出现 *Expression Swell* 表达式膨胀问题
+    -   *Numerial Differentiation* 数值微分：根据微分定义，计算 **某个数值处** 的导数近似值
+        -   实现简单、几乎适用所有场合
+        -   但，计算量大、求解速度慢、某些点附近数值逼近结果不稳定
+    -   *Automatic Differentiation* 自动微分：预定义基本算子的微分方程，根据链式法则、带入数值逐步计算最终导数
+        -   介于符号微分、数值微分之间的方法
+            -   无需求解完成微分方程，对问题表达式约束少
+            -   每步计算结果均为微分方程解析解带入求得，精度高（不考虑浮点精度情况下是精确结果）
+            -   每步基本算子导数已求得数值结果，（可）被直接作为整体带入、计算下个算子数值结果，避免表达式膨胀问题
+                -   **类似动态规划中查表获取已计算子问题**，减少重复计算
+                -   其中，基本算子即为子问题、最终损失为待解决问题
+                -   依此计算基本算子导数，即自底向上的求解前序子问题，编译器（解释器）维护的变量名、值 “映射” 即查表
+        -   神经网络（计算图）即可视为复杂复合函数，且往往无法表示为闭合表达式
+            -   输入张量即函数自变量
+            -   网络节点即构成复合函数的函数：根节点即损失函数
+            -   网络边即函数、参数（输入张量、函数输出）带出执行关系
+
+> - *Automactic Differentiation in Machine Learning: a Survery*：<https://arxiv.org/pdf/1502.05767>
+> - 【自动微分原理】*AD* 的正反向模式：<https://zhuanlan.zhihu.com/p/518296942>
+> - 深度学习利器之自动微分1：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
+
+### *Chain Rule*
+
+$$ \frac {\partial z} {\partial x} = \frac {\partial z} {\partial t} \frac {\partial t} {\partial x} $$
+
+-   *Chain Rule* 链式法则：复合函数的导数可由构成复合函数的各函数导数乘积表示
+    -   *Jacobian Matrix* 雅可比矩阵：描绘向量对向量偏导的矩阵
+        $$\begin{bmatrix}
+            \frac {\partial z_1} {\partial t_1} & \cdots & \frac {\partial z_1} {\partial t_n} \\
+            \vdots & \ddots & \vdots \\
+            \frac {\partial z_m} {\partial t_1} & \cdots & \frac {\partial z_m} {\partial t_n} \\
+        \end{bmatrix}$$
+    -   *Jacobian-Vector Product*：雅可比矩阵右乘向量的向量积
+        -   右乘向量常为自变向量 $t$（中间向量）对前序自变标量 $x$ 的偏导
+        -   向量积即为 $\frac {\partial z} {dx}$
+    -   *Vector-Jacobian Product*：雅可比矩阵左乘向量的向量积
+        -   左乘向量常为因变标量 $z$（中间向量）对前序自变向量 $t$ 的偏导果
+        -   向量积即为 $\frac {dz} {\partial x}$
+        -   在反向自动模式自动微分中（标量损失函数），可直接存储此向量积替代雅可比矩阵
 
 > - *BP* 算法详解之链式法则：<https://zhuanlan.zhihu.com/p/44138371>
+> - 机器学习工具自动微分之：VJP、JVP和JAX：<https://zhuanlan.zhihu.com/p/570554452>
+> - *Jacobian* 矩阵与多元函数微分：<https://yan-blog.oss-cn-beijing.aliyuncs.com/files/Jacobi%E7%9F%A9%E9%98%B5%E4%B8%8E%E5%A4%9A%E5%85%83%E5%87%BD%E6%95%B0%E5%BE%AE%E5%88%86.pdf>
 
-###  梯度爆炸、梯度消失
+### *Forward-mode Automatic Defferentiation*、*Backward-mode AD*
+
+| 自动微分模式     | *FMAD*                                       | *BMAD*                                  |
+|------------------|----------------------------------------------|-----------------------------------------|
+| 导数数值计算顺序 | 由内至外                                     | 由外至内                                |
+| 动态规划         | 通过数值计算结果合并相同算子                 | 同左                                    |
+| *Jacobian* 矩阵  | 每次计算一列（全部输出对某输入）偏导         | 每次计算一行（某个输出对全部输入）偏导  |
+| 每步导数值含义   | 中间函数对输入的偏导                         | 目标对中间参数（中间函数整体）的偏导    |
+| **空间开销**     | 中间节点对输入的偏导（整个 *Jacobian* 矩阵） | 根节点对当前节点偏导（*Jacobian* 向量） |
+
+![automatic_differentiation_fm_rm_jacobian](imgs/automatic_differentiation_fm_rm_jacobian.png)
+
+$$\begin{align*}
+f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
+\frac {\partial f} {\partial x_1} & =  \frac {\partial v_{-1}} {\partial x_1} 
+    (\frac {\partial v_1} {\partial v_{-1}} \frac {\partial v_4} {\partial v_1}
+        + \frac {\partial v_2} {\partial v_{-1}} \frac {\partial v_4} {\partial v_2})
+    \frac {\partial v_5} {\partial v_4}
+    \frac {\partial f} {\partial v_5}
+\end{align*}$$
+
+![automatic_differentiation_example_graph](imgs/automatic_differentiation_example_graph.png)
+
+-   根据对链式法则中数值（带入）运算的顺序（或对应的展开形式）有两种不同的微分模式
+    -   *Forward-mode AD*、*Tangent-Mode AD* 前向自动微分、前向（累计梯度）模式：由内至外带入、计算、累计梯度
+        ![automatic_differentiation_example_fm_calculation](imgs/automatic_differentiation_example_fm_calculation.png)
+        -   即，先数值计算（复合函数）内部函数的偏导 $\frac {\partial v_{-1}} {\partial x_1}$、再计算外部函数偏导 $\frac {\partial f} {\partial v_5}$
+        -   在计算图前向传播过程中即同时计算微分，同时输出函数值、导数值
+        -   在计算图各节点需维护 **当前节点对前序所有参数偏导**（即整个 *Jacobian* 矩阵）
+    -   *Reverse-mode AD*、*Adjoint-Mode AD* 反向自动微分、反向（累计梯度）模式：由外至内带入、计算、累计梯度
+        ![automatic_differentiation_example_rm_calculation](imgs/automatic_differentiation_example_rm_calculation.png)
+        -   即，先数值计算（复合函数）内部函数偏导 $\frac {\partial f} {\partial v_5}$、再计算外部函数的偏导 $\frac {\partial v_{-1}} {\partial x_1}$
+        -   在计算图前向传播过程中仅计算原函数值、维护部分中间结果（避免重复计算），反向传播过程中再计算梯度
+        -   在计算图各节点需维护 **根节点对当前节点输出（复合函数整体）偏导**（根节点一般为标量损失，故仅需维护 *Jacobian* 向量）
+    -   说明
+        -   **考虑到前向自动微分的巨大空间开销**，实际自动微分框架常实现为反向自动微分
+            -   错误解释：因为神经网络中参数量大于输出值数量，前向模式每轮迭代只能计算单个参数的偏导，而反向模式每轮可以计算单个输出所有参数偏导，所以反向微分计算量小
+                -   事实上，偏导计算量就是 *Jacobian* 矩阵，考虑向量化计算则应可以矩阵整体向量化计算、不考虑向量化则计算量一致
+            -   错误解释：因为反向模式需要计算两轮，所以反向模式存储开销更大
+                -   事实上，前向模式需要存储当前节点对所有前序参数的偏导 *Jacobian* 矩阵，而反向模式的 *Jacobian* 矩阵退化为 *Jacobian* 向量积（标量损失）
+        -   对自动微分中某个（中间）函数（运算），**其中参数梯度仅依赖输入，即数学上的梯度的数值化带入计算**
+            -   即，需要上下文暂存输入、中间结果（用于简化计算）
+            -   而，函数输出对当前函数中参数梯度计算往往无意义，而作为下层函数输入
+            -   事实上，计算图根节点绝对值无意义，仅因其作为极小化目标（损失）而在正向传播中被计算
+    -   *Back Propogation* 反向传播算法：基于反向自动微分，输入沿网络前向传播计算损失、反向传播计算梯度，调整网络参数
+        ![back_propagation_procedure](imgs/back_propagation_procedure.png)
+
+> - 深度学习利器之自动微分2：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
+> - AI 编译器和前端技术：自动微分：<https://openmlsys.github.io/chapter_frontend_and_ir/ad.html>
+
+##  梯度爆炸、梯度消失
 
 -   反向传播过程中，梯度以指数形式传播，梯度消失（趋于 0）、梯度爆炸（过大）问题随网络深度增加而更加明显
     -   梯度消失、爆炸原因
