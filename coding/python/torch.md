@@ -7,7 +7,7 @@ tags:
   - Torch
   - Machine Learning
 date: 2025-03-11 15:26:53
-updated: 2025-06-28 19:25:54
+updated: 2025-06-29 21:20:56
 toc: true
 mathjax: true
 description: 
@@ -83,7 +83,7 @@ description:
 
 > - *Tensors*：<https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html>
 
-### `Tensor` 自动微分
+### `torch.Tensor` 自动微分
 
 | 微分属性、方法                                    | 描述                                            |
 |---------------------------------------------------|-------------------------------------------------|
@@ -98,6 +98,9 @@ description:
 | `Tensor.register_post_accumulate_grad_hook(hook)` | 注册（反向传播中）梯度累加完后后钩子            |
 | `Tensor.retain_grad()`                            | 保留（非叶子）节点梯度                          |
 | `Tensor.backward([gradient,...])`                 | 反向传播                                        |
+
+-   `torch.Tensor` 自动微分方法说明
+    -   `Tensor.backward()` 方法即以张量自身为参数调用 `autograd.backward()` 函数
 
 > - *Tensor autograd functions*：<https://docs.pytorch.org/docs/stable/autograd.html#tensor-autograd-functions>
 
@@ -215,10 +218,16 @@ description:
 
 ### 自动微分
 
-| `torch.autograd` 函数                                           | 描述                           |
-|-----------------------------------------------------------------|--------------------------------|
-| `autograd.backward(tensor[,grad_tensors,retain_graph,...])`     | 计算给定节点至图叶子节点的梯度 |
-| `autograd.grad(outputs,inputs[,grad_outputs,retain_graph,...])` | 计算输入对输出的梯度           |
+| `torch.autograd` 函数                                           | 描述                             |
+|-----------------------------------------------------------------|----------------------------------|
+| `autograd.backward(tensor[,grad_tensors,retain_graph,...])`     | 反向传播计算、累积叶子节点的梯度 |
+| `autograd.grad(outputs,inputs[,grad_outputs,retain_graph,...])` | 反向传播计算 `inputs` 节点梯度   |
+
+-   说明
+    -   `autograd.backward()`、`.grad()` 函数均是触发反向传播过程计算、累计梯度
+        -   二者首个参数张量（计算流程）即计算图根节点，也即代表计算图整体
+        -   `.backward()` 方法从根节点出发反向传播，但最终仅保留叶子节点梯度
+        -   `.grad()` 方法可用户获取 `inputs` 参数指定的中间节点梯度
 
 > - 自动微分机制：<https://jackiexiao.github.io/eat_pytorch_in_20_days/2.%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/2-2%2C%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86%E6%9C%BA%E5%88%B6/>
 > - 深度学习利器之自动微分1：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
@@ -997,8 +1006,7 @@ class Module:
 -   容器模块继承自 `nn.Module`，其实例作为模块实例属性时会被特殊处理
     -   使用 `list`、`dict` 维护子模块将导致子模块不可被父模块感知，在参数控制、状态存取时被忽略
 
-####    *BatchNorm*
-
+####    *Batch Norm*
 
 > - *PyTorch* 源码解读之 *BN&SyncBN*：<https://zhuanlan.zhihu.com/p/337850513>
 
@@ -1008,27 +1016,14 @@ class Module:
     -   作为模块属性的 `Parameter` 实例将被注册至模块参数列表，可通过 `Module.parameters()` 访问
     -   依赖 `nn.Parameter` 参数类，被嵌套模块参数可被嵌套模块统一管理（运算由自动微分机制记录）
 
-##    `torch.optim.Optimizer`
+##    `torch.optim` 优化器
 
-| `Optimizer` 常用方法 | 描述               |
-|----------------------|--------------------|
-| `step()`             | 执行优化，更新参数 |
-| `zero_grad()`        | 清空待优化参数梯度 |
-| `add_param_group()`  | 添加参数组         |
-| `load_state_dict()`  | 载入优化器状态     |
-| `state_dict()`       | 返回优化器状态     |
+| `torch.optim` 模块、包 | 描述             |
+|------------------------|------------------|
+| `optim.optimizer`      | 优化器           |
+| `optim.lr_scheduler`   | 学习率调整策略器 |
 
--   `torch.optim`：包、子包实现有最优化算法
-    -   `optim.optimizer.Optimizer` 是所有优化器基类
-        -   （内置）优化器首个形参 `params` 需为 `nn.Parameter` 待优化参数迭代器，后续参数为优化器配置参数
-            -   `Iterable[nn.Paramter]`：最常即 `Module.parameters()` 优化模型中所有参数
-            -   `[(<NAME>, nn.Parameter),...]`：最常即 `Module.named_parameters()` 优化具名参数
-            -   `[{"param": Iterable[nn.Parameter],...},...]`：为参数指定不同优化器参数（依旧可以指定优化器级配置参数作为默认值）
-        -   `Optimizer.step()`：更新参数
-            -   不带参调用：适合大部分优化器，常用于 `Tensor.backward()` 反向传播更新梯度之后更新参数
-            -   带闭包函数调用：适合 *LBFGS* 等每轮迭代中需要多次计算损失的优化器
-                -   闭包函数（仅）需清空梯度、计算并返回损失（张量）
-        -   `Optimizer.zero_grad()`：清空待优化参数梯度
+-   `torch.optim`：包内实现有最优化算法、学习率调整策略
     -   `torch.optim` 内置优化器处于性能、可靠性（泛用性）有多种实现（默认会使用在当前设备上最快实现）
         -   *For-loop*：遍历各参数更新
             -   直观、慢
@@ -1038,22 +1033,149 @@ class Module:
         -   *Fused*：在一次内核调用中更新所有参数
             -   最快、融合多种操作以减少开销
             -   依赖特定硬件加速，已实现优化器较少
-    -   `optim.lr_scheduler` 中提供多种学习率（动态）调整器
-        -   `lr_scheduler.LRScheduler`：（及其子类）根据 *epoch* 轮次动态调整
-        -   `lr_scheduler.ReduceLROnPlateau`：（及其子类）根据验证结果动态调整
-        -   `<XXX>Scheduler.step()`：调整学习率
-            -   学习率调整应在优化器更新后应用
-            -   多个学习率调整可以背靠背应用
 
 > - `torch.optim`：<https://pytorch.org/docs/stable/optim.html>
 > - *Optimizer in PyTorch*：<https://zhuanlan.zhihu.com/p/684067397>
 > - *PyTorch* 源码解读之 `torch.optim`：<https://zhuanlan.zhihu.com/p/346205754>
 
-#TODO
+###    `optim.optimizer.Optimizer` 优化器基类
+
+| `optim.optimizer.Optimizer` 方法                 | 描述               |
+|--------------------------------------------------|--------------------|
+| `Optimizer.step([closure])`                      | 执行优化，更新参数 |
+| `Optimizer.zero_grad()`                          | 清空待优化参数梯度 |
+| `Optimizer.add_param_group()`                    | 添加参数组         |
+| `Optimizer.state_dict()`                         | 返回优化器状态     |
+| `Optimizer.load_state_dict()`                    | 载入优化器状态     |
+| `Optimizer.register_load_state_dict_pre_hook()`  |                    |
+| `Optimizer.register_load_state_dict_post_hook()` |                    |
+| `Optimizer.register_state_dict_pre_hook()`       |                    |
+| `Optimizer.register_state_dict_post_hook()`      |                    |
+| `Optimizer.register_step_pre_hook()`             |                    |
+| `Optimizer.register_step_post_hook()`            |                    |
+
+-   `optim.optimizer.Optimizer` 优化器基类
+    -   （内置）优化器首个形参 `params` 需为 `nn.Parameter` 待优化参数迭代器，后续参数为优化器配置参数
+        -   `Iterable[nn.Paramter]`：最常即 `Module.parameters()` 优化模型中所有参数
+        -   `[(<NAME>, nn.Parameter),...]`：最常即 `Module.named_parameters()` 优化具名参数
+        -   `[{"param": Iterable[nn.Parameter],...},...]`：为参数指定不同优化器参数（依旧可以指定优化器级配置参数作为默认值）
+    -   `Optimizer.step([closure])`：更新参数
+        -   不带参调用：适合大部分优化器，常用于 `Tensor.backward()` 反向传播更新梯度之后更新参数
+        -   带闭包函数调用：适合 *LBFGS* 等每轮迭代中需要多次计算损失的优化器
+            -   闭包函数（仅）需清空梯度、计算并返回损失（张量）
+    -   `Optimizer.zero_grad()`：清空待优化参数梯度
+
+### 优化器类
+
+| `torch.optim` 优化器类                   | 描述      | *Default*  | *Foreach* 支持 | *Fused* 支持 |
+|------------------------------------------|-----------|------------|----------------|--------------|
+| `optim.SGD(params,lr[,momentum,...])`    | *SGD*     | *foreach*  | 1              | 1            |
+| `optim.Adagrad(param[,lr,mementum,...])` | *Adagrad* | *foreach*  | 1              | *CPU-only*   |
+| `optim.RMSprop(params[,lr,alpha,...])`   | *RMSprop* | *foreach*  | 1              | 0            |
+| `optim.Adam(params[,lr,betas,...])`      | *Adam*    | *foreach*  | 1              | 1            |
+| `optim.LBFGS(params[,lr,....])`          | *LBFGS*   | *for-loop* | 0              | 0            |
+
+### `optim.lr_scheduler._LRScheduler`
+
+| `optim.lr_schduler._LRScheduler` 方法         | 描述                       |
+|-----------------------------------------------|----------------------------|
+| `_LRScheduler.step()`                         | 调整学习率                 |
+| `_LRScheduler.get_last_lr()`                  | 记录参数组更新后的学习率   |
+| `_LRScheduler.get_lr()`                       | 更新学习率策略，需子类实现 |
+| `_LRScheduler.print_lr(is_verbose,group,...)` | 显示学习率调整信息         |
+| `_LRScheduler.state_dict()`                   | 获取状态信息               |
+| `_LRScheduler.load_state_dict()`              | 加载状态信息               |
+
+-   `optim.lr_scheduler` 中提供多种学习率（动态）调整器
+    -   学习率策略类根据调整参考依据
+        -   `lr_scheduler.LRScheduler`：（及其子类）根据 *epoch* 轮次动态调整
+        -   `lr_scheduler.ReduceLROnPlateau`：（及其子类）根据验证损失动态调整
+    -   `<XXX>Scheduler.step()`：调整学习率
+        -   学习率调整应在优化器更新后应用
+        -   多个学习率调整可以背靠背应用
+
+```python
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+scheduler1 = ExponentialLR(optimizer, gamma=0.9)
+scheduler2 = MultiStepLR(optimizer, milestones=[30,80], gamma=0.1)
+
+for epoch in range(20):
+    for input, target in dataset:
+        optimizer.zero_grad()
+        output = model(input)
+        loss = loss_fn(output, target)
+        loss.backward()
+        optimizer.step()
+    scheduler1.step()
+    scheduler2.step()
+```
+
+| `optim.lr_schduler._LRScheduler` 子类                         | 描述                      |
+|---------------------------------------------------------------|---------------------------|
+| `lr_scheduler.LRScheduler(optimizer,...)`                     | 根据 *epoch* 轮次动态调整 |
+| `lr_scheduler.ReduceLROnPlateau(optimizer[,mode,factor,...])` | 自适应调整                |
+
+### 学习率策略
+
+| `lr_scheduler.LRScheduler` 子类                                        | 描述             |
+|------------------------------------------------------------------------|------------------|
+| `lr_scheduler.StepLR(optimizer,step_size[,gamma,...])`                 | 等距间隔调整     |
+| `lr_scheduler.MultiStepLR(optimizer,milestones[,gamma,...])`           | 多阶段调整       |
+| `lr_scheduler.ExponentialLR(optimizer,gamma[,last_epoch,...])`         | 指数衰减调整     |
+| `lr_scheduler.CosineAnnealingLR(optimizer,T_max[,eta_min,...])`        | 余弦退火         |
+| `lr_scheduler.CosineAnnealingWarmRestarts(optimizer,T_0[,T_mult,...])` |                  |
+| `lr_scheduler.OneCycleLR(optimizer,max_lr[,total_steps,...])`          | 单三角波调整     |
+| `lr_scheduler.CyclicLR(optimizer,base_lr[,max_lr,...])`                | 周期三角波调整   |
+| `lr_scheduler.LambdaLR(optimizer,lr_lambda[,last_epoch,...])`          | 按轮次自定义调整 |
+| `lr_scheduler.MultiplicativeLR(optimizer,lr_lambda[,last_epoch,...])`  | 按轮次自定义调整 |
 
 ## 交互
 
-### 数据加载
+### `torch.utils.data` 数据加载
+
+| `torch.utils.data` 模块、包 | 描述         |
+|-----------------------------|--------------|
+| `data.dataset`              | 数据集       |
+| `data.sampler`              | 数据抽样     |
+| `data.dataloader`           | 数据加载封装 |
+
+-   *PyTorch* 包含数据集相关处理功能 `torch.utils.data` 以解耦数据预处理、模型训练
+    -   `data.dataset.Dataset` 数据集：将数据源（样本、标签）封装为数据集
+    -   `data.sampler.Sampler` 数据抽样：抽样方式决定从数据集中获取数据的策略
+    -   `data.dataloader.DataLoader` 数据加载：数据加载调度、打包成批、批处理等
+
+> - *Datasets & DataLoader*：<https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>
+> - `torch.utils.data`：<https://pytorch.org/docs/stable/data.html>
+> - *PyTorch* 源码解读之 `torch.utils.data`：<https://zhuanlan.zhihu.com/p/337850513>
+
+####    数据处理
+
+| `torch.utils.data` 函数                          | 描述                                       |
+|--------------------------------------------------|--------------------------------------------|
+| `data.default_collate(batch)`                    | 根据批内元素类型，按规则将数据规范化       |
+| `data.default_convert(data)`                     | 将序列中 *NumPy* 元素转换为 `torch.Tensor` |
+| `data.get_worker_info()`                         | 并行工作节点信息                           |
+| `data.random_split(dataset,lengths[,generator])` | 随机划分                                   |
+
+####    `data.dataset` 数据集
+
+| `data.dataset` 数据集类                | 描述                                               |
+|----------------------------------------|----------------------------------------------------|
+| `dataset.Dataset`                      | *Map-style* 风格数据集基类                         |
+| `dataset.IterableDataset`              | *Iterable-style* 风格数据集基类                    |
+| `dataset.TensorDataset(*tensors)`      | 按索引从 `tensors` 中各张量首维抽取切片组成元组    |
+| `dataset.StackDataset(*args, **kargs)` | 按索引从各参数获取数据组成元组、字典（关键字参数） |
+| `dataset.ConcatDataset(datasets)`      | 串联数据集                                         |
+| `dataset.ChainDataset(datasets)`       | 串联迭代数据集                                     |
+| `dataset.Subset(dataset,indices)`      | 数据集切片                                         |
+
+-   `data.Dataset` 数据集：封装样本、标签
+    -   *Map-style* 映射风格数据集：实现 `__getitem__`、`__len__` 协议，代表键（位序下标）、样本映射
+        -   可通过键、下表直接访问样本
+        -   可直接继承 `data.Dataset` 实现自定义数据集，代表样本迭代器
+    -   *Iterable-style* 迭代风格数据集：实现 `__iter__` 协议
+        -   适合随机读取开销大、块大小依赖获取数据的场合
+        -   可继承 `data.IterableDataset` （继承自 `data.Dataset`）实现自定义数据集
 
 ```python
 class CustomImageDataset(Dataset):
@@ -1080,30 +1202,46 @@ training_data = CustomImageDataset(labels, imgdir)
 train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
 ```
 
--   *PyTorch* 包含数据集相关处理功能 `torch.utils.data` 以解耦数据预处理、模型训练
-    -   `data.Dataset` 数据集：封装样本、标签
-        -   映射风格数据集：实现 `__getitem__`、`__len__` 协议，代表键（位序下标）、样本映射
-            -   可通过键、下表直接访问样本
-            -   可直接继承 `data.Dataset` 实现自定义数据集，代表样本迭代器
-        -   迭代风格数据集：实现 `__iter__` 协议
-            -   适合随机读取开销大、块大小依赖获取数据的场合
-            -   可继承 `data.IterableDataset` （继承自 `data.Dataset`）实现自定义数据集
-    -   `data.DataLoader`：封装 `data.Dataset` 为可迭代对象，方便使用
-        -   支持映射风格、迭代风格数据集
-        -   支持自定义（映射风格）数据加载顺序
-            -   迭代风格数据集加载顺序由数据集自身决定
-            -   映射风格由 `data.Sampler` 类负责排列样本顺序（`shuffle` 参数置位时将在内部自动构造）
-        -   自动分块、整理数据
-            -   `batch_size`、`batch_sampler` 均 `None` 时禁用自动分块
-            -   `collate_fn` 在自动分块时处理块数据，否则处理单个样本（缺省将 `np.ndarray` 转换为张量）
-        -   支持多进程数据加载
-        -   支持内存固定
+####    `data.sampler`
 
-> - *Datasets & DataLoader*：<https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>
-> - `torch.utils.data`：<https://pytorch.org/docs/stable/data.html>
-> - *PyTorch* 源码解读之 `torch.utils.data`：<https://zhuanlan.zhihu.com/p/337850513>
+| `data.sampler` 抽样类                                                | 描述         |
+|----------------------------------------------------------------------|--------------|
+| `sampler.Sampler`                                                    | 抽样类基类   |
+| `sampler.SequentialSampler(datasource)`                              | 顺序抽样     |
+| `sampler.RandomSampler(datasource[,replacement,...])`                | 随机抽样     |
+| `sampler.SubsetRandomSampler(indices,generator)`                     | 子集随机抽样 |
+| `sampler.WeightRandomSampler(weights,num_samples[,replacement,...])` | 带权随机抽样 |
+| `sampler.BatchSampler(sampler,batch_size,drop_last)`                 | 抽样批封装   |
+| `sampler.DistributedSampler(dataset[,num_replicas,...])`             | 分布式抽样   |
 
-#TODO
+####    `data.dataloader`
+
+| `dataloader.DataLoader` 参数 | 描述                                        | 取值类型                     | 默认值  |
+|------------------------------|---------------------------------------------|------------------------------|---------|
+| `dataset`                    | 数据集                                      | `dataset.Dataset`            |         |
+| `batch_size`                 | 批大小                                      | `int`                        | 1       |
+| `shuffle`                    | 置位时通过 `sampler.RandomSampler` 随机抽样 | `bool`                       | `False` |
+| `sampler`                    | 抽样策略                                    | `sampler.Sample`、`Iterable` | `None`  |
+| `batch_sampler`              | 批抽样策略                                  | `sampler.BatchSampler`       | `None`  |
+| `num_workers`                | 数据加载子进程数                            | `int`                        | 0       |
+| `collate_fn`                 | *Map-style* 数据集批打包函数                | `callable`                   | `None`  |
+| `pin_memory`                 | 将张量加载到 *CUDA* 固定内存中              | `bool`                       | `False` |
+| `drop_last`                  | 丢弃最后不满足批大小批                      | `bool`                       | `False` |
+| `timeout`                    | 从工作进程收集批超时时间                    | `numeric`                    | 0       |
+| `worker_init_fn`             | 接受序号初始化工作进程                      | `callable`                   | `None`  |
+| `prefetch_factor`            | 工作进程提前加载样本数量                    | `int`                        | 2       |
+| `persistent_workers`         | 保留工作进程直至数据集迭代完成              | `bool`                       | `False` |
+
+-   `dataloader.DataLoader`：封装 `data.Dataset`、`data.Sampler`，调度数据加载
+    -   支持映射风格、迭代风格数据集 `data.Dataset`
+    -   支持自定义（映射风格）数据加载顺序
+        -   迭代风格数据集加载顺序由数据集自身决定
+        -   映射风格由 `data.Sampler` 类负责排列样本顺序（`shuffle` 参数置位时将在内部自动构造）
+    -   自动分块、整理数据
+        -   `batch_size`、`batch_sampler` 均 `None` 时禁用自动分块
+        -   `collate_fn` 在自动分块时处理块数据，否则处理单个样本（缺省将 `np.ndarray` 转换为张量）
+    -   支持多进程数据加载
+    -   支持内存固定
 
 ###    可视化
 
