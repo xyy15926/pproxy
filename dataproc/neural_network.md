@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-06-28 16:54:48
+updated: 2025-07-17 10:22:31
 toc: true
 mathjax: true
 description: 
@@ -590,6 +590,13 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 > - *Transformer Position-Encoding*：<https://ifwind.github.io/2021/08/17/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%884%EF%BC%89Poisition%20encoding>
 > - *Transformer* 的 *Position Encoding* 的总结：<https://zhuanlan.zhihu.com/p/95079337>
 
+### *Rotary Position Embedding*
+
+-   *RoPE* 旋转编码
+
+> - 十分钟读懂旋转编码 *RoPE*：<https://www.zhihu.com/tardis/bd/art/647109286>
+> - 旋转式位置编码 *RoPE* 知识总结：<https://zhuanlan.zhihu.com/p/662790439>
+
 ## *Mask* 机制
 
 -   *Mask* 机制：利用遮蔽矩阵标记不（应）参与计算的元素
@@ -1082,12 +1089,21 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 ### *Transformer* 训练
 
--   *Transformer* 训练
-    -   优化目标
-        -   *Decoder* 最终输出经过 *Softmax* 得到各位置取各类别值的概率分布
-            -   序列中每个位置的预测视为一次多分类任务
-            -   单个序列本身即包含多个分类任务
-        -   以预测概率分布与真实目标序列的交叉熵作为损失，极小化损失
+-   *Decoder* 最终输出经过线性映射、*Softmax* 得到各位置取各类别值的概率分布
+    -   *Decoder* 输出序列中 **每个元素（向量）视为一次独立的预测**
+        -   输出序列中元素即输入序列 **对应位置** *Token* 的预测（解码）结果
+        -   单个输入目标、输出预测序列即包含多个（分类）任务、预测结果
+    -   一般的，对分类任务
+        -   对 **每个输出序列中向量分别** 做线性变换、*Softmax*，得到多分类的概率分布
+        -   以交叉熵作为损失，计算与目标序列的损失和作为单次目标序列输入整体损失
+
+> - 训练 *Transformer*：<https://ifwind.github.io/2021/08/18/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%889%EF%BC%89%E8%AE%AD%E7%BB%83Transformer>
+> - 从零开始实现 *Transformer*：<https://zhuanlan.zhihu.com/p/651736596>
+
+####    训练输入
+
+-   *Decoder* 基于上下文向量（*Encoder* 编码结果）、根据前序预测结果预测下个输出
+    -   则，*Decoder* 输入序列应不包含最后元素、目标序列应不包含最初元素
     -   *Teacher Forcing*：训练时以真实目标序列作为 *Decoder* 输入
         -   训练时，*Decoder* 始终能使用正确的前置序列预测当前位置
         -   但实际预测中，*Decoder* 无法获取正确的前置序列，只有自身对前序的预测结果，可能累计错误
@@ -1095,7 +1111,6 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
         -   选择真实序列元素的概率可随训练轮次衰减
         -   但，计划采样无法并行训练：必须得到上个位置预测结果才能预测下个位置元素
 
-> - 训练 *Transformer*：<https://ifwind.github.io/2021/08/18/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%889%EF%BC%89%E8%AE%AD%E7%BB%83Transformer>
 > - *Scheduled Sampling for Sampling*：<https://arxiv.org/abs/1906.07651>
 
 #   *CTR*

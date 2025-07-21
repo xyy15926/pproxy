@@ -6,8 +6,9 @@ tags:
   - Python
   - Torch
   - Machine Learning
+  - Nueral Network
 date: 2025-03-11 15:26:53
-updated: 2025-06-29 21:20:56
+updated: 2025-06-30 09:47:54
 toc: true
 mathjax: true
 description: 
@@ -82,6 +83,8 @@ description:
         -   通过 `Tensor.numpy`、`torch.from_numpy` 在 `Tensor`、`np.ndarray` 间切换
 
 > - *Tensors*：<https://pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html>
+> - 理解 *elementwise_kernel* 和 *TensorIterator* 的调用流程：<https://zhuanlan.zhihu.com/p/690858698>
+> - *PyTorch* 常用函数常用调用方式及内部原理：<https://zhuanlan.zhihu.com/p/692723895>
 
 ### `torch.Tensor` 自动微分
 
@@ -1024,15 +1027,6 @@ class Module:
 | `optim.lr_scheduler`   | 学习率调整策略器 |
 
 -   `torch.optim`：包内实现有最优化算法、学习率调整策略
-    -   `torch.optim` 内置优化器处于性能、可靠性（泛用性）有多种实现（默认会使用在当前设备上最快实现）
-        -   *For-loop*：遍历各参数更新
-            -   直观、慢
-        -   *Foreach*：将参数组组合为 *multi-tensor* 整体更新参数组
-            -   较快、内存占用高、内核调用少
-            -   大部分优化器的默认实现
-        -   *Fused*：在一次内核调用中更新所有参数
-            -   最快、融合多种操作以减少开销
-            -   依赖特定硬件加速，已实现优化器较少
 
 > - `torch.optim`：<https://pytorch.org/docs/stable/optim.html>
 > - *Optimizer in PyTorch*：<https://zhuanlan.zhihu.com/p/684067397>
@@ -1074,6 +1068,16 @@ class Module:
 | `optim.RMSprop(params[,lr,alpha,...])`   | *RMSprop* | *foreach*  | 1              | 0            |
 | `optim.Adam(params[,lr,betas,...])`      | *Adam*    | *foreach*  | 1              | 1            |
 | `optim.LBFGS(params[,lr,....])`          | *LBFGS*   | *for-loop* | 0              | 0            |
+
+-   `torch.optim` 内置优化器处于性能、可靠性（泛用性）有多种实现（默认会使用在当前设备上最快实现）
+    -   *For-loop*：遍历各参数更新
+        -   直观、慢
+    -   *Foreach*：将参数组组合为 *multi-tensor* 整体更新参数组
+        -   较快、内存占用高、内核调用少
+        -   大部分优化器的默认实现
+    -   *Fused*：在一次内核调用中更新所有参数
+        -   最快、融合多种操作以减少开销
+        -   依赖特定硬件加速，已实现优化器较少
 
 ### `optim.lr_scheduler._LRScheduler`
 

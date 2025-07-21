@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-16 09:53:49
-updated: 2024-09-06 16:15:17
+updated: 2025-07-18 10:12:35
 toc: true
 mathjax: true
 description: 
@@ -2892,3 +2892,32 @@ L(\theta) & = log P(Y|\theta) \\
         ```
         -   一般对应确定权重问题，确定最底层元素对最上层元素的贡献
         -   对完全不关联结构，可以直接逐层、逐节点拆分为多个不相关层次结构分别处理，减少各层判断矩阵阶数
+
+##  *Stochastics Neighbor Embedding*
+
+-   *SNE* 可视化降维：将样本点间相似度（距离）视为概率分布，期望降维前后样本点间相似度分布接近
+    -   基本思路
+        -   为 **每个样本** $x_i$ 定义 **其他样本 $x_j$ 与该样本点的相似度** 概率分布
+            $$ P(j|i) = \frac {S(x_i, x_j)} {\sum_j S(x_i, x_j)}, j \neq i $$
+        -   同样，对降维后数据样本点 $z_i$ 定义相似度概率分布
+            $$ Q(j|i) = \frac {S^{'}(z_i, z_j)} {\sum_j S^{'}(z_i, z_j)}, j \neq i $$
+        -   以降维前后相似度概率分布差异（*KL* 散度）作为损失损失函数，优化损失函数
+            $$ \begin{align*}
+            L(z_1, \cdots, z_N) & = \sum_i D_{KL} (P(j|i) || Q(j|i)) \\
+                & = \sum_i \sum_j P(j|i) log(\frac {P(j|i)} {Q(j|i)})
+            \end{align*}$$
+    -   相似度概率分布模型说明
+        -   为满足概率分布要求，引入相似度之和作为分母
+        -   降维前后相似度度量可不一致：*t-SNE* 与 *SNE* 主要区别即相似度度量差异
+            -   *SNE* 算法降维前后、*t-SNE* 算法高维部分
+                $$ S(x_i, x_j) = exp(-\frac {\| x_i - x_j \|_2^2} {2 \sigma_i^2}) $$
+            -   *t-SNE* 算法低维部分
+                $$ S^{'}(x_i, x_j) = (1 + \| z_i - z_j \|_2^2)^{-1} $$
+    -   相较于 *PCA* 降维，*SNE* 一般用于将高维数据降维到 2、3 维
+        -   *SNE* 降维更加注重保留原始数据的局部特征
+        -   数据可视化结果中各类数据边界明显，避免了 *PCA* 降维的拥挤现象
+        ![sne_vs_pca_visualization](imgs/sne_vs_pca_visualization.png)
+
+> - 降维方法之 *t-SNE*：<https://zhuanlan.zhihu.com/p/426068503>
+> - *Stochastic Neighbor Embedding*：<https://papers.nips.cc/paper/2002/file/6150ccc6069bea6b5716254057a194ef-Paper.pdf>
+> - *Visualizing Data Using t-SNE*：<https://jmlr.org/papers/v9/vandermaaten08a.html>
