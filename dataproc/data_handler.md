@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-10 10:55:52
-updated: 2024-08-21 16:46:51
+updated: 2025-07-22 10:44:00
 toc: true
 mathjax: true
 description: 
@@ -348,9 +348,12 @@ description:
             -   数值：标准化、离散化（若依赖统计值）
             -   有序：相对位置
             -   分类：所属占比
-    -   *Embedding*
+    -   *Embedding*：稠密向量代表稀疏、类别特征
         -   *Word2Vec*
-        -   *hash* 技巧：针对文本类别数据，统计文本词表、倾向
+        -   *Hash* 技巧：针对文本类别数据，统计文本词表、倾向
+        -   数值特征 *Embedding*
+            -   *Field Embedding*：特征整体共享 *Embedding* 向量，再与特征取值相乘
+            -   离散化后再 *Embedding*
 
 -   特征组合变换
     -   特征拼接
