@@ -9,7 +9,7 @@ tags:
   - Semi-Supervised Learning
   - Reinforcement Learning
 date: 2019-07-14 20:02:42
-updated: 2024-07-21 20:52:49
+updated: 2025-08-04 16:05:08
 toc: true
 mathjax: true
 comments: true
@@ -115,141 +115,6 @@ description: 机器学习范畴
     -   训练数据为“输入-输出”对形式，无需提供其他额外信息
     -   和深度学习一样，都是要解决“贡献度分配”问题
         -   大部分神经网络模型的深度学习可以看作是端到端学习
-
-###  *Supervised Learning*
-
--   *Supervised Learning* 有监督学习：从有标记的数据中学习、训练、建立模型，用于对可能的输入预测输出
-    -   *Generative Approach* 生成方法：学习联合概率分布 $P(X, Y)$，然后求出条件概率分布 $P(Y|X)$ 作为 *Generative Model*
-        -   即，学习输入 $X$、输出 $Y$ 之间的生成关系（联合概率分布）
-        -   *Generative Model*：生成模型，由生成方法学习到的模型 $P(Y|X) = \frac {P(X, Y)} {P(X}$
-            -   朴素贝叶斯法
-            -   隐马尔可夫模型
-        -   特点
-            -   可以还原联合概率分布 $P(X, Y)$
-            -   生成方法学习收敛速度快，样本容量增加时，学习到的模型可以快速收敛到真实模型
-            -   存在隐变量时，仍可以使用生成方法学习
-    -   *Discriminative Approach* 判别方法：直接学习决策函数 $f(x)$、条件概率分布 $P(Y|X)$ 作为 *Discriminative Model*
-        -  即，对给定输入 $X$ 预测输出$Y$
-        -   *Discriminative Model*：判别模型
-            -   *KNN*
-            -   感知机
-            -   决策树
-            -   逻辑回归
-            -   最大熵模型
-            -   支持向量机
-            -   提升方法
-            -   条件随机场
-        -   特点
-            -   直接学习条件概率、决策函数
-            -   直面预测，学习准确率更高
-            -   可以对数据进行各种程度抽象、定义特征、使用特征，简化学习问题
-    -   数据空间
-        -   *input space*：输入空间 $\chi$，所有输入 $X$ 可能取值的集合
-        -   *output space*：输出空间 $\gamma$，所有输出 $Y$ 可能取值集合
-        -   *feature space*：特征空间，表示输入实例 *Feature Vector* 存在的空间
-            -   特征空间每维对应一个特征
-            -   模型实际上是定义在特征空间上的
-            -   特征空间是输入空间的象集，有时等于输入空间
-
--   有监督学习常用于解决问题
-    -   *Classification* 分类问题：输出变量 $Y$ 为有限个离散变量（即类别）
-        -   目标：根据样本特征判断样本所属类别
-            -   训练：根据已有数据集训练分类器 $P(Y|X))$、$Y=F(X)$
-                -   不存在分类能力弱于随机预测的分类器（若有，结论取反）
-            -   推理：利用学习的分类器对新输入实例进行分类
-        -   分类问题模型
-            -   *KNN*
-            -   感知机
-            -   朴素贝叶斯
-            -   决策树
-            -   决策列表
-            -   逻辑回归
-            -   支持向量机
-            -   提升方法
-            -   贝叶斯网络
-            -   神经网络
-    -   *Tagging* 标注问题：输入、输出均为变量序列（即标签）
-        -   目标：可认为是分类问题的一个推广、更复杂 *structure prediction* 简单形式
-            -   训练：利用已知训练数据集构建条件概率分布模型 $P(Y^{(1)}, Y^{(2)}, \cdots, Y^{(n)}|X^{(1)}, X^{(2)}, \cdots, X^{(n)})$
-            -   推理：按照学习到的条件概率分布，标记新的输入观测序列
-        -   标注问题模型
-            -   隐马尔可夫模型
-            -   条件随机场
-    -   *Regression* 回归问题：输入（自变量）、输出（因变量）均为连续变量
-        -   回归模型的拟合等价于函数拟合：选择函数曲线很好的拟合已知数据，且很好的预测未知数据
-            -   学习过程：基于训练数据构架模型（函数）$Y=f(X)$
-            -   预测过程：根据学习到函数模型确定相应输出
-        -   回归问题模型
-            -   线性回归
-            -   广义线性回归
-
-> - 监督学习：<https://zh.wikipedia.org/wiki/%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0>
-
-####  二分类到多分类
-
--   多分类策略
-    -   *1 vs n-1*：对类 $k=1,...,n$ 分别训练当前类对剩余类分类器
-        -   分类器数据量有偏，可以在负类样本中进行抽样
-        -   训练 $n$ 个分类器
-    -   *1 vs 1*：对 $k=1,...,n$ 类别两两训练分类器，预测时取各分类器投票多数
-        -   需要训练 $\frac {n(n-1)} 2$ 给分类器
-    -   *DAG*：对 $k=1,...,n$ 类别两两训练分类器，根据预先设计的、可以使用 *DAG* 表示的分类器预测顺序依次预测
-        -   即排除法排除较为不可能类别
-        -   一旦某次预测失误，之后分类器无法弥补
-            -   但是错误率可控
-            -   设计 *DAG* 时可以每次选择相差最大的类别优先判别
-
-###  *Unsupervised Learning*
-
--   *Unsupervised Learning* 无监督学习：自动对无标记的数据进行分类、分群
-    -   无监督模型一般比有监督模型表现差
-    -   无监督学习主要用于数据预划分、识别、编码，供其他任务使用
-        -   *Clustering Analysis* 聚类分析
-            -   *Hierarchy Clustering*
-            -   *K-means*
-            -   *Mixture Models*
-            -   *DBSCAN*
-            -   *OPTICS Algorithm*
-        -   *Anomaly Detection* 异常检测
-            -   *Local Outlier Factor*
-        -   *Encoder* 编码器
-            -   *Auto-encoders*
-            -   *Deep Belief Nets*
-            -   *Hebbian Learning*
-            -   *Generative Adversarial Networks*
-            -   *Self-organizing Map*
-        -   隐变量学习
-            -   *Expectation-maximization Algorithm*
-            -   *Methods of Moments* 矩估计
-            -   *Bind Signal Separation Techniques* 带信号分离
-                -   *Principal Component Analysis*
-                -   *Independent Component Analysis*
-                -   *Non-negative Matrix Factorization*
-                -   *Singular Value Decomposition*
-
--   *Semi-Supervised Learning* 半监督学习：利用少量标注数据和大量无标注数据进行学习的方式
-    -   可以利用大量无标注数据提高监督学习的效果
-
-> - 无监督学习：<https://zh.wikipedia.org/wiki/%E7%84%A1%E7%9B%A3%E7%9D%A3%E5%AD%B8%E7%BF%92>
-
-###  *Reinforcement Learning*
-
--   *Reinforcement Learning* 强化学习：与环境交互并获得延迟奖励，并据此调整策略以获得最大回报
-    -   从与环境交互中不断学习的问题、以及解决这类问题的方法
-        -   每个动作不能直接得到监督信息，需要通过整个模型的最终监督信息得到，且具有时延性
-        -   给出的监督信息也非 “正确” 策略，而是策略的延迟回报，并通过调整策略以取得最大化期望回报
-
--   强化学习要素
-    -   *State* 环境状态
-    -   *Action* 个体动作
-    -   *Reward* 环境奖励：$t$ 时刻个体在状态 $S_t$ 采取动作 $A_t$ 将延时在 $t+1$ 时刻得到奖励 $R_{t+1}$
-    -   *Policy* 个体策略：个体采取动作的依据，常通过条件概率分布 $\pi(A|S)$ 表示
-    -   *Value* 行动价值：个体在状态 $S_t$ 下采取行动后的价值，综合考虑当前、后续的延时奖励整体期望
-    -   *Decay Rate* 奖励衰减因子：后续延时奖励对行动价值的权重
-    -   环境状态转化模型：状态 $S_t$、动作 $A_t$ 构成概率状态机
-    -   探索率：动作选择概率
-
-> - 强化学习基础：<https://www.cnblogs.com/pinard/p/9385570.html>
 
 ###  *ML Components*
 
@@ -373,6 +238,194 @@ description: 机器学习范畴
         -   全局最优性
         -   求解效率：收敛速度
         -   稀疏性
+
+### *Learning Task*
+
+####    *Supervised Learning*
+
+-   *Supervised Learning* 有监督学习：从有标记的数据中学习、训练、建立模型，用于对可能的输入预测输出
+    -   *Generative Approach* 生成方法：学习联合概率分布 $P(X, Y)$，然后求出条件概率分布 $P(Y|X)$ 作为 *Generative Model*
+        -   即，学习输入 $X$、输出 $Y$ 之间的生成关系（联合概率分布）
+        -   *Generative Model*：生成模型，由生成方法学习到的模型 $P(Y|X) = \frac {P(X, Y)} {P(X}$
+            -   朴素贝叶斯法
+            -   隐马尔可夫模型
+        -   特点
+            -   可以还原联合概率分布 $P(X, Y)$
+            -   生成方法学习收敛速度快，样本容量增加时，学习到的模型可以快速收敛到真实模型
+            -   存在隐变量时，仍可以使用生成方法学习
+    -   *Discriminative Approach* 判别方法：直接学习决策函数 $f(x)$、条件概率分布 $P(Y|X)$ 作为 *Discriminative Model*
+        -  即，对给定输入 $X$ 预测输出$Y$
+        -   *Discriminative Model*：判别模型
+            -   *KNN*
+            -   感知机
+            -   决策树
+            -   逻辑回归
+            -   最大熵模型
+            -   支持向量机
+            -   提升方法
+            -   条件随机场
+        -   特点
+            -   直接学习条件概率、决策函数
+            -   直面预测，学习准确率更高
+            -   可以对数据进行各种程度抽象、定义特征、使用特征，简化学习问题
+    -   数据空间
+        -   *input space*：输入空间 $\chi$，所有输入 $X$ 可能取值的集合
+        -   *output space*：输出空间 $\gamma$，所有输出 $Y$ 可能取值集合
+        -   *feature space*：特征空间，表示输入实例 *Feature Vector* 存在的空间
+            -   特征空间每维对应一个特征
+            -   模型实际上是定义在特征空间上的
+            -   特征空间是输入空间的象集，有时等于输入空间
+    -   *Semi-Supervised Learning* 半监督学习：利用少量标注数据和大量无标注数据进行学习的方式
+        -   可以利用大量无标注数据提高监督学习的效果
+
+-   有监督学习常用于解决问题
+    -   *Classification* 分类问题：输出变量 $Y$ 为有限个离散变量（即类别）
+        -   目标：根据样本特征判断样本所属类别
+            -   训练：根据已有数据集训练分类器 $P(Y|X))$、$Y=F(X)$
+                -   不存在分类能力弱于随机预测的分类器（若有，结论取反）
+            -   推理：利用学习的分类器对新输入实例进行分类
+        -   分类问题模型
+            -   *KNN*
+            -   感知机
+            -   朴素贝叶斯
+            -   决策树
+            -   决策列表
+            -   逻辑回归
+            -   支持向量机
+            -   提升方法
+            -   贝叶斯网络
+            -   神经网络
+    -   *Tagging* 标注问题：输入、输出均为变量序列（即标签）
+        -   目标：可认为是分类问题的一个推广、更复杂 *structure prediction* 简单形式
+            -   训练：利用已知训练数据集构建条件概率分布模型 $P(Y^{(1)}, Y^{(2)}, \cdots, Y^{(n)}|X^{(1)}, X^{(2)}, \cdots, X^{(n)})$
+            -   推理：按照学习到的条件概率分布，标记新的输入观测序列
+        -   标注问题模型
+            -   隐马尔可夫模型
+            -   条件随机场
+    -   *Regression* 回归问题：输入（自变量）、输出（因变量）均为连续变量
+        -   回归模型的拟合等价于函数拟合：选择函数曲线很好的拟合已知数据，且很好的预测未知数据
+            -   学习过程：基于训练数据构架模型（函数）$Y=f(X)$
+            -   预测过程：根据学习到函数模型确定相应输出
+        -   回归问题模型
+            -   线性回归
+            -   广义线性回归
+
+> - 监督学习：<https://zh.wikipedia.org/wiki/%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0>
+
+#####  二分类到多分类
+
+-   部分模型原生仅支持二分类任务，可通过一定策略扩展至多分类任务
+    -   *1 vs n-1*：对类 $k=1,...,n$ 分别训练当前类对剩余类分类器
+        -   分类器数据量有偏，可以在负类样本中进行抽样
+        -   训练 $n$ 个分类器
+    -   *1 vs 1*：对 $k=1,...,n$ 类别两两训练分类器，预测时取各分类器投票多数
+        -   需要训练 $\frac {n(n-1)} 2$ 给分类器
+    -   *DAG*：对 $k=1,...,n$ 类别两两训练分类器，根据预先设计的、可以使用 *DAG* 表示的分类器预测顺序依次预测
+        -   即排除法排除较为不可能类别
+        -   一旦某次预测失误，之后分类器无法弥补
+            -   但是错误率可控
+            -   设计 *DAG* 时可以每次选择相差最大的类别优先判别
+
+#####    *Self-Supervised Learning*
+
+-   *Self-Supervised Learning* 自监督学习：从数据本身生成、无人工标注的标签进行学习
+    -   目标：学习 **通用的特征表示，用于下游任务**
+        -   即，预训练模型
+    -   优势：可利用大量、低成本的无标注数据训练任务
+        -   下游任务可用带标注数据较少、标注成本较高
+    -   难点：找到合适的学习目标
+        -   自监督学习的学习目标往往和下游任务目标不同
+        -   即，需要找到合适学习目标、标签（生成逻辑），配合特定结构的模型，以学习通用的特征表示
+        -   *NLP* 领域常见的任务
+            -   *Language Modeling*：根据前序词元预测下个词元
+            -   *Masked Languag Modeling*：根据上下文填空
+            -   *Permuted Language Modeling*：词元排序
+            -   *Denosing Auto-Encoder*
+            -   *Contrastive Learning*
+
+> - *Self-Supervised Learning* 解读目录：<https://zhuanlan.zhihu.com/p/381354026>
+> - *Self-Supervised Learning*：<https://cs229.stanford.edu/notes2021spring/notes2021spring/cs229_lecture_selfsupervision_final.pdf>
+> - *NLP* 预训练模型综述：<https://zhuanlan.zhihu.com/p/139015428>
+> - *Pre-trained Models for NLP: A Survey*：<https://arxiv.org/abs/2003.08271>
+
+####  *Unsupervised Learning*
+
+-   *Unsupervised Learning* 无监督学习：自动对无标记的数据进行分类、分群
+    -   无监督模型一般比有监督模型表现差
+    -   无监督学习主要用于数据预划分、识别、编码，供其他任务使用
+        -   *Clustering Analysis* 聚类分析
+            -   *Hierarchy Clustering*
+            -   *K-means*
+            -   *Mixture Models*
+            -   *DBSCAN*
+            -   *OPTICS Algorithm*
+        -   *Anomaly Detection* 异常检测
+            -   *Local Outlier Factor*
+        -   *Encoder* 编码器
+            -   *Auto-encoders*
+            -   *Deep Belief Nets*
+            -   *Hebbian Learning*
+            -   *Generative Adversarial Networks*
+            -   *Self-organizing Map*
+        -   隐变量学习
+            -   *Expectation-maximization Algorithm*
+            -   *Methods of Moments* 矩估计
+            -   *Bind Signal Separation Techniques* 带信号分离
+                -   *Principal Component Analysis*
+                -   *Independent Component Analysis*
+                -   *Non-negative Matrix Factorization*
+                -   *Singular Value Decomposition*
+
+-   *Semi-Supervised Learning* 半监督学习：利用少量标注数据和大量无标注数据进行学习的方式
+    -   可以利用大量无标注数据提高监督学习的效果
+
+> - 无监督学习：<https://zh.wikipedia.org/wiki/%E7%84%A1%E7%9B%A3%E7%9D%A3%E5%AD%B8%E7%BF%92>
+
+####    *Reinforcement Learning*
+
+-   *Reinforcement Learning* 强化学习：与环境交互并获得延迟奖励，并据此调整策略以获得最大回报
+    -   从与环境交互中不断学习的问题、以及解决这类问题的方法
+        -   每个动作不能直接得到监督信息，需要通过整个模型的最终监督信息得到，且具有时延性
+        -   给出的监督信息也非 “正确” 策略，而是策略的延迟回报，并通过调整策略以取得最大化期望回报
+
+-   强化学习要素
+    -   *State* 环境状态
+    -   *Action* 个体动作
+    -   *Reward* 环境奖励：$t$ 时刻个体在状态 $S_t$ 采取动作 $A_t$ 将延时在 $t+1$ 时刻得到奖励 $R_{t+1}$
+    -   *Policy* 个体策略：个体采取动作的依据，常通过条件概率分布 $\pi(A|S)$ 表示
+    -   *Value* 行动价值：个体在状态 $S_t$ 下采取行动后的价值，综合考虑当前、后续的延时奖励整体期望
+    -   *Decay Rate* 奖励衰减因子：后续延时奖励对行动价值的权重
+    -   环境状态转化模型：状态 $S_t$、动作 $A_t$ 构成概率状态机
+    -   探索率：动作选择概率
+
+> - 强化学习基础：<https://www.cnblogs.com/pinard/p/9385570.html>
+
+####    *Transfer Learning*
+
+-   *Transfer Learning* 迁移学习：从多个源任务学习知识，应用于目标任务
+
+#####   *Pre-Trained Model*
+
+-   *PTM* 预训练模型：在其他任务的上学习通用特征表示、用于下游任务的模型
+    -   预训练模型特点
+        -   参数、数据规模大：大规模数据允许训练大规模参数模型
+        -   学习通用特征表示：允许跨任务迁移、微调以适配特定任务
+            -   更好的初值，提高模型收敛速度
+            -   避免过拟合
+    -   *CV* 预训练模型
+        -   *VGG 11*
+        -   *ResNet 50*、*ResNet 101*
+    -   *NLP* 预训练模型
+        -   *CoVE*
+        -   *Word2Vec*：*Continuous Bag-of-Words*、*Skip-Gram*
+        -   *BERT*、*XLNet*
+        -   *GPT*
+
+> - 预训练与微调：<https://zhuanlan.zhihu.com/p/26370943464>
+> - *Pre-trained Models for NLP: A Survey*：<https://arxiv.org/abs/2003.08271>
+> - *NLP* 中预训练技术发展史：<https://zhuanlan.zhihu.com/p/49271699>
+> - 预训练模型的技术发展：<https://zhuanlan.zhihu.com/p/254821426>
+> - 预训练模型综述：<https://tqnwhz.github.io/blog/2022/01/22/PTM-Study/>
 
 ## 模型策略
 

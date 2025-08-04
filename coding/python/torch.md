@@ -8,7 +8,7 @@ tags:
   - Machine Learning
   - Nueral Network
 date: 2025-03-11 15:26:53
-updated: 2025-06-30 09:47:54
+updated: 2025-08-03 18:55:38
 toc: true
 mathjax: true
 description: 
@@ -485,18 +485,18 @@ def DigitsRecogNeuralNetwork(nn.Module):
 
 ####    `nn.Module` 属性
 
-| `Module` 实例属性、方法                | 描述                                                                      |
-|----------------------------------------|---------------------------------------------------------------------------|
-| `Module.training`                      | 模型训练、推理状态标志                                                    |
-| `Module._parameters`                   | 训练时在反向传播过程中更新的参数                                          |
-| `Module._buffers`                      | 训练时不在反向传播过程中更新的参数                                        |
-| `Module._non_persistent_buffers_set`   | 无需持久化缓冲                                                            |
-| `Module._backward_hooks`               | 反向传播后调用的钩子                                                      |
-| `Module._forward_hooks`                | 正向传播后调用的钩子                                                      |
-| `Module._forward_pre_hooks`            | 正向传播前调用的钩子                                                      |
-| `Module._state_dict_hooks`             | 载入 `state_dict` 后调用的钩子                                            |
-| `Module._load_state_dict_pre_hooks`    | 载入 `state_dict` 前调用的钩子                                            |
-| `Module._modules`                      | 神经网络子模块                                                            |
+| `Module` 实例属性、方法              | 描述                                 |
+|--------------------------------------|--------------------------------------|
+| `Module.training`                    | 模型训练、推理状态标志               |
+| `Module._parameters`                 | 模型参数，训练时在反向传播过程中更新 |
+| `Module._buffers`                    | 模型缓存，不在反向传播过程中自动更新 |
+| `Module._non_persistent_buffers_set` | 无需持久化缓冲                       |
+| `Module._backward_hooks`             | 反向传播后调用的钩子                 |
+| `Module._forward_hooks`              | 正向传播后调用的钩子                 |
+| `Module._forward_pre_hooks`          | 正向传播前调用的钩子                 |
+| `Module._state_dict_hooks`           | 载入 `state_dict` 后调用的钩子       |
+| `Module._load_state_dict_pre_hooks`  | 载入 `state_dict` 前调用的钩子       |
+| `Module._modules`                    | 神经网络子模块                       |
 
 ```python
 class Module:
@@ -582,12 +582,13 @@ class Module:
                 modules[name] = value
             else:
                 buffers = self.__dict__.get('_buffers')
-                if buffers is not None and name in buffers:
+                if isinstance(value, Buffer) or buffers is not None and name in buffers:
                     if value is not None and not isinstance(value, torch.Tensor):
                         raise TypeError("cannot assign '{}' as buffer '{}' "
                                         "(torch.Tensor or None expected)"
                                         .format(torch.typename(value), name))
-                    buffers[name] = value
+                    persistent = getattr(value, "persistent", True)
+                    self.register_buffer(name, value, persistent)
                 else:
                     # 缺省直接设置属性
                     object.__setattr__(self, name, value)
@@ -645,14 +646,14 @@ class Module:
         -   `self._apply()` 等方法仅处理被特殊维护的模块实例属性
         -   并实现对应注册方法 `.register_<XXX>`、迭代访问方法 `.named_<XXX>`
     -   为此，`nn.Module` 重载 `__setattr__`、`__getattr__`、`__delattr__`、`__dir__` 等魔术方法，方便属性新增、修改、删除、暴露
-        -   `__setattr__` 针对 `nn.Parameter`、`nn.Buffer`、`nn.Module` 类属性（复制）特殊处理
-            -   检查 `nn.Module`（父类） 是否被正确初始化
-            -   处理名称重复属性：属性被 `self._parameters`、`self.__dict__` 等分别维护
-            -   赋 `nn.Parameter` 类型值时，`__setattr__` 总会调用 `self.register_parameter()` 方法，其他属性则直接更新对应 `OrderedDict`（或 `__dict__`）
-            -   注意，`nn.Buffer` 属性只能通过显式调用 `self.register_buffer()` 新增
-                -   `__setattr__` 只能将已有缓冲重赋值为 `None`、`torch.Tensor`
-                -   因为，缓冲的初始化类型就是 `torch.Tensor`、`None`，无法区分
-                -   故，`self.<ATTR> = torch.Tensor` 直接为模块增加的张量属性为普通属性，在 `self._apply()` 处理状态转换时将被遗漏
+        -   `__setattr__` 会检查 `nn.Module`（父类） 是否被正确初始化
+            -   `nn.Module` 初始化后会创建 `self._parameters` 属性，`__setattr__` 据此判断
+        -   `__setattr__` 检查属性值类型，并 `nn.Parameter`、`nn.Buffer`、`nn.Module` 类属性（复制）特殊处理：分别维护、检查名称重复
+            -   `nn.Parameter` 类型值：`__setattr__` 总会调用 `self.register_parameter()` 方法
+            -   `nn.Buffer` 类型值：`__setattr__` 总会调用 `self.register_buffer()` 方法
+            -   `nn.Module` 类型值：直接更新对应 `OrderedDict` 属性 `self._modules`
+            -   或者，手动调用对应注册 `.register_XXX()` 方法注册特殊属性
+                -   `nn.Buffer.persistent` 属性决定是否可需被持久化，普通张量注册为缓冲时将被是为需被持久化
     -   `nn.Module` 属性遍历访问方法说明
         -   `.named_parameters()`、`.named_buffers()` 基于 `self._named_members()` 方法实现
         -   `.parameters()` 基于 `.named_parameters()` 实现（忽略名称），`.buffers()`、`.modules()`、`.children()`类似
@@ -703,6 +704,8 @@ class Module:
         for elem in gen:
             yield elem
 ```
+
+> - `torch.nn.modules.module.py`：<https://github.com/pytorch/pytorch/blob/main/torch/nn/modules/module.py>
 
 ####    `nn.Module` 参数、缓冲、模块控制
 
@@ -1013,11 +1016,20 @@ class Module:
 
 > - *PyTorch* 源码解读之 *BN&SyncBN*：<https://zhuanlan.zhihu.com/p/337850513>
 
-### `nn.parameter.Parameter`
+### `nn.parameter.Parameter`、`nn.parameter.Buffer`
 
--   `nn.Parameter` 参数：`torch.Tensor` 子类
+-   `nn.Parameter` 参数：`torch.Tensor` 子类，反向传播过程中自动更新
     -   作为模块属性的 `Parameter` 实例将被注册至模块参数列表，可通过 `Module.parameters()` 访问
-    -   依赖 `nn.Parameter` 参数类，被嵌套模块参数可被嵌套模块统一管理（运算由自动微分机制记录）
+        -   或 `nn.register_parameter()` 手动注册
+    -   通过 `nn.Parameter` 参数类，被嵌套模块参数可被嵌套模块统一管理（运算由自动微分机制记录）
+-   `nn.Buffer` 缓冲：`tensor.Tensor` 子类，反向传播过程中不会自动更新
+    -   作为模块属性的 `Buffer` 实例将被注册至模块参数列表，可通过 `Module.buffers()` 访问
+        -   或 `nn.register_buffer()` 手动注册
+    -   通过 `nn.Buffer` 参数类，被嵌套模块参数可被嵌套模块统一管理（持久化）
+        -   `nn.Buffer` 参数类受 `._apply` 方法影响而迁移、转换类型
+        -   `nn.Buffer` 缓冲类可配置是否需要持久化
+            -   即，持久化缓冲可用于存储需要持久化、但无需训练更新的参数
+            -   即，非持久化缓冲仅用于同步适配迁移、类型转换动作
 
 ##    `torch.optim` 优化器
 

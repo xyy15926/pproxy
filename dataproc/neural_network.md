@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-07-17 10:22:31
+updated: 2025-08-04 19:56:21
 toc: true
 mathjax: true
 description: 
@@ -125,7 +125,7 @@ f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
 > - 深度学习利器之自动微分2：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
 > - AI 编译器和前端技术：自动微分：<https://openmlsys.github.io/chapter_frontend_and_ir/ad.html>
 
-##  梯度爆炸、梯度消失
+###  梯度爆炸、梯度消失
 
 -   反向传播过程中，梯度以指数形式传播，梯度消失（趋于 0）、梯度爆炸（过大）问题随网络深度增加而更加明显
     -   梯度消失、爆炸原因
@@ -1006,14 +1006,56 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 -   *ReLU* 系激活函数输出均大于 0，考虑前向、后向传播权重初始化方案均可
     -   *He 2015 for ReLU*
         -   前向：$$ Var(W^{(l)}) ~ N(0, \frac 2 {n^{(l-1)}}) $$
-        -   反向：$$ Var(W^{(l)}) ~ N(0,  \frac 2 {n^{(l)}}) $$
+        -   反向：$$ Var(W^{(l)}) ~ N(0, \frac 2 {n^{(l)}}) $$
     -   *He 2015 for PReLU*、*Leaky ReLU*
         -   前向：$$ Var(W^{(l)}) ~ N(0, \frac 2 {(1 + \alpha^2) n^{(l-1)}}) $$
-        -   反向：$$ Var(W^{(l)}) ~ N(0,  \frac 2 {(1 + \alpha^2) n^{(l)}}) $$
+        -   反向：$$ Var(W^{(l)}) ~ N(0, \frac 2 {(1 + \alpha^2) n^{(l)}}) $$
 
 > - *He*：<https://arxiv.org/abs/1502.01852>
 
 #   *NLP*
+
+##  *NLP PTM*
+
+![nlp_generic_neural_architecture](imgs/nlp_generic_neural_architecture.png)
+
+-   *Language Representation Learning* 语言表示学习：学习文本中隐藏的词法含义、语法结构、语义角色、行文风格
+    -   *Non-contextual Embeddings* 上下文无关嵌入：建立词表，将词元用稠密向量表示
+        -   可学习到语法、语义
+            -   词元之间关系可被词向量之间偏置（差）表示
+            -   倾向于学习分类属性而不是描述性属性
+        -   缺陷
+            -   词元表示向量与上下文无关，无法处理多义词
+            -   无法处理未登录词
+        -   常为浅层模型（不包含神经网络结构）
+            -   *Continuous Bag-of-Words* 模型
+            -   *Skip-Gram* 模型
+            -   *GloVe* 模型
+    -   *Contextual Embeddings/Encoders* 上下文相关嵌入：词元的表示向量依赖文本整体
+        -   可学习到语言知识、世界知识
+        -   常为神经网络模型，包括有监督学习、自监督学习
+            -   *LSTM with a language model*
+            -   *CoVe*
+            -   *BiLM*
+            -   *Embedding from Language Model*
+            -   *Generative Pre-training*
+            -   *Bidirectional Encoder Representation from Transformer*
+-   *NLP Pre-trained Model* 预训练 *NLP* 模型：学习通用语言表示，用于下游任务
+    -   预训练任务：需根据模型结构、数据确定合适的任务，可同时使用多个任务共同训练，对语言表示学习至关重要
+        -   *Language Modeling*：根据前序词元预测下个词元
+        -   *Masked Languag Modeling*：根据上下文填空
+        -   *Permuted Language Modeling*：词元排序
+        -   *Denosing Auto-Encoder*
+        -   *Contrastive Learning*
+        -   *Next Sentence Prediction*：判断两句话是否相邻
+    -   预训练模型
+        -   *Word2Vec*
+        -   *CoVE*
+        -   *BERT*、*XLNet*、*ReBERTa*
+        -   *GPT*、*GPT-2*
+
+> - *NLP* 预训练模型综述：<https://zhuanlan.zhihu.com/p/139015428>
+> - *Pre-trained Models for NLP: A Survey*：<https://arxiv.org/abs/2003.08271>
 
 ## *Transformer*
 
@@ -1112,6 +1154,64 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
         -   但，计划采样无法并行训练：必须得到上个位置预测结果才能预测下个位置元素
 
 > - *Scheduled Sampling for Sampling*：<https://arxiv.org/abs/1906.07651>
+
+###  *BERT*
+
+![bert_mlm_structure](imgs/bert_mlm_struture.png)
+
+-   *BERT*：只包含 *Transformer Encoder* 结构的 *Auto Encoder* 自编码器
+    -   模型结构
+        -   *Embedding* 部分包含 3 层
+            -   *Token Embeddings* 词元编码 `voc_len * emb_sz`
+            -   *Segment Embeddings* 标签编码 `2 * emb_sz`：仅用于 *NSP* 任务中标记前、后句子
+            -   *Position Embeddings* **可学习**位置编码 `max_seq_len * emb_sz`
+        -   编码起部分即多个 *Transformer Encoder* 堆叠
+        -   输出部分
+            -   对 *MLM* 任务即 `emb_sz * voc_len` 线性层、*Softmax*：仅被遮蔽处编码结果被用于预测
+            -   对 *NSP* 任务即 `emb_sz * 2` 线性层、*Softmax*：仅 `[CLS]` 处编码结果被用于预测
+    -   模型输入：类似原始 *Transformer*
+        -   *Word Pieces* 词元化方法
+            -   包含 `##ing` 等特殊词缀作为词元
+            -   可减少词元数量、提升泛化能力
+        -   特殊词元
+            -   `[CLS]` 句子起始：同时也代表句子整体
+            -   `[SEP]` 句子分割、结束
+            -   `[UNK]` 未登录词
+            -   `[PAD]` 填充：此对应原始 *Transformer* 中 *padding mask*
+            -   `[MASK]` 遮罩：*BERT* 中遮罩是 **单独的词元**，不是原始 *Transformer* 中 *mask*
+                -   遮罩词元本身也在 *Token Embedding* 中被编码、训练
+                -   仅出现在训练过程中，且 **会（被）计算注意力**，以用于被识别、预测原词元
+                -   遮罩词元对应的最终 *Encoder* 输出被用于计算被遮蔽原词元
+    -   训练任务
+        -   *BERT* 没有额外 *mask* 张量用于标记 *padding*、因果关系
+            -   *Encoder* 部分的 *padding mask* 直接在数据张量 `[PAD]` 词元标记
+            -   没有 *Decoder* 部分，无需因果关系标记
+        -   对于 *MLM* 训练任务：随机挑选语句中 `15%` 词元被预测
+            -   `80%` 语句中被选中词元被替换为 `[MASK]` 词元
+            -   `10%` 语句中被选中词元被随机替换为其他词元
+                -   合计 `1.5%` 词元被随机替换，论文研究表明不影响学习语言能力
+            -   `10%` 语句中被选中词元保持不变
+        -   对于 *NSP* 训练任务：后证实对模型训练效果不好
+            -   `50%` 为文档中相邻语句，`50%` 为文档中随机抽取的不相邻语句
+
+![bert_mlm_and_nsp_structure](imgs/bert_mlm_and_nsp_struture.png)
+
+> - *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*：<https://arxiv.org/abs/1810.04805>
+> - *BERT* 模型总体结构与输入形式、预训练任务、应用方法：<https://zhuanlan.zhihu.com/p/1897632224272175148>
+> - *BERT* 模型架构详解：<https://x-hao.github.io/2021/07/21/bert/>
+> - *BERT* 模型参数量：<https://zhuanlan.zhihu.com/p/452267359>
+> - *BERT* 预训练任务 *MLM*：<https://zhuanlan.zhihu.com/p/632621447>
+> - *Transformer-BERT-相关*：<https://ifwind.github.io/2021/08/31/Transformer-BERT-%E5%AE%9E%E6%88%98/#bert%E7%9B%B8%E5%85%B3>
+> - *BERT* 模型：<https://ifwind.github.io/2021/08/20/BERT%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89BERT%E6%A8%A1%E5%9E%8B/>
+
+# *CV*
+
+##  *Diffusion*
+
+> - <https://zhuanlan.zhihu.com/p/1909982309534377428>
+> - <https://segmentfault.com/a/1190000043744225>
+> - <https://lilianweng.github.io/posts/2021-07-11-diffusion-models/>
+#TODO
 
 #   *CTR*
 
