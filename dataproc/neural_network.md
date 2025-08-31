@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-08-04 19:56:21
+updated: 2025-08-31 23:33:08
 toc: true
 mathjax: true
 description: 
@@ -532,6 +532,131 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 > - *BERT* 中，Multihead `768*64*12` 与直接使用 `768*768` 矩阵统一计算优化什么区别：<https://www.zhihu.com/question/446385446/answer/1752279087>
 > - 自注意力机制：<https://0809zheng.github.io/2020/04/24/self-attention.html>
 > - *Self-Attention* 与 *Transformer*：<https://zhuanlan.zhihu.com/p/47282410>
+
+#  *AutoEncoder*
+
+##  *AutoEncoder*
+
+![ae_autoencoder_structure](imgs/ae_autoencoder_structure.png)
+
+-   *AE* 自编码器：压缩数据、并重构以捕捉数据关键特征、学习表示的自监督神经网络
+    -   思路：学习恒等编、解码函数重构原始输入数据
+        $$\begin{align*}
+        z &= E_{\phi}(x) \\
+        x^{'} &= D_{\theta}(z) \\
+        x &\approx x{'} = D_{\theta}(E_{\phi}(x))
+        \end{align*}$$
+        > - $D_{\theta}, E_{\phi}$：编解码器、及其参数
+        > - $x,x^{'},z$：输入向量、输出向量、隐变量向量（一般维数小于输入 $x$）
+        -   *AE* 同时实现了数据压缩、重构（类似 *PCA*、*MF* 数据降维过程）
+    -   网络结构
+        -   *Encoder* 编码器：将原始高维输入 $x$ 转换为低维隐编码 $z = E_{\phi}(x)$
+        -   *Decoder* 解码器：从隐编码 $z$ 中恢复原始数据 $x^{'} = D_{\theta}(z)$
+        -   损失函数：重构损失 $loss(x, x^{'})$，度量 $x,x^{'}$ 差异即可
+
+### *Denoising AE*
+
+![ae_denoising_autoencoder_structure](imgs/ae_denoising_autoencoder_structure.png)
+
+-   *DAE* 去噪自编码器：用于数据去噪、提升鲁棒性
+    -   思路：引入噪声、训练网络复原至原始数据，学习鲁棒性更好的表示
+        $$\begin{align*}
+        x &\approx D_{\theta}(E_{\phi}(\tilde x)) \\
+        \tilde x = Corruption(x)
+        \end{align*}$$
+        > - $Corruption(x)$：随机映射，向输入数据中引入噪声
+        -   噪声扰动可以融入先验知识，引入多种不同类型的噪声扰动：遮蔽噪声、高斯噪声、椒盐噪声等
+
+### *Sparse AE*
+
+-   *Sparse AE* 稀疏自编码器：限制隐藏层激活神经元数量，防止过拟合、提升鲁棒性
+    -   *KL 散度* 思路：在损失函数中引入神经元激活情况分布、预期分布的 *KL 散度* 作为惩罚，限制神经元激活数量
+        $$\begin{align*}
+        \hat \rho_j &= \frac 1 N \sum_{i=1}^N a_j(x_i) \\
+        loss_{SAE}(x, x^{'}) &= \sum_{i=1}^N loss(x_i, x_i^{'}) + \beta \sum_{j=1}^M KL(\rho || \hat rho_j) \\
+        KL(\rho || \hat rho_j) &= \rho log \frac {\rho} {\hat \rho} + (1 - \rho) log \frac {1 - \rho} {1 - \hat \rho}
+        \end{align*}$$
+        > - $x_i, N$：样本 $i$、样本数量
+        > - $a_j, M$：神经元 $j$ 激活函数、神经元数量
+        > - $\rho, \hat \rho_j$：神经元预期激活比例、神经元 $j$ 实际激活值
+        > - $KL(\rho || \hat \rho_j)$：*KL 散度* 度量 **预期激活分布与实际激活分布差异**
+        > - $\beta$：惩罚项权重
+        -   单个神经元（对多个样本）激活情况的分布应服从伯努利分布，此处使用预期分布、实际分布差异作为惩罚
+            -   虽然神经元的激活函数值并非 $\{0, 1\}$，但依然直接使用激活函数值均值替代
+    -   *K-SAE*：只保留最高的 `K` 个最高激活神经元
+
+## *Varitional AE*
+
+![vae_variational_ae_structure](imgs/vae_variational_ae_structure.png)
+
+-   *VAE* 变分自编码器：将输入映射至 **符合某个概率分布（常为高斯分布）的隐（编码）向量** 的生成式模型
+    -   *VAE* 将输入 $x_k$ 编码为 **对应的概率（后验）分布 $p(z|x_k)$**（也可视为编码为满足分布的一族隐编码向量）
+        -   故，*VAE* 中优化对象分布 $p(z|x_k)$，也即名称中 *Variational* 变分
+        -   后验分布 $p(z|x_k)$ 一般期望为 **针对每个样本 $x_k$** 的高斯分布
+            -   则，*Encoder* 部分训练、输出均值、对数方差 $\mu_k, log \sigma_k^2$ 即可
+                -   方差要求 $\sigma^2 > 0$ 需要额外增加变换（激活）函数
+                -   而，对数方差 $log \sigma^2$ 取值无额外限制，也可直接用于后续计算
+            -   *Reparameterization Trick* 重采样：从 $N(0, I)$ 中采样 $\epsilon$，计算 $ z_k = \mu_k + \epsilon * \sigma $
+                -   等价于，后验分布 $p(z|x_k)$ 中抽样 $z_k$、作为 *Decoder* 部分恢复为 $x_k^{'}$
+                -   因，直接从 $p(z|x_k)$ 抽样 $z_k$ 无法与 $\mu_k, log \sigma_k^2$ 建立计算联系，梯度反向传播将被中断
+        -   同时，还要求 $p(z|x_k)$ **接近标准正态分布，避免 *Encoder* 部分将方差压缩至 0**
+            -   方差可视为向隐变量添加的噪声，减少方差可降低 *Decoder* 恢复难度（方差为 0 时，*VAE* 即退化为 *AE*）
+            -   故，在损失函数中增加 $KL(p(z|x_k) || N(0, I))$
+                $$\begin{align*}
+                loss_{\mu,\sigma^2} &= KL(N(\mu, \sigma^2) || N(0, I)) \\
+                    &= \frac 1 2 \sum_{d=1}^D (\mu_d^2 + \sigma_d^2 - log \sigma_d^2 - 1) \\
+                    &= \frac 1 2 \sum_{d=1}^D \mu_d^2 + \frac 1 2 (\sigma_d^2 - log \sigma_d^2 - 1) \\
+                    &=: loss_{\mu} + loss_{\sigma^2}
+                \end{align*}$$
+                > - *KL 散度* 也可以拆分为对均值、方差两部分的惩罚
+        -   即，后验分布 $p(z|x_k)$ 被要求 **保留编码信息 $\mu, \sigma^2$ 同时接近标准正态分布**
+            -   当然，$p(z|x_k)$ 不能直接为标准正态分布，否则丢失全部 $x_k$ （编码）信息
+            -   但，$p(z|x_k)$ 接近正态分布则有
+                $$\begin{align*}
+                p(z) &= \sum_X p(z|x)p(x) = \sum_X N(0,I)p(x) = N(0,I) \\
+                p(x) &= p(x|z) p(z) = Decoder(p(z)) = Decoder(N(0, I))
+                \end{align*}$$
+    -   损失函数：包括重构损失、*KL 散度* 损失两部分
+        $$ loss_{all} = loss(x, x^{'}) + KL(N(\mu, \sigma^2), N(0, I)) $$
+        -   即，降低生成模型中对输入、输出分布 $p(x),p(y)$ 的拟合差距
+    -   *VAE* 可以视为在 *AE* 基础上、向隐（编码）变量增加高斯噪声
+        -   同样，高斯噪声带来的动态范围（隐变量分布），也赋予模型生成能力
+            -   直接从隐变量分布抽样、作为 *Decoder* 输入解码
+            -   另外，高斯分布噪声可以替换为其他分布，但是需要考虑到概率密度 0 值、抽样效率、重采样等问题
+        -   重采样技巧中 $z_k = \mu_k + \epsilon * \sigma_k$ 即此视角体现
+            -   $\mu$ 即 *AE* 对输入的编码
+            -   $\sigma$ 即体现高斯噪声强度
+        -   重构损失、*KL 散度* 损失即对抗过程，要求 *Decoder* 部分提升性能
+            -   重构损失要希望噪声尽量小
+            -   *KL 散度* 损失要求标准正态分布的噪声
+
+> - *Auto-Encoding Variational Bayes*：<https://zhuanlan.zhihu.com/p/34998569>
+> - 变分自编码器（一）：原来是这么回事：<https://spaces.ac.cn/archives/5253>
+> - 变分自编码器（二）：从贝叶斯观点出发：<https://spaces.ac.cn/archives/5343>
+> - *VAE* 结构详解：<https://jishuzhan.net/article/1950582268820500482>
+> - *VAE* 模型简析和精要（原理和代码）：<https://www.cnblogs.com/myleaf/p/18682945>
+> - *Tutorial on Variational AutoEncoders*：<https://arxiv.org/abs/1606.05908>
+
+###    *Reparameterization*
+
+-   *Reparameterization Trick* 重采样：从易得分布中采样、经过变换，得到满足给定分布的样本
+    -   重采样实质上 **将神经网络确定性计算与生成分离**
+        -   模型（或者说图灵计算体系）只具备确定性计算能力，无法生成
+        -   故，采样作为生成的源头，通过重采样被独立于模型计算过程
+    -   即，生成式模型学习的是变换，将输入模式变换为目标输出模式
+        -   而，变换核心即函数形式、参数
+        -   即，神经网络的拟合、学习能力
+
+### *Conditional VAE*
+
+-   *CVAE* 条件变分自编码器：将标签信息融入 *VAE* 隐变量分布中的一类模型
+    -   均值编码 *CVAE*：为各类样本训练标签均值 $\mu_d^{label}$，希望 *Encoder* 输出均值接近对应标签均值
+        -   训练时仅需调整 *KL 散度* 损失
+            $$ 
+            loss_{\mu,\sigma^2} = \frac 1 2 \sum_{d=1}^D (\mu_d - \mu_d^{label})^2
+                + \frac 1 2 (\sigma_d^2 - log \sigma_d^2 - 1)
+            $$
+        -   生成时：从 $N(\mu_d^{label}, I)$ 分布中采样、作为 *Decoder* 输入生成即可
 
 #   数据处理
 
@@ -1157,7 +1282,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 ###  *BERT*
 
-![bert_mlm_structure](imgs/bert_mlm_struture.png)
+![bert_mlm_structure](imgs/bert_mlm_structure.png)
 
 -   *BERT*：只包含 *Transformer Encoder* 结构的 *Auto Encoder* 自编码器
     -   模型结构
@@ -1175,26 +1300,31 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
             -   可减少词元数量、提升泛化能力
         -   特殊词元
             -   `[CLS]` 句子起始：同时也代表句子整体
+                -   **`[CLS]` 词元最终 *Encoder* 输出用于 *NSP* 任务中预测两句子是否为相邻语句**
             -   `[SEP]` 句子分割、结束
             -   `[UNK]` 未登录词
             -   `[PAD]` 填充：此对应原始 *Transformer* 中 *padding mask*
             -   `[MASK]` 遮罩：*BERT* 中遮罩是 **单独的词元**，不是原始 *Transformer* 中 *mask*
                 -   遮罩词元本身也在 *Token Embedding* 中被编码、训练
                 -   仅出现在训练过程中，且 **会（被）计算注意力**，以用于被识别、预测原词元
-                -   遮罩词元对应的最终 *Encoder* 输出被用于计算被遮蔽原词元
+                -   **遮罩词元对应的最终 *Encoder* 输出被用于计算被遮蔽原词元**
     -   训练任务
         -   *BERT* 没有额外 *mask* 张量用于标记 *padding*、因果关系
             -   *Encoder* 部分的 *padding mask* 直接在数据张量 `[PAD]` 词元标记
             -   没有 *Decoder* 部分，无需因果关系标记
-        -   对于 *MLM* 训练任务：随机挑选语句中 `15%` 词元被预测
-            -   `80%` 语句中被选中词元被替换为 `[MASK]` 词元
-            -   `10%` 语句中被选中词元被随机替换为其他词元
-                -   合计 `1.5%` 词元被随机替换，论文研究表明不影响学习语言能力
-            -   `10%` 语句中被选中词元保持不变
+        -   对于 *MLM* 训练任务
+            -   随机挑选语句中 `15%` 词元用于预测
+                -   `80%` 语句中被选中词元被替换为 `[MASK]` 词元
+                -   `10%` 语句中被选中词元被随机替换为其他词元
+                    -   合计 `1.5%` 词元被随机替换，论文研究表明不影响学习语言能力
+                -   `10%` 语句中被选中词元保持不变
+            -   模型本身不知道待预测词元
+                -   促使模型学习通用语言表示
+                -   但，仅在训练中出现的 `[MASK]` 词元可能被模型过度关注
         -   对于 *NSP* 训练任务：后证实对模型训练效果不好
             -   `50%` 为文档中相邻语句，`50%` 为文档中随机抽取的不相邻语句
 
-![bert_mlm_and_nsp_structure](imgs/bert_mlm_and_nsp_struture.png)
+![bert_mlm_and_nsp_structure](imgs/bert_mlm_and_nsp_structure.png)
 
 > - *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*：<https://arxiv.org/abs/1810.04805>
 > - *BERT* 模型总体结构与输入形式、预训练任务、应用方法：<https://zhuanlan.zhihu.com/p/1897632224272175148>
@@ -1204,14 +1334,100 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 > - *Transformer-BERT-相关*：<https://ifwind.github.io/2021/08/31/Transformer-BERT-%E5%AE%9E%E6%88%98/#bert%E7%9B%B8%E5%85%B3>
 > - *BERT* 模型：<https://ifwind.github.io/2021/08/20/BERT%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89BERT%E6%A8%A1%E5%9E%8B/>
 
+
 # *CV*
 
-##  *Diffusion*
+##  *Diffusion Probabilistic Models*
 
-> - <https://zhuanlan.zhihu.com/p/1909982309534377428>
-> - <https://segmentfault.com/a/1190000043744225>
-> - <https://lilianweng.github.io/posts/2021-07-11-diffusion-models/>
+### 基本思路
+
+-   *Diffusion(Probabilistic)Models* 扩散模型：将原始数据分布经马尔可夫过程变换至易得分布上，再通过逆过程恢复至原数据分布上
+    -   扩散模型思想来自非平衡热力学的扩散原理
+        -   扩散过程、逆过程均为（建模）为 *Markov* 过程
+        -   限制每步过程变换对当前分布的改变程度
+
+> - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
+> - *What are Diffusion Models?*：<https://lilianweng.github.io/posts/2021-07-11-diffusion-models/>
+> - *Deep Unsupervised Learning using Nonequilibrium Thermodynamics*：<https://arxiv.org/abs/1503.03585>
+
+####    *Forward Diffusion* 正向（扩散）过程
+
+-   正向（扩散）过程：将原始数据分布 $q(x^{(0)})$ 逐步转换为形式已知、易采样的分布 $\pi(x^{(T)})$（常用高斯分布）
+    -   扩散过程为马尔可夫过程，逐步转换即重复应用 *Markov Diffusion Kernel*，即状态转移（条件概率）分布 $q(x^{(t)}|x^{(t-1)})$（离散即转移矩阵）
+        $$\begin{align*}
+        \pi(x^{(t)}) &= N(x^{(t)};0,I) \\
+        q_(x^{(t)}|x^{(t-1)}) &= N(x^{(t)}; \sqrt {1 - \beta^{(t)}} x^{(t-1)}, \beta^{(t)} I) \\
+        q_(x^{(1:T)}|x^{(0)}) &= \prod_{t=1}^T q(x^{(t)}|x^{(t-1)}) \\
+        \end{align*}$$
+        > - $\beta^{(t)}$：第 $t$ 步扩散速率
+    -   同样，需要类似 *VAE* 中利用重采样技术解耦随机采样、参数训练，实现上述分布的随机抽样
+        $$\begin{align*}
+        x^{(0)} &\sim q(x^{(0)}) \\
+        x^{(t)} &= \sqrt {\alpha^{(t)}} x^{(t-1)} + \sqrt {1 - \alpha^{(t)}} z^{(t)} \\
+            &= \sqrt {\alpha^{(t)}} (\sqrt {\alpha^{(t-1)}} x^{(t-2)} + \sqrt {1 - \alpha^{(t-1)}} z^{(t-1)})
+                + \sqrt {1 - \alpha^{(t)}} z^{(t)} \\
+            &= \cdots \\
+            &= \sqrt {\bar \alpha^{(t)}} x^{(0)} + \sqrt {1 - \bar \alpha^{(t)}} \bar z^{(t)} \\
+        \bar \alpha^{(t)} &= \prod_{i=1}^t \alpha^{(i)} \\
+        \bar z^{(t)} &\sim N(0,(1 - \prod_{i=1}^t \alpha^{(i)}) I) \\
+        \end{align*}$$
+        > - $x^{(0)}$ 原始数据，服从分布 $x^{(0)} \sim q(x^{(0)})$
+        > - $\alpha^{(t)} = 1 - \beta^{(t)}, \beta^{(t)}$：第 $t$ 步原数据权重、噪声权重
+        > - $z^{(t)} \sim N(0,I)$：第 $t$ 步混入的随机噪声，各步混入噪声相互独立
+        -   从标准正态分布中抽样 $z^{(t)}$
+        -   根据扩散速率 $\beta^{(t)}$ ，按比例叠加 $x^{(t-1)},z^{(t)}$ 得到 $x^{(t)}$
+    -   且，上述前向过程中
+        -   由递推式，任意 $t$ 步状态 $x^{(t)}$ 由 $x^{(0)}$ 一步计算得到
+
+> - *Deep Unsupervised Learning using Nonequilibrium Thermodynamics*：<https://arxiv.org/abs/1503.03585>，原始论文中提到二项分布作为采样分布的案例
+> - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
+
+####    *Reverse Diffusion* 逆向（恢复）过程
+
+-   逆向（恢复）过程：将分布 $\pi(x^{(T)})$ 逐步转换为原始数据分布 $q(x^{(0)})$ 的过程
+    -   同样的，逆向过程为马尔可夫过程，逐步转换即重复应用 *Markov Diffusion Kernel*，即状态转移（条件概率）分布 $p(x^{(t-1)}|x^{(t)})$（离散即转移矩阵）
+        $$\begin{align*}
+        p(x^{(t-1)}|x^{(t)};\theta) &= N(x^{(t-1)}; \mu(x^{(t)},t;\theta), \Sigma(x^{(t)},t;\theta)) \\
+        p(x^{(0:T)};\theta) &= p(x^{(T)}) \prod_{t=1}^T p(x^{(t-1)}|x^{(t)}) \\
+        \end{align*}$$
+        > - $\theta$：模型参数
+        > - $\mu(x^{(t)},t;\theta), \Sigma(x^{(t)},t;\theta)$：逆向状态转移条件概率高斯分布均值、方差
+        -   对高斯扩展核，当扩散速率 $\beta$ 较小时，逆向过程状态转移分布形式与正向过程相同
+        -   则，模型训练核心即拟合 $\mu(x^{(t)},t;\theta), \Sigma(x^{(t)},t;\theta)$
+            -   以（并），计算逆向扩散（高斯）核均值、方差，确定用于采样的分布
+    -   同样，需要类似 *VAE* 中利用重采样技术解耦随机采样、参数训练，实现上述分布的随机抽样
+
+> - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
+
+####    损失函数
+
+$$\begin{align*}
+H(q(x^{(0)}), p(x^{(0)})) &= -E_{q(x^{(0)})} log p(x^{(0)}) \\
+    &\leq -E_{q(x^{(0)})} (ELOB(q(x^{(1:T)}|x^{(0)})) \\
+    &= -\int_{x^{(0)}} dx^{(0)} q(x^{(0)}) \int_{x^{(1:T)}} dx^{(1:T)} q(x^{(1:T)}|x^{(0)})
+        log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})} \\
+    &= -\int_{x^{(0)}} dx^{(0)} \int_{x^{(1:T)}} dx^{(1:T)} q(x^{(0)}) q(x^{(1:T)}|x^{(0)})
+        log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})} \\
+    &= -\int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})} \\
+    &= E_{q(x^{(0:T)})} log \frac {q(x^{(1:T)}|x^{(0)})} {p(x^{(0:T)})} \\
+\end{align*}$$
+> - $log p(x^{(0)})$ 直接被缩放为 $ELOB(q(x^{(1:T)}|x^{(0)}))$
+
+-   损失函数：常用原始数据分布、逆向恢复分布的交叉熵 $E_{q(x^{(0)})} p(x^{(0)};\theta)$
+    -   实际优化则为类似 *ELBO* 的一个交叉熵的上界
+
+### *Denoising Diffusion Probabilistic Models*
+
 #TODO
+
+> - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
+> - 生成扩散模型漫谈（一）：DDPM = 拆楼 + 建楼：<https://spaces.ac.cn/archives/9119/>
+> - 从贝叶斯公式理解 *Diffusion* 模型：<https://zhuanlan.zhihu.com/p/586362713>
+> - *Denoising Diffusion Probabilistic Models*：<https://arxiv.org/abs/2006.11239>
+> - *DDPM* 论文解读：<https://arxiv.org/abs/2006.11239>
+> - *Diffusion Model* 扩展模型详解：<https://segmentfault.com/a/1190000043744225>
+> - *Understanding Diffusion Models: A Unified Perspective*：<https://arxiv.org/abs/2208.11970>
+> - *Diffusion* 是谱自回归：<https://zhuanlan.zhihu.com/p/1909982309534377428>
 
 #   *CTR*
 

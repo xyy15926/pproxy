@@ -7,7 +7,7 @@ tags:
   - Data Structure
   - Problems
 date: 2024-01-06 18:32:01
-updated: 2024-11-14 22:02:29
+updated: 2025-08-05 16:19:27
 toc: true
 mathjax: true
 description: 
@@ -1608,28 +1608,41 @@ a_n = & (ba_{n-1} + c) % m, & n=1,2,\cdots
 
 ### *Markow chain Monte Carlo*
 
--   *MCMC* 采样：为目标分布 $q(X)$ 构建满足 **细致平稳条件**、易于采样（即条件概率易采样）的 “转移矩阵” $Pr(X|Y)$
-    -   算法思路：对目标分布 $q(x)$，任意转移分布 $Pr(y|x)$
+-   *MCMC* 采样：为目标分布 $q(X)$ 构建满足 **细致平稳条件**、易于采样（即条件概率易采样）的 “转移矩阵” $\tilde {Pr}(X|Y)$
+    -   按 “转移矩阵” $\tilde {Pr}(X|Y)$ 抽样得到的样本即符合马尔可夫过程，则样本分布服从平稳分布
+        -   *MCMC* 采样的样本显然不独立
+        -   用于抽样的 “转移矩阵”  $\tilde {Pr}(X|Y)$ 并非真正意义上的转移矩阵，也不会真正被构造
+            -   “转移矩阵” $\tilde {Pr}$ 不是合法的状态转移矩阵，转移概率未归一化
+            -   **每步抽样仅考虑 “转移矩阵” 当前状态分量**，保证 **对当前状态下满足细致平稳（状态间两两转移概率相同）**
+        -   “转移矩阵” $\tilde {Pr}(X|Y)$ 抽样通过易采样分布、拒绝采样得到
+    -   算法思路：对目标分布 $q(x)$，**任意转移分布** $Pr(y|x)$
         -   记 $\alpha(X|Y) = Pr(Y|X)q(X)$，则有
             $$ \forall x,y, \alpha(y|x) Pr(y|x) q(x) = \alpha(x|y) Pr(x|y) q(y) $$
         -   记 $\tilde {Pr}(X|Y) = \alpha(X|Y) Pr(X|Y) $，并 “视为” 转移概率，则其对应平稳分布为 $q(X)$
             -   $\tilde {Pr}(X|Y)$ （各列）未归一化，不是合法的转移概率
             -   $\tilde {Pr}(X|Y)$ 直接归一化，则细致平稳条件不一定成立，也无法保证转移概率相同
-        -   依转移矩阵 $\tilde {Pr}(X|Y)$ 拒绝采样得到满足目标分布序列
+        -   依（为）转移矩阵 $\tilde {Pr}(X|Y)$ 做 **拒绝采样** 得到满足目标分布序列
             -   从条件概率分布 $Pr(Y|x_t)$ 中采样得到候选点 $y$
             -   以 $\alpha(y|x_t)$ 作为拒绝阈值决定是否接受 $y$
+                -   接受则候选点 $y$ 作为此次抽样样本，并作为新状态 $x_{t+1}=y$
+                -   否则，**原状态 $x_t$ 作为此次抽样样本，并保持状态 $x_{t+1}=x_t$ 不变**
 
 -   事实上，*MCMC* 中最终使用的转移概率（未实际计算）为
     $$\begin{align*}
-    Pr^{*}(X|Y) &= \tilde Pr(X|Y) + (1 - \sum_Y \tilde {Pr}(Y|X)) \sigma(Y|X) \\
-    \sigma(Y|X) &= \left \{ \begin{array}{l}
-        1, & Y = X \\
-        0, & Y \neq X
-    \end{array} \right.
+    Pr^{*}(X|Y) &= \tilde Pr(X|Y) + (1 - \sum_X \tilde {Pr}(X|Y)) \sigma(X|Y) \\
+        &= \tilde Pr(X|Y) + diag(1 - Pr(X|Y).sum(axis=X)) \\
+    \sigma(X|Y) &= \left \{ \begin{array}{l}
+        1, & X = Y \\
+        0, & X \neq Y
+    \end{array} \right. \\
     \end{align*}$$
     -   即，算法未对也无需对 $\tilde {Pr}(X|Y)$ 归一化，而是调整 **转移至自身概率** 以实现归一化
+        -   即，算法中 **拒绝候选点时以当前状态作为当次采样结果**
         -   对离散分布，即调整转移矩阵对角线元素保证列概率和为 1
         -   考虑 $alpha < 1$，显然转移概率和小于 1，则转移概率 $Pr^{*}$ 非负
+    -   即，抽样结果可能出现连续相同值
+        -   尤其是拒绝采样步骤接受率较小时
+        -   即，需要较长抽样结果才能保证抽样符合目标分布
     -   显然，调整后 $Pr^{*}(X|Y)$ 满足细致平稳条件
 
 > - 从 *MCMC* 到模拟退火：<https://kexue.fm/archives/8084>，归一化逻辑，*MCMC* 逻辑
@@ -1653,12 +1666,14 @@ a_n = & (ba_{n-1} + c) % m, & n=1,2,\cdots
 
 ####    *Metropolis-Hastings* 算法
 
--   *MH* 算法：在 *Metropolis* 算法基础上调整拒绝率
+-   *MH* 算法：在 *Metropolis* 算法基础上调整 “转移矩阵” 构造方式，降低拒绝率
     -   算法思路
         -   考虑 *MCMC* 中 $alpha(X|Y)$ 为满足细致平稳条件构造的恒等式
             $$ \forall x,y, \alpha(y|x) Pr(y|x) q(x) = \alpha(x|y) Pr(x|y) q(y) $$
         -   则，对恒等式两侧同除 $\max\{\alpha(y|x), \alpha(x|y)\}$ 仍满足细致平稳条件
-            -   确保概率和小于 1，即 $Pr^{*}$ 非负，即 “调整后” 转移矩阵中对角线非负
+            -   确保概率和小于 1
+            -   即，确保 $ 1 - \sum_Y \tilde {Pr} $ 非负
+            -   即，“调整后” 转移矩阵 $Pr^{*}$ 中 **额外转移至自身** 的部分非负
         -   则可使用如下接受率
             $$ \alpha^{*}(Y|X) = \min(1, \frac {Pr(X|Y)q(Y)} {Pr(Y|X)q(X)}) $$
     -   算法第 $t+1$ 步采样步骤

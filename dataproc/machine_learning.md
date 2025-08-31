@@ -9,7 +9,7 @@ tags:
   - Semi-Supervised Learning
   - Reinforcement Learning
 date: 2019-07-14 20:02:42
-updated: 2025-08-04 16:05:08
+updated: 2025-08-28 18:38:59
 toc: true
 mathjax: true
 comments: true
@@ -244,16 +244,20 @@ description: 机器学习范畴
 ####    *Supervised Learning*
 
 -   *Supervised Learning* 有监督学习：从有标记的数据中学习、训练、建立模型，用于对可能的输入预测输出
-    -   *Generative Approach* 生成方法：学习联合概率分布 $P(X, Y)$，然后求出条件概率分布 $P(Y|X)$ 作为 *Generative Model*
-        -   即，学习输入 $X$、输出 $Y$ 之间的生成关系（联合概率分布）
-        -   *Generative Model*：生成模型，由生成方法学习到的模型 $P(Y|X) = \frac {P(X, Y)} {P(X}$
-            -   朴素贝叶斯法
-            -   隐马尔可夫模型
+    -   *Generative Approach(Classifier)* 生成方法：学习联合概率分布 $P(X, Y)$，然后求出条件概率分布 $P(Y|X)$ 作为 *Generative Model(Classfier)*
+        -   即，学习输入 $X$、输出 $Y$ 之间的生成关系（联合概率分布），**再计算条件概率用作判别**
+            -   联合概率分布 $P(X,Y)$ 被学习，则边缘分布、条件分布 $P(X),P(Y),P(Y|X)$ 都可计算
+            -   即，生成模型可以用于生成输入 $X$、输出 $Y$、成对数据 $X,Y$
+            -   而，判别模型仅有条件概率 $P(Y|X)$，无法生成数据
+        -   *Generative Model(Classifier)*：生成模型，由生成方法学习到的模型 $P(Y|X) = \frac {P(X, Y)} {P(X}$
+            -   *Naive Bayes Classifier* 朴素贝叶斯分类器
+            -   *Guassian Mixture Models* 高斯混合模型
+            -   *Hidden Markvov Models* 隐马尔可夫模型
         -   特点
             -   可以还原联合概率分布 $P(X, Y)$
             -   生成方法学习收敛速度快，样本容量增加时，学习到的模型可以快速收敛到真实模型
             -   存在隐变量时，仍可以使用生成方法学习
-    -   *Discriminative Approach* 判别方法：直接学习决策函数 $f(x)$、条件概率分布 $P(Y|X)$ 作为 *Discriminative Model*
+    -   *Discriminative Approach(Classifier)* 判别方法：直接学习决策函数 $f(x)$、条件概率分布 $P(Y|X)$ 作为 *Discriminative Model(Classifier)*
         -  即，对给定输入 $X$ 预测输出$Y$
         -   *Discriminative Model*：判别模型
             -   *KNN*
@@ -311,6 +315,8 @@ description: 机器学习范畴
             -   广义线性回归
 
 > - 监督学习：<https://zh.wikipedia.org/wiki/%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0>
+> - *On Discriminative vs. Generative Classfiers: A comparison of LR and naive Bayes*：<https://papers.nips.cc/paper/2001/file/7b7a53e239400a13bd6be6c91c4f6c4e-Paper.pdf>
+> - *Generative Model* 与 *Discriminative Model* 的区别：<https://zhuanlan.zhihu.com/p/146503132>
 
 #####  二分类到多分类
 

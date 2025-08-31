@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-16 09:53:49
-updated: 2025-07-18 10:12:35
+updated: 2025-08-31 20:36:59
 toc: true
 mathjax: true
 description: 
@@ -551,7 +551,7 @@ s.t. & E_P(f_i) - E_{\tilde P}(f_i) = 0, i=1,2,\cdots,M \\
         \frac {\sigma_i f_i(x,y)} {f^{**}(x,y)})
     $$
 
--   考虑到 $\sum_{i=1}^M \frac {f_i(x,y)} {f^{**}(x,y)} = 1$，由指数函数凸性、*Jensen* 不等式有
+-   考虑到 $\sum_{i=1}^M \frac {f_i(x,y)} {f^{**}(x,y)} = 1$，由指数函数凸性、*Jensen 不等式* 有
     $$
     exp(\sum_{i=1}^M \frac {f_i(x,y)} {f^{**}(x,y)} \sigma_i
         f^{**}(x,y)) \leq \sum_{i=1}^M \frac {f_i(x,y)}
@@ -1885,295 +1885,6 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
         -   *Prefix*：前缀，正在处理的子序列
         -   *Projected*：投影，各数据序列中位于前缀之后子串
 
-##  *Expectation Maximization*
-
-$$\begin{align*}
-L(\theta) & = log P(Y|\theta) \\
-& = log \sum_Z P(Y, Z|\theta) \\
-& = log \left(\sum_Z P(Y|Z,\theta) P(Z|\theta) \right)
-\end{align*}$$
-> - $Y$：观测变量数据
-> - $Z$：隐随机变量数据（未知）
-> - $Y,Z$合在一起称为完全数据
-> - $P(Y,Z|\theta)$：联合分布
-> - $P(Z|Y,\theta)$：条件分布
-
--   *EM* 算法：含有隐变量的概率模型参数的极大似然估计法、极大后验概率估计法
-    -   目标：极大化观测数据（不完全数据）$Y$ 关于参数 $\theta$ 的对数似然函数
-        -   模型含有 *Latent Variable*、*Hidden Variable*，似然函数将没有解析解，需迭代求解
-            -   *Expection* 步：估计缺失值分布，计算 *Q* 函数
-            -   *Maximization* 步：求解极大化 *Q* 函数更新参数 $\theta$
-        -   通过极大化 *Q* 函数（似然函数的一个下界）间接优化似然函数
-    -   算法特点
-        -   参数估计结果依赖初值，不够稳定，不能保证找到全局最优解
-        -   非常简单，稳定上升的步骤能非常可靠的找到较优估计值
-        -   应用广泛，能应用在多个领域中
-            -   生成模型的非监督学习
-        -   计算复杂、收敛较慢，不适合高维数据、大规模数据集
-
-> - 模型变量都是 *Observable Variable*、给定数据情况下，可以直接使用极大似然估计、贝叶斯估计求参数
-> - *EM* 算法及其推广：<https://www.cnblogs.com/eryoyo/p/16772757.html>
-
-### *Q* 函数
-
--   假设第 $i$ 次迭代后 $\theta$ 的估计值是 $\theta^{(i)}$，希望新估计值 $\theta$ 能使 $L(\theta)$ 增加，并逐步增加到极大值，考虑两者之差
-    $$ L(\theta) - L(\theta^{(i)}) = log (\sum_Z P(Y|Z,\theta) P(Z|\theta)) - log P(Y|\theta^{(i)}) $$
--   利用 *Jensen* 不等式有
-    $$\begin{align*}
-    L(\theta) - L(\theta^{(i)}) & = log(\sum_Z P(Y|Z, \theta^{(i)})
-        \frac {P(Y|Z,\theta) P(Z|\theta)} {P(Y|Z,\theta^{(i)})}) - log P(Y|\theta^{(i)}) \\
-    & \geq \sum_Z P(Z|Y,\theta^{(i)}) log \frac {P(Y|Z,\theta) P(Z|\theta)}
-        {P(Z|Y,\theta^{(i)})} - log P(Y|\theta^{(i)}) \\
-    & = \sum_z P(Z|Y,\theta^{(i)}) log \frac {P(Y|Z,\theta) P(Z|\theta)}
-        {P(Z|Y,\theta^{(i)}) P(Y|\theta^{(i)})}
-    \end{align*}$$
--   有 $L(\theta)$ 的一个下界 $B(\theta, \theta^{(i)})$ 
-    $$ B(\theta, \theta^{(i)}) = L(\theta^{(i)}) + \sum_Z P(Z|Y,\theta^{(i)})
-        log \frac {P(Y|Z,\theta) P(Z|\theta)} {P(Z|Y,\theta^{(i)}) P(Y|\theta^{(i)})} $$
-    且有
-    $$\begin{align*}
-    L(\theta) & \geq B(\theta, \theta^{(i)})
-    L(\theta^{(i)}) &= B(\theta^{(i)}, \theta^{(i)})
-    \end{align*}$$
--   则对任意 $\theta$ 满足 $B(\theta,\theta^{(i)}) > B(\theta^{(i)},\theta^{(i)})$ ，将有 $L(\theta) > L(\theta^{(i)})$，应选择 $\theta^{(i+1)}$使得 $B(\theta,\theta^{(i)})$ 达到极大
-    $$\begin{align*}
-    \theta^{(i+1)} & = \arg\max_{\theta} B(\theta,\theta^{(i)}) \\
-    & = \arg\max_{\theta} L(\theta^{(i)}) + \sum_Z P(Z|Y,\theta^{(i)})
-        log \frac {P(Y|Z,\theta) P(Z|\theta)} {P(Z|Y,\theta^{(i)}) P(Y|\theta^{(i)})} \\
-    & = \arg\max_{\theta} (\sum_Z P(Z|Y,\theta^{(i)}) log(P(Y|Z,\theta)P(Z|\theta))) \\
-    & = \arg\max_{\theta} (\sum_Z P(Z|Y,\theta^{(i)}) log P(Y,Z|\theta)) \\
-    & = \arg\max_{\theta} Q(\theta, \theta^{(i)}) \\
-    Q(\theta, \theta^{(i)}) &= E_z [logP(Y,Z|\theta)|Y,\theta^{(i)}]
-    \end{align*}$$
-    > - 舍弃 $\theta$ 无关的常数项
-    > - $Q(\theta, \theta^{(i)})$：Q 函数，完全数据的对数似然函数 $logP(Y,Z|\theta)$，关于在给定观测 $Y$ 和当前参数 $\theta^{(i)}$ 下，对未观测数据 $Z$ 的条件概率分布 $P(Z|Y,\theta^{(i)})$ 的期望
-
-### 算法收敛性
-
-####    定理1
-
--   定理1：设 $P(Y|\theta)$ 为观测数据的似然函数，$\theta^{(i)}$ 为 *EM* 算法得到的参数估计序列，$P(Y|\theta^{(i)}),i=1,2,...$ 为对应的似然函数序列，则 $P(Y|\theta^{(i)})$ 是单调递增的
-    $$ P(Y|\theta^{(i+1)}) \geq P(Y|\theta^{(i)}) $$
-
--   证明逻辑
-    -   由条件概率
-        $$\begin{align*}
-        P(Y|\theta) & = \frac {P(Y,Z|\theta)} {P(Z|Y,\theta)} \\
-        logP(Y|\theta) & = logP(Y,Z|\theta) - logP(Z|Y,\theta)
-        \end{align*}$$
-    -   则对数似然函数有
-        $$ logP(Y|\theta) = Q(\theta, \theta^{(i)}) - H(\theta, \theta^{(i)}) $$
-        > - $H(\theta, \theta^{(i)}) = \sum_Z log P(Z|Y,\theta) P(Z|Y,\theta)$
-        > - $Q(\theta, \theta^{(i)})$：前述 *Q* 函数
-        > - $logP(Y|\theta)$和$Z$无关，可以直接提出
-    -   分别取 $\theta^{(i+1)}, \theta^{(i)}$ 带入，做差
-        $$ logP(Y|\theta^{(i+1)}) - logP(Y|\theta^{(i)}) = [Q(\theta^{(i+1)},
-            \theta^{(i)}) - Q(\theta^{(i)}, \theta^{(i)}]
-            - [H(\theta^{(i+1)}, \theta^{(i)}) - H(\theta^{(i)}, \theta^{(i)})] $$
-        -   $\theta^{(i+1)}$ 使得 $Q(\theta, \theta^{(i)})$ 取极大
-        -   又有
-            $$\begin{align*}
-            & H(\theta^{(i+1)}, \theta^{(i)}) - H(\theta^{(i)}, \theta^{(i)}) \\
-            = & \sum_Z (log \frac {P(Z|Y,\theta^{(i+1)})} {P(Z|Y,\theta^{(I)})}) P(Z|Y,\theta^{(i)}) \\
-            \leq & log (\sum_Z \frac {P(Z|Y,\theta^{(i+1)})} {P(Z|Y,\theta^{(I)})} P(Z|Y,\theta^{(i)})) \\
-            = & log \sum_Z P(Z|Y,\theta^{(i+1)}) = 0
-            \end{align*}$$
-
-####    定理1
-
--   定理2：设 $L(\theta)=log P(Y|\theta)$ 为观测数据的对数似然函数，$\theta^{(i)},i=1,2,...$ 为 *EM* 算法得到的参数估计序列，$L(\theta^{(i)}),i=1,2,...$ 为对应的对数似然函数序列
-    -   若 $P(Y|\theta)$ 有上界，则 $L(\theta^{(i)})$ 收敛到某定值 $L^{*}$
-    -   *Q* 函数 $Q(\theta, \theta^{'})$与$L(\theta)$ 满足一定条件的情况下，由 *EM* 算法得到的参数估计序列 $\theta^{(i)}$ 的收敛值 $\theta^{*}$ 是 $L(\theta)$ 的稳定点
-
--   证明逻辑
-    -   结论 1 由序列单调、有界显然
-    -   结论 2
-        -   *Q* 函数 $Q(\theta, \theta^{'})$ 与 $L(\theta)$ 的条件在大多数情况下是满足的
-        -   *EM* 算法收敛性包含对数似然序列 $L(\theta^{(i)})$、参数估计序列 $\theta^{(i)}$ 的收敛性，前者不蕴含后者
-        -   此定理只能保证参数估计序列收敛到对数似然序列的稳定点，不能保证收敛到极大点，可选取多个不同初值迭代，从多个结果中选择最好的
-
-### *Gaussion Mixture Model*
-
--   *GMM* 高斯混合模型：以固定概率从不同高斯分布抽样的概率分布
-    $$ P(y|\theta) = \sum_{k=1}^K \alpha_k \phi(y|\theta_k) $$
-    > - $\alpha_k \geq 0, \sum_{k=1}^K \alpha_k=1$：系数
-    > - $\phi(y|\theta_k)$：高斯分布密度函数
-    > - $\theta_k=(\mu_k, \sigma_k)$：第k个分模型参数
-
--   可用 *EM* 算法估计未知的高斯混合模型参数 $\theta=(\alpha_1,...,\alpha_2,\theta_1,...,\theta_K)$
-    -   *GMM* 模型的参数估计的 *EM* 算法非常类似 *K-Means* 算法
-        -   *E* 步类似于 *K-Means* 中计算各点和各聚类中心之间距离，不过 *K-Means* 将点归类为离其最近类，而 *EM* 算法则是算期望
-        -   *M* 步根据聚类结果更新聚类中心
-
-####    *EM* 算法思路
-
-#####   对数似然函数
-
--   明确隐变量，写出完全数据对数似然函数
-    -   反映观测数据 $y_j$ 来自第 $k$ 个分模型的数据是未知的
-        $$\gamma_{j,k} = \left \{ \begin{array}{l}
-        1, & 第j个观测来自第k个分模型 \\
-        0, & 否则
-        \end{array} \right. $$
-        > - $j=1,2,\cdots,N$：观测编号
-        > - $k=1,2,\cdots,K$：模型编号
-    -   则完全数据为
-        $$(y_j,\gamma_{j,1},\cdots,\gamma_{j,K}), j=1,2,...,N$$
-    -   完全数据似然函数为
-        $$\begin{align*}
-        P(y,\gamma|\theta) & = \prod_{j=1}^N P(y_j,\gamma_{j,1},\cdots,\gamma_{j,N}|\theta) \\
-        & = \prod_{k=1}^{K} \prod_{j=1}^N [\alpha_k \phi(y_j|\theta_k)]^{\gamma _{j,k}} \\
-        & = \prod_{k=1}^{K} \alpha_k^{n_k} \prod_{j=1}^N [\phi(y_j|\theta_k)]^{\gamma _{j,k}} \\
-        \end{align*}$$
-        > - $n_k = \sum_{j=1}^{N} \gamma_{j,k}$
-        > - $\sum_{k=1}^K n_k = N$
-    -   完全数据的对数似然函数为
-        $$
-        logP(y, \gamma|\theta) = \sum_{k=1}^K \left \{ n_k log \alpha_k + \sum_{j=1}^N \gamma_{j,k}
-            [log \frac 1 {\sqrt {2\pi}} - log \sigma_k - \frac 1 {2\sigma_k}(y_j - \mu_k)^2] \right \}
-        $$
-
-#####   *Q* 函数
-
--   *E* 步：确定 *Q* 函数
-    -   由 *Q* 函数定义
-        $$\begin{align*}
-        Q(\theta, \theta^{(i)}) & = E_z[logP(y,\gamma|\theta)|Y,\theta^{(i)}] \\
-        & = E \sum_{k=1}^K \left \{ n_k log\alpha_k + \sum_{j=1}^N \gamma_{j,k}
-            [log \frac 1 {\sqrt {2\pi}} - log \sigma_k - \frac 1 {2\sigma_k}(y_j - \mu_k)^2] \right \} \\
-        & = \sum_{k=1}^K \left \{ \sum_{k=1}^K (E\gamma_{j,k}) log\alpha_k + \sum_{j=1}^N (E\gamma_{j,k})
-            [log \frac 1 {\sqrt {2\pi}} - log \sigma_k - \frac 1 {2\sigma_k}(y_j - \mu_k)^2] \right \} \\
-        E\gamma_{j,k} &= E(\gamma_{j,k}|y,\theta)
-        \end{align*}$$
-    -   记 $\hat \gamma_{j,k} = E\gamma_{j,k}$
-        $$\begin{align*}
-        \hat \gamma_{j,k} & = E(\gamma_{j,k}|y,\theta) = P(\gamma_{j,k}|y,\theta) \\
-        & = \frac {P(\gamma_{j,k}=1, y_j|\theta)} {\sum_{k=1}^K P(\gamma_{j,k}=1,y_j|\theta)} \\
-        & = \frac {P(y_j|\gamma_{j,k}=1,\theta) P(\gamma_{j,k}=1|\theta)} {\sum_{k=1}^K
-            P(y_j|\gamma_{j,k}=1,\theta) P(\gamma_{j,k}|\theta)} \\
-        & = \frac {\alpha_k \phi(y_j|\theta _k)} {\sum_{k=1}^K \alpha_k \phi(y_j|\theta_k)}
-        \end{align*}$$
-    -   带入可得
-        $$
-        Q(\theta, \theta^{(i)}) = \sum_{k=1}^K \left\{ n_k log\alpha_k + \sum_{k=1}^N \hat \gamma_{j,k}
-            [log \frac 1 {\sqrt{2\pi}} - log \sigma_k - \frac 1 {2\sigma^2}(y_j - \mu_k)^2] \right \}
-        $$
-
-#####   迭代求解参数
-
--   *M* 步：求新一轮模型参数 $\theta^{(i+1)}=(\hat \alpha_1,...,\hat \alpha_2,\hat \theta_1,...,\hat \theta_K)$
-    $$\begin{align*}
-    \theta^{(i+1)} & = \arg\max_{\theta} Q(\theta,\theta^{(i)}) \\
-    \hat \mu_k & = \frac {\sum_{j=1}^N \hat \gamma_{j,k} y_j} {\sum_{j=1}^N \hat \gamma_{j,k}} \\
-    \hat \sigma_k^2 & = \frac {\sum_{j=1}^N \hat \gamma_{j,k} (y_j - \mu_p)^2} {\sum_{j=1}^N \hat \gamma_{j,k}} \\
-    \hat \alpha_k & = \frac {n_k} N = \frac {\sum_{j=1}^N \hat \gamma_{j,k}} N
-    \end{align*}$$
-    > - $\hat \theta_k = (\hat \mu_k, \hat \sigma_k^2)$：直接求偏导置 0 即可得
-    > - $\hat \alpha_k$：在$\sum_{k=1}^K \alpha_k = 1$ 条件下求偏导置 0 求得
-
-### *F* 函数
-
--   *Free Energy* 函数：假设隐变量数据 $Z$ 的概率分布为 $\tilde P(Z)$，定义分布 $\tilde P$ 与参数 $\theta$ 的函数$F(\tilde P, \theta)$ 如下
-    $$\begin{align*}
-    F(\tilde P, \theta) &= E_{\tilde P} [log P(Y,Z|\theta)] + H(\tilde P) \\
-    H(\tilde P) &=-E_{\tilde P} log \tilde P(Z)
-    \end{align*}$$
-    > - $H(\tilde P)$：分布 $\tilde P(Z)$ 的熵
-    -   通常假设 $P(Y,Z|\theta)$ 是 $\theta$ 的连续函数，则函数 $F(\tilde P,\theta)$ 是 $\tilde P, \theta$ 的连续函数
-
--   说明
-    -   *EM* 算法可以解释为 *F* 函数的 *Maximization-Maximization Algorithm*
-    -   并由此推广得到 *Generalized EM* 算法
-
-####    定理 1
-
--   定理 1：对于固定 $\theta$，存在唯一分布 $\tilde P_\theta$，极大化 $F(\tilde P, \theta)$，这时 $\tilde P_\theta$ 由下式给出
-    $$ \tilde P_\theta(Z) = P(Z|Y,\theta) $$
-    并且 $\tilde P_{\theta}$ 随 $\theta$ 连续变化
-
--   证明逻辑
-    -   对于固定的 $\theta$，求使得 $F(\tilde P, \theta)$ 的极大，构造 *Lagrange* 函数
-        $$ L(\tilde P, \lambda, \mu) = F(\tilde P, \theta)
-            + \lambda(1 - \sum_Z \tilde P(Z)) - \mu \tilde P(Z) $$
-        -   其中 $\tilde P(Z)$ 为概率密度函数，自然包含两个约束
-    -   对 $\tilde P(Z)$ 求偏导，得
-        $$ \frac {\partial L} {\partial \tilde P(Z)} = 
-            log P(Y,Z|\theta) - log \tilde P(Z) - \lambda - \mu $$
-        置偏导为 0，有
-        $$\begin{align*}
-        log P(Y,Z|\theta) - log \tilde P(Z) & = \lambda + \mu \\
-        \frac {P(Y,Z|\theta)} {\tilde P(Z)} & = e^{\lambda + \mu}
-        \end{align*}$$
-    -   则使得 $F(\tilde P, \theta)$ 极大的 $\tilde P_\theta(Z)$ 应该和 $P(Y,Z|\theta)$ 成比例，由概率密度自然约束有
-        $$ \tilde P_\theta(Z) = P(Y,Z|\theta) $$
-        而由假设条件，$P(Y,Z|\theta)$ 是 $\theta$ 的连续函数
-
-####    定理 2
-
--   定理 2：若 $\tilde P_\theta(Z) = P(Z|Y, \theta)$，则
-    $$ F(\tilde P, \theta) = log P(Y|\theta) $$
-
-####    定理 3
-
--   定理 3：设 $L(\theta)=log P(Y|\theta)$ 为观测数据的对数似然函数，$\theta^{(i)}, i=1,2,\cdots$ 为 *EM* 算法得到的参数估计序列，函数 $F(\tilde P,\theta)$ 如上定义
-    -   若 $F(\tilde P,\theta)$ 在 $\tilde P^{*}, \theta^{*}$ 上有局部极大值，则 $L(\theta)$ 在 $\theta^{*}$ 也有局部最大值
-    -   若 $F(\tilde P,\theta)$ 在 $\tilde P^{*}, \theta^{*}$ 达到全局最大，则 $L(\theta)$ 在 $\theta^{*}$ 也达到全局最大
-
--   证明逻辑
-    -   由定理 1、定理 2 有
-        $$ L(\theta) = logP(Y|\theta) = F(\tilde P_\theta, \theta) $$
-        特别的，对于使 $F(\tilde P,\theta)$ 极大 $\theta^{*}$ 有
-        $$ L(\theta^{*}) = logP(Y|\theta^{*}) = F(\tilde P_\theta^{*}, \theta{*}) $$
-    -   由 $\tilde P_\theta$ 关于 $\theta$ 连续，局部点域内不存在点 $\theta^{**}$ 使得 $L(\theta^{**}) > L(\theta^{*})$，否则与 $F(\tilde P, \theta^{*})$ 矛盾
-
-####    定理 4
-
--   定理 4：*EM* 算法的依次迭代可由 *F* 函数的极大-极大算法实现，设 $\theta^{(i)}$ 为第 $i$ 次迭代参数 $\theta$ 的估计，$\tilde P^{(i)}$ 为第 $i$ 次迭代参数 $\tilde P$ 的估计，在第 $i+1$ 次迭代的两步为
-    -   对固定的 $\theta^{(i)}$，求 $\tilde P^{(i)}$ 使得 $F(\tilde P, \theta^{(i)})$ 极大
-    -   对固定的 $\tilde P^{(i+1)}$，求 $\theta^{(i+1)}$ 使 $F(\tilde P^{(t+1)}, \theta)$ 极大化
-
--   证明逻辑
-    -   固定 $\theta^{(i)}$
-        $$\begin{align*}
-        F(\tilde P^{(i+1)}, \theta^{(i)}) & = E_{\tilde P^{(t+1)}}
-            [log P(Y,Z|\theta)] + H(\tilde P^{(i+1)}) \\
-        & = \sum_Z log P(Y,Z|\theta) P(Z|Y,\theta^{(i)}) + H(\tilde P^{(i+1)}) \\
-        & = Q(\theta, \theta^{(i)}) + H(\tilde P^{(i+1)})
-        \end{align*}$$
-    -   则固定 $\tilde P^{(i+1)}$ 求极大同 *EM* 算法 *M* 步
-
-### *EM* 算法推广
-
--   *Generalized EM* 广义期望极大算法：极大化 *F* 函数替代极大化 *Q* 函数
-    1.  初始化 $\theta^{(0)}$，开始迭代
-    2.  第 $i+1$ 次迭代：记 $\theta^{(i)}$ 为参数 $\theta$ 的估计值，$\tilde P^{(i)}$ 为函数 $\tilde P$ 的估计，求 $\tilde P^{(t+1)}$ 使 $\tilde P$ 极大化 $F(\tilde P,\theta)$
-    3.  求 $\theta^{(t+1)}$ 使 $F(\tilde P^{(t+1)l}, \theta)$ 极大化
-    4.  重复 2、3 直到收敛
-
--   次优解代替最优解：有时候极大化 $Q(\theta, \theta^{(i)})$ 困难时，仅寻找使目标函数值上升方向
-    1.  初始化参数 $\theta^{(0)}$，开始迭代
-    2.  第 $i+1$ 次迭代，记 $\theta^{(i)}$ 为参数 $\theta$ 的估计值，计算
-        $$\begin{align*}
-        Q(\theta, \theta^{(i)}) & = E_Z [ log P(Y,Z|\theta)|Y,\theta^{(i)}] \\
-        & = \sum_Z P(Z|Y, \theta^{(i)}) log P(Y,Z|\theta)
-        \end{align*}$$
-    3.  求 $\theta^{(i+1)}$ 使
-        $$ Q(\theta^{(i+1)}, \theta^{(i)}) > Q(\theta^{(i)}, \theta^{(i)}) $$
-    4.  重复 2、3 直到收敛
-
--   *ADMM* 求次优解
-    1.  初始化参数 $\theta^{(0)} = (\theta_1^{(0)},...,\theta_d^{(0)})$， 开始迭代
-    2.  第 $i$ 次迭代，记 $\theta^{(i)} = (\theta_1^{(i)},...,\theta_d^{(i)})$， 为参数 $\theta = (\theta_1,...,\theta_d)$ 的估计值，计算
-        $$\begin{align*}
-        Q(\theta, \theta^{(i)}) & = E_Z [ log P(Y,Z|\theta)|Y,\theta^{(i)}] \\
-        & = \sum_Z P(Z|Y, \theta^{(i)}) log P(Y,Z|\theta)
-        \end{align*}$$
-    3.  进行 $d$ 次条件极大化
-        1.  在 $\theta_1^{(i)},...,\theta_{j-1}^{(i)},\theta_{j+1}^{(i)},...,\theta_d^{(i)}$ 保持不变条件下，求使 $Q(\theta, \theta^{(i)})$ 达到极大的 $\theta_j^{(i+1)}$
-        2.  $j$ 从 1 到 d，进行 d 次条件极大化的，得到 $\theta^{(i+1)} = (\theta_1^{(i+1)},...,\theta_d^{(i+1)})$ 使得
-            $$ Q(\theta^{(i+1)}, \theta^{(i)}) > Q(\theta^{(i)}, \theta^{(i)}) $$
-    4.  重复 2、3 直到收敛
-
 ##  *Emsemble Learning*
 
 | 类型     | Target         | Data                                 | parallel               | Classifier                   | Aggregation            |
@@ -2921,3 +2632,809 @@ L(\theta) & = log P(Y|\theta) \\
 > - 降维方法之 *t-SNE*：<https://zhuanlan.zhihu.com/p/426068503>
 > - *Stochastic Neighbor Embedding*：<https://papers.nips.cc/paper/2002/file/6150ccc6069bea6b5716254057a194ef-Paper.pdf>
 > - *Visualizing Data Using t-SNE*：<https://jmlr.org/papers/v9/vandermaaten08a.html>
+
+## 概率图模型
+
+-   *Probabilistic Graph Model* 概率图模型：节点表示随机变量、边表示随机变量间概率依赖关系的图模型
+    -   随机变量之间复杂相关关系将导致边缘分布等计算量过大，需要添加假设、简化模型
+        -   朴素贝叶斯：$P(x_1, \cdots, x_p) = \prod P(x_i)$ 随机变量之间相互独立
+        -   `n` 阶马尔可夫假设：当前随机变量仅与前 $n$ 个随机变量相关
+            -   `1` 阶马尔可夫：$x_j \perp x_{i+1} | x_i, j < i$
+        -   条件独立性假设：$x_A \perp x_B | x_C$，其中 $A, B, C$ 为不相交（随机变量）集合
+            -   相较于朴素贝叶斯和马尔可夫假设限制较少，同时可以降低计算复杂度
+            -   基于条件独立性即，建立概率图模型 *PGM*
+    -   *PGM* 中的马尔可夫性质、条件独立性：概率图模型中节点（取值）仅与相邻位置（或父）节点相关，与其不相邻节点无关
+        -   全局马尔可夫性：团 $A, C$ 必须经过团 $B$ 到达，则团 $A,C$ 关于团 $B$ 条件独立 $A \perp C | B$（给定 $B$，$A,C$ 独立）
+        -   局部马尔可夫性：节点 $A$ 在给定全部相邻节点情况下，与非相邻节点条件独立
+        -   成对马尔科夫性：节点 $A, B$ 不相邻，节点 $A,B$ 关于其余所有节点条件独立 $A \perp B | V_{rest}$
+    -   概率图模型是概率论与图论结合的产物，可为统计推理、学习提供统一的灵活框架
+        -   表示：刻画随机变量之间的依赖关系，反映问题的概率结构
+            -   有向图：贝叶斯网络
+            -   无向图：马尔可夫随机场
+            -   *Clique* 团：**全连接** 节点子集
+                -   节点可以包含在多个团中
+                -   极大团：非其他团的真子集的团
+                -   最小的团：边及边两侧节点（或单个节点）
+        -   联合概率分布：联合概率分布根据链式法则可分解为条件概率乘积
+            -   **根据概率图模型的条件独立假设可以简化条件概率**
+            -   联合概率分布可表示为局部条件概率（有向图）、势函数（无向图）的连乘积
+        -   易于在图模型建模中引入先验知识
+            -   贝叶斯网络中叶子节点即先验
+
+> - 概率图模型（一）：综述：<https://zhuanlan.zhihu.com/p/363689582>
+> - 5.有向图：<https://www.zhangzhenhu.com/probability_model/4.%E6%9C%89%E5%90%91%E5%9B%BE_lecture_2.html>
+> - 贝叶斯网络和马尔可夫随机场：<https://zhuanlan.zhihu.com/p/364010781>
+> - 机器学习：马尔可夫随机场（*MRF*）：<https://zhuanlan.zhihu.com/p/1897719287453569250>
+> - 无向图：<https://www.zhangzhenhu.com/probability_model/5.%E6%97%A0%E5%90%91%E5%9B%BE_lecture_3.html>
+> - 概率图模型及理论应用：<https://oa.ee.tsinghua.edu.cn/~ouzhijian/pdf/L2-HMM-CRF.pdf>
+
+### *Bayesian Network*
+
+```mermaid
+graph
+    direction LR
+    subgraph Tail2Tail
+        direction TB
+        B1((B)) --tail--> A1((A))
+        B1((B)) --tail--> C1((C))
+    end
+    subgraph Head2Tail
+        direction TB
+        A2((A)) --head--> B2((B))
+        B2((B)) --tail--> C2((C))
+    end
+    subgraph Head2Head
+        direction TB
+        A3((A)) --head--> B3((B))
+        C3((C)) --head--> B3((B))
+    end
+```
+
+-   *Bayesian Network* 贝叶斯网络：有向无环概率图 $G=(V, E)$ 模型，适合表示变量间的因果关系
+    -   网络内容
+        -   边方向：父节点指向子节点（子节点依赖父节点）
+        -   边含义：变量之间的依赖关系为条件概率
+        -   无父节点的节点即先验信息
+    -   网络结构形式
+        -   *Tail-to-Tail*：满足 $A \perp C|B$，即 $B$ 确定（被观测）的情况下，$A,C$ 相互独立（$A,C$ 间依赖被 $B$ 截断）
+        -   *Head-to-Tail*：满足 $A \perp C|B$，即 $B$ 确定（被观测）的情况下，$A,C$ 相互独立（$A,C$ 间依赖被 $B$ 截断）
+        -   *Head-to-Head*：默认情况下 $A \perp C$，而 $B$ 确定（被观测）的情况下，$A,C$ 相关（$A,C$ 间依赖被 $B$ 联通）
+
+> - 5.有向图：<https://www.zhangzhenhu.com/probability_model/4.%E6%9C%89%E5%90%91%E5%9B%BE_lecture_2.html>
+> - 马尔可夫随机场 *Markov Random Field*：<https://zhuanlan.zhihu.com/p/361407034>
+> - 概率图模型（二）：贝叶斯网络和马尔可夫随机场：<https://zhuanlan.zhihu.com/p/364010781>
+
+####    *Local Conditional Probability*
+
+$$\begin{align*}
+P(X) &= P(x_1, \cdots, x_N) \\
+&= \prod_{i=1}^N p(x_i | x_{\pi_i})
+\end{align*}$$
+> - $x_{\pi_i}$：随机变量 $x_i$ 的父节点集合，可为空集
+
+-   *Local Conditional Probability* 局部条件概率：联合概率分布按节点因子化后、各节点条件概率 $P(x_i | x_{\pi_i})$
+    -   显然，$P(x_i | x_{\pi_i})$ 总是归一化的条件概率分布
+        -   即，联合概率分布因子化分解满足概率归一化条件
+        -   虽然，贝叶斯网络中总是将联合概率分布因子化为 $P(x_i | x_{\pi_i})$ 的形式
+            -   即，与有向图强调的因果关系思路一致
+            -   **但从概率角度看，相关性是双向的**，同样存在条件概率 $P(x_{\pi_i} | x_i)$，仅未被用于联合概率因子化
+    -   联合概率分布的按链式法则分解为条件概率乘积总是成立的
+        -   仅，在条件概率独立条件下，条件概率可以进一步简化（**条件概率中作为条件的随机变量也是条件概率分布的一部分**）
+        -   但（即），联合概率分布分解顺序可以任意
+        -   即，需要 **找到合适分解顺序** 以充分利用概率图模型中蕴含的条件独立性简化条件概率
+
+### *Markov Random Field*
+
+-   *Markov Random Field* 马尔可夫随机场：无向概率图模型，包含 $G=(V, E)$ 模型
+    -   *Conditional Random Field* 条件随机场：对随机变量组 $X, Y$，若随机变量组 $Y$ 为马尔可夫随机场，则称 $P(Y|X)$ 为条件随机场
+        -   *Linear Chain CRF* 线性链条件随机场：若随机变量组 $Y$ 中随机变量（节点）仅前后邻接 $Y_{i-1}, Y_i$，则称为线性链条件随机场
+            ![pgm_linear_crf](imgs/pgm_linear_crf.png)
+        -   结构相同的线性链条件随机场：$X_i, Y_j$ 为结构相同的线性链条件随机场
+            ![linear_crf_same_structure](imgs/linear_crf_same_structure.png)
+            -   即，无向图版本 *HMM* 模型
+            -   词性标注问题中，词序列 $X$、词性序列 $Y$ 即为结构相同的线性链条件随机场
+    -   *Pairwise MRF* 成对马尔可夫随机场：对随机变量组 $X, Y$，若随机变量组 $Y$ 为马尔可夫随机场，$X_i$ 仅与对应 $Y_i$ 邻接
+        ![pgm_pairwise_mrf](imgs/pgm_pairwise_mrf.png)
+        -   成对马尔可夫随机场联合概率分布势函数
+            $$ P(X, Y) = \frac 1 Z \prod_{i,j} \psi(X_i, X_j) \prod_i \phi(x_i, y_i) $$
+
+> - 条件随机场 *CRF*（一）：从随机场到线性链条件随机场：<https://www.cnblogs.com/pinard/p/7048333.html>
+> - 清晰理解条件随机场CRF（1）：背景与应用：<https://zhuanlan.zhihu.com/p/344356785>
+> - 机器学习：条件随机场（*CRF*）：<https://zhuanlan.zhihu.com/p/1900118267395306585>
+> - CRF Part 3：条件随机场和线性链条件随机场：<https://zhuanlan.zhihu.com/p/113223515>
+> - 概率论与统计学8：马尔可夫随机场 *Markov Random Field*：<https://zhuanlan.zhihu.com/p/361407034>
+> - 贝叶斯网络和马尔可夫随机场：<https://zhuanlan.zhihu.com/p/364010781>
+> - 机器学习：马尔可夫随机场（*MRF*）：<https://zhuanlan.zhihu.com/p/1897719287453569250>
+> - *Belief Propagation* 算法学习笔记：<https://zhuanlan.zhihu.com/p/589477908>
+
+####    *Potential Function*
+
+$$\begin{align*}
+P(x) & \propto \prod_{C \in e} \psi_{x_C} (x_C) \\
+    &= \frac 1 Z \prod \psi_{x_C}(x_C) \\
+Z &= \sum_x \prod_{C \in e} P(x)
+\end{align*}$$
+> - $e, C$：定义在概率图 $G=(V, E)$ 上的（某个）团划分结果（集合）、团
+> - $\psi_{x_C}$：定义在团 $C$ 上的势函数
+> - $Z$：配分函数（归一化因子）
+
+-   *Potential Function* 势函数：**定义在极大团上**、乘积线性于（随机变量全体）联合概率分布、非负值（局部）函数
+    -   根据概率图模型的条件独立性质：团内节点不满足条件独立性，不同团间节点可以存在条件独立性
+        -   考虑图中不相邻节点 $x_i, x_j$，有 $x_i \perp x_j | x_{rest}$，则有
+            $$\begin{align*}
+            P(x_{all}) & = P(x_i, x_j | x_{rest}) P(x_{rest}) \\
+            & = P(x_{rest}) P(x_i | x_{rest}) P(x_{j} | x_{rest})
+            \end{align*}$$
+        -   即，无向概率图模型表示联合概率分布可以分解为定义在团上的 *局部函数* 乘积
+    -   势函数即为联合概率分布的因子分解
+        -   势函数不是（条件、边缘）概率分布函数
+            -   同一无向图中不同团的势函数可以有不同形式
+            -   势函数连乘结果无概率意义，但可通过归一化因子得到有意义概率值
+            -   配分函数（归一化因子）往往无法计算，但条件概率、最大概率查询等场景下无需计算
+        -   最大团彼此间可能存在节点重叠，但总能找到满足 **因子分解** 的势函数
+            -   考虑极大团 $A, B$ 的重叠节点集合 $C$，补集为 $A_C, B_C$
+            -   显然，$C, A_C, B_C$ 也为团，且 $A_C \perp B_C | C$
+            -   则有
+                $$\begin{align*}
+                P(A, B) &= P(A_C, B_C, C) \\
+                &= P(C) P(A_C|C) P(B_C|C) \\
+                &= P(A) P(B_C|C) \\
+                &= P(A_C|C) P(B)
+                \end{align*}$$
+            -   则，定义在极大团 $A,B$ 上的势函数可如上定义
+        -   即，**势函数不必定义在极大团上**，甚至极大团划分无法得到较优的因子化结果
+            ```mermaid
+            graph LR
+                A ---- B
+                A ---- C
+                B ---- C
+                B ---- D
+                C ---- D
+            ```
+            -   $\{A, B, C\}$、$\{B, C, D\}$ 是极大团，对应 $P(A,B,C,D) = \frac 1 Z \psi (A,B,C) \psi(B,C,D)$
+            -   而，按团 $\{A\}$、$\{B, C\}$、$\{D\}$ 则可因子化联合概率为 $P(A,B,C,D) = P(B,C)P(A|B,C)P(D|B,C)$，并相应定义势函数
+            -   即，概率图模型中团划分的方案有多种，对应不同的势函数定义、联合概率因子化结果（**提公因子方案不同**）
+            -   但注意，对任何联合概率因子化方案，**所有极大团总必对应某个势函数因子**，非极大团可能不对应势函数因子
+                -   即使，重叠节点作为（非极大）团被定义势函数作为联合概率分布因子，**重叠节点也将称为极大团中条件变量**
+                -   即，**总存在某个势函数因子，其包含的随机变量与极大团包含节点一致**
+                -   也即，仅定义在极大团的上势函数是因子数量最少的因子化方式
+    -   势函数 $\psi$ 非负，常使用指数函数表示
+        $$\begin{align*}
+        \psi_{x_C}(x_C) &= e^{-E(x_C)} \\
+        P(x) &= \frac 1 Z e^{-E(x_C)} \\
+        &= \frac 1 Z e^{-\sum_{C \in e} E(x_C)}
+        \end{align*}$$
+        -   在统计物理学中，$E(x_C)$ 被称为 *Energy Function* 能量函数，表示状态 $x_C$ 的能量
+
+> - 6.无向图：<https://www.zhangzhenhu.com/probability_model/5.%E6%97%A0%E5%90%91%E5%9B%BE_lecture_3.html>
+> - 因子图、势函数：<https://www.cnblogs.com/549294286/archive/2013/06/06/3121454.html>
+
+####    *Moral Graph*
+
+-   *Moral Graph* 道德图：将有向图道德化得到的无向图
+    -   *Moralization* 道德化：将有向图中父节点完全相互连接、去掉边方向的过程
+        -   显然，节点及其父节点构成团
+        -   则，至少存在极大团包含节点及其父节点
+        -   则，道德图中极大团势函数可定义为其中包含的所有节点对应的吃条件概率分布因子之积
+            -   此时，配分函数 $Z=1$
+    -   道德化过程通过最小的额外连接，最大可能保证了原有向图的条件独立性质
+        -   但，依然较原有向图丢弃了部分条件独立性
+-   事实上，有向图和无向图不能等价转换（保持同样的条件独立性）
+    -   带环无向图无法转换为有向无环图
+        ```mermaid
+        graph LR
+            A ---- B
+            B ---- C
+            C ---- D
+            D ---- A
+        ```
+        -   假设 $D$ 为转换后有向图最后节点，则 $A, C$ 邻接 $D$
+        -   此时，总无法设计边满足 $A \perp C | B, D$
+    -   *Tail-to-Tail* 结构有向图无法转换为无向图
+        ```mermaid
+        graph LR
+            A ----> B
+            C ----> B
+        ```
+        -   无向图无法实现：$A \perp C$ 的同时不满足 $A \perp C | B$
+
+> - 6.无向图：<https://www.zhangzhenhu.com/probability_model/5.%E6%97%A0%E5%90%91%E5%9B%BE_lecture_3.html>
+
+### *Factor graph*
+
+![pgm_factor_graph](imgs/pgm_factor_graph.png)
+
+-   *Factor Graph* 因子图：包含变量节点 $V$、因子节点 $F$ 的二分图 $G=(V, E, F)$，仅在变量节点和因子节点间存在边
+    -   因子图通过因子节点，直接表达 **联合概率分布的因子化分解**
+        $$ P(X) = \frac 1 Z \prod_j f_j(x_{f_j}) $$
+        -   因子节点：**即定义在随机变量上、联合概率分布的因子化函数**
+        -   因子（节点）函数即类似贝叶斯网络（有向图）的局部条件概率函数、马尔可夫场（无向图）中的势函数
+        -   但，因子函数可在任意节点集定义、同一节点集上定义多个，对联合概率分布的分解形式更灵活
+    -   转换为因子图
+        -   将势函数定义为因子函数（节点），即可将马尔可夫场的转换为因子图
+        -   将局部条件概率函数定义为因子函数（节点），即可将贝叶斯网络转换为因子图
+        -   **同一贝叶斯网络、马尔可夫场可以转换为多种因子图（势函数、提公因子方案不同）**
+
+> - 7.因子图：<https://www.zhangzhenhu.com/probability_model/6.%E5%9B%A0%E5%AD%90%E5%9B%BE_lecture_4.html>
+
+###    图模型评价
+
+-   考虑概率分布 $D$、图模型 $G$，记 $CI(D)$ 为分布 $D$ 满足的条件独立性集合，$CI(G)$ 为图 $G$ 蕴含（实现）的条件独立性集合
+    -   *Independence Map* 独立图：若 $CI(G) \subset CI(D)$，则说图 $G$ 是分布 $D$ 的独立图
+        -   即，分布 $D$ 满足图 $G$ 包含的所有条件独立性
+        -   完全图 $G$ 是任何分布的 *I-map*
+    -   *Dependence Map* 依赖图：若 $CI(D) \subset CI(G)$，则说图 $G$ 是分布 $D$ 的依赖图
+        -   即，图 $G$ 满足分布 $D$ 满足的所有条件独立性
+        -   无边图 $G$ 是任何分布的 *D-map*
+    -   *Perfect Map* 完美图：若 $CI(G) = CI(D)$，则说图 $G$ 是分布 $D$ 的完美图
+    -   通过定义图、分布蕴含的条件独立性（集）关系
+        -   可用来判断转换是否足够 “好”
+
+> - 7.因子图：<https://www.zhangzhenhu.com/probability_model/6.%E5%9B%A0%E5%AD%90%E5%9B%BE_lecture_4.html>
+
+##  概率图模型概率推断
+
+-   图模型概率推断
+    -   将图模型中节点（随机变量）划分类型
+        -   查询变量 $X_F$：待推断概率分布变量集合
+        -   观测（证据）变量 $X_W$：可观测、存在观测值（证据）的变量集合
+        -   隐变量 $X_E$：不是查询变量、观测变量的变量
+    -   图模型中概率推断问题
+        -   *Marginal Probabilities* 边缘概率分布
+        -   *Conditional Probabilities* 条件概率分布
+            -   引入证据势函数后，条件概率推断、边缘概率推断问题形式上相同
+        -   *Maximum a Postorier Probabilities* 最大后验概率参数估计
+            -   *MAP* 关注点在后验概率取极值时目标随机变量（概率分布参数）的状态，而非条件概率分布、或极值本身
+            -   最大后验概率即最大条件概率，且引入证据势函数后进一步可视为最大联合概率
+    -   推断算法
+        -   *Exact Inference* 精确推断
+            -   *Elimimation Algorithm* 变量消元法：按顺序边际化、消去证据变量、隐变量，直至得到目标节点的边缘、条件概率分布
+            -   *Belief Propagation* 信念传播：节点收到领接节点消息后、延图传播消息，消息传播完毕后即可根据消息计算任意节点边缘分布、条件分布
+            -   *Junction Tree Algorithm* 联结树、团树传播法：构造团树，将概率推理计算转换为团树节点之间的消息传递
+        -   *Approximate Inference* 近似推断
+            -   *Variational Inference(Method)* 变分法
+            -   *Sampling Algorithm* 采样法
+
+> - 8.模型推断：消元法：<https://www.zhangzhenhu.com/probability_model/8.%E6%B6%88%E5%85%83%E6%B3%95.html>
+> - 机器学习（十四）：概率图模型：<https://zhuanlan.zhihu.com/p/641471097>
+
+### 概率推断
+
+-   条件概率 $P(X_F | X_E = \bar X_E)$ 的推断：核心即 **边际化算法消元** 求边缘概率分布
+    -   根据贝叶斯（后验、条件）定理列出查询变量 $X_F$ 的条件概率
+        $$ P(X_F | X_E = \bar X_E) = \frac {P(X_F, X_E = \bar X_E)} {P(X_E = \bar X_E)} $$
+        -   固定（带入分布函数、选取对应分量）证据变量取值，消除联合概率分布中证据变量
+        -   多组证据变量取值（多次观测）则取多个概率分布之积（条件概率分布似然）
+    -   计算分子：通过 *Marginalization* 边际化方法消除概率图联合概率分布 $P(X_F, X_E, X_W)$ 中隐变量计划 $X_W$
+        $$ P(X_F, X_E = \bar X_E) = \sum_{X_W} P(X_F, X_E=\bar X_E, X_W) $$
+        -   消元顺序影响算法复杂度，是 *NP-Hard* 问题
+        -   随机变量边际化（需带入数值）
+            -   离散随机变量边际化消元即对概率求和
+            -   连续随机变量边际化消元即对概率密度函数积分
+    -   计算分母：边际化消除分子目标变量
+        $$ P(X_E = \bar X_E) = \sum_{X_F} P(X_F, X_E=\bar X_E) $$
+    -   通过条件概率公式计算条件概率分布
+        -   对有向图，根据条件独立带入局部条件概率即可
+        -   对无向图，带入势函数即可
+            -   对条件概率问题，配分函数可以被消去
+            -   对边缘概率问题，直接归一化结果即可（归一化分母即配分函数值）
+-   最大后验分布 $\arg \max_{X_F} P(X_F | X_E = \bar X_E)$ 推断：核心即 **最大化消元** 求最大后验概率
+    -   类似条件概率推断，但消元方法是固定随机变量取值（以最大化后验概率）
+    -   最大后验估计结果可能不唯一
+
+> - 8.模型推断：消元法：<https://www.zhangzhenhu.com/probability_model/8.%E6%B6%88%E5%85%83%E6%B3%95.html>
+> - 10.最大后验估计：<https://www.zhangzhenhu.com/probability_model/11.%E6%9C%80%E5%A4%A7%E5%90%8E%E9%AA%8C%E4%BC%B0%E8%AE%A1_lecture_11.html>
+
+####    证据势函数
+
+-   *Evidence Potential* 证据势函数：$\sigma(x_i, \bar x_i)$ 随机变量 $x_i$ 取 $\bar x_i$ 值的示性函数
+    $$ \sigma(x_i, \bar x_i) = \begin{cases}
+        1 &, x_i = \bar x_i \\
+        0 &, x_i \neq \bar x_i
+    \end{cases} $$
+    -   引入是证据势函数可以 **将推断过程中证据变量取值操作转化为求和（边缘化）操作**
+        $$\begin{align*}
+        P(x_i = \bar x_i, x_j) &= \sum_{x_i} P(x_i, x_j) \sigma(x_i, \bar x_i) \\
+        P(x_i = \bar x_i | x_j) &= \sum_{x_i} P(x_i | x_j) \sigma(x_i, \bar x_i) \\
+        P(x_j | x_i = \bar x_i) &= \sum_{x_i} P(x_j | x_i) \sigma(x_i, \bar x_i)
+        \end{align*}$$
+        -   即，取值固定化变量（证据变量、极大化取值变量）与边缘化变量（隐变量）形式上相同
+        -   则，条件概率查询可看作边缘概率查询，二者在计算上等价
+    -   类似的，可以定义整体证据势函数，得到求和形式的取值固定化概率、条件概率（忽略隐变量）
+        $$\begin{align*}
+        \sigma(X_E, \bar X_E) &= \prod_{x_i \in E} \sigma(x_i, \bar x_i) \\
+        P(X_F, X_E = \bar X_E) &= \sum_{X_E} P(X_F, X_E) \sigma(X_E, \bar X_E) \\
+            &= \sum_{X_E} (\prod_{i=1}^N p(x_i | x_{\pi_i}) \prod_{x_i \in E} \sigma(x_i, \bar x_i)) \\
+        P(X_F | X_E = \bar X_E) &= \frac {P(X_F, X_E = \bar X_E)} {P(X_E = \bar X_E)} \\
+            &= \frac {\sum_{X_E} P(X_F, X_E) \sigma(X_E, \bar X_E)}
+                {\sum_{X_F} \sum_{X_E} P(X_F, X_E) \sigma(X_E, \bar X_E)}
+        \end{align*}$$
+    -   对无向图，类似的加入证据势函数，得到求和形式的取值固定化联合概率
+        $$\begin{align*}
+        P(X_F, X_E = \bar X_E) &= \frac 1 {Z^E} \sum_{X_E} (
+            \prod_{C \in e} \psi_{X_C}(X_C)
+            \prod_{x_i \in E} \sigma(x_i, \bar x_i))
+        \end{align*}$$
+
+> - 8.模型推断：消元法：<https://www.zhangzhenhu.com/probability_model/8.%E6%B6%88%E5%85%83%E6%B3%95.html>
+
+####    消元法
+
+-   消元法：按一定顺序消去联合概率分布中非目标随机变量，得到目标概率分布
+    -   消元法步骤
+        -   选择消元顺序 $I$，目标节点 $X_F$ 位于最后
+        -   将所有势函数（局部概率分布）、证据势函数加入激活列表
+        -   按顺序消去 $I$ 中节点
+            -   对节点 $i$，选择激活列表中所有包含 $x_i$ 因子 $\psi_{\cdots, i, \cdots}$
+            -   在因子乘积上对 $x_i$ 求和进行消除，得到中间因子 $m_i(\cdot)$ 加入激烈列表
+            -   注意：**中间因子 $m_i(\cdot)$ 包含所有与 $x_i$ 相关、尚未消除随机变量**
+    -   消元法的效率依赖于消元顺序的选择
+        -   包含大量随机变量的中间因子 $m_i(\cdot)$ 将导致计算复杂
+        -   一般的，优先消去证据变量、最后消去目标变量（若需归一化）
+        -   对树结构概率图，按每次（先）均消除叶子节点顺序
+            -   则，中间因子 $m_i(\cdot)$ 只涉及两个随机变量：待消除随机变量、父节点
+            -   即，$m_i(\cdot)$ 消元后只包含父节点
+
+> - 9.和积算法：9.2 从消元法到信息传播：<https://www.zhangzhenhu.com/probability_model/9.%E5%92%8C%E7%A7%AF%E7%AE%97%E6%B3%95_lecture_8.html#id2>
+> - 概率图模型（三）：精确推理（变量消元/团树传播/信念传播/二值图切法）：<https://zhuanlan.zhihu.com/p/365538673>
+
+####    树概率图模型
+
+-   （无向）树：任意两节点间有且仅有一条 *路径* 的无向图
+    -   树概率图中 **只有两节点、单节点组成的团**，则其联合概率分布可如下表示
+        $$\begin{align*}
+        P(X) &= \frac 1 Z \prod_{i \in V} \psi_i(x_i) \prod_{(i,j) \in E} \psi_{ij}(x_i, x_j) \\
+        P(X_F | X_E = \bar X_E) & = \frac 1 {Z^E} \prod_{i \in V}
+            \psi_i^E(x_i) \prod_{(i,j) \in E} \psi_{i,j}(x_i, x_j)
+        \end{align*}$$
+    -   有向树：道德图为树的有向图，即仅有一个根节点、且根节点外的节点有且只有一个父节点
+        $$ P(X) = P(x_{root}) \prod_{(i,j) \in E} P(x_j | x_i) $$
+        -   任意无向树可以转换为又向树：任意选择节点作为根节点、无向边改为根节点向外扩散的有向边
+        -   有向树、无向树概率图模型在表达、推断方面无显著差异
+            -   有向树和由其转化的无向树有相同的条件独立性
+            -   即，二者联合概率分布的因子化分解本质上一样
+    -   对树概率图中概率推断
+        -   将目标节点作为根节点，从叶子节点逐层消元直至根节点即可得到目标节点边缘概率（条件概率）
+
+> - 9.加和乘积算法：<https://www.zhangzhenhu.com/probability_model/9.%E5%92%8C%E7%A7%AF%E7%AE%97%E6%B3%95_lecture_8.html>
+
+### *Belief Propagtion*、*Sum-Product Algorithm*
+
+-   *Belief Propagtion* 信念传播算法、和积算法：复用节点间信息（消元后中间因子），降低多次求解边缘概率分布时的计算量（**动态规划思想**）
+    -   信息传播协议：节点可以向某个邻居发送消息当且仅当收到其他所有邻居节点消息
+        ![pgm_bg_message_transmission](imgs/pgm_bg_message_transmission.png)
+        -   $x_j$ 向 $x_i$ 消息：（通过求和）消去节点 $x_j$ 前序邻居节点（随机变量）、及自身的中间因子 $m_{ji}(x_i, \cdots)$
+        -   每条边会有往返两次消息，需要分别计算
+        -   树结构概率模型为确保双向信息均被计算
+            -   并行计算：检查节点 $x_i$ 的全部 $d_i$ 边，收到任意 $d_i-1$ 条边信息后即向节点发送信息，直至所有向所有节点发送信息
+            -   串行计算：选定根节点，一阶段从叶子节点出发计算到根节点，二阶段从根节点出发反向计算
+
+-   和积算法只适用于树形结构概率图
+    -   无向（图）树、有向树思路类似
+        $$ m_{ji}(x_i) = \sum_{x_j} (\psi_j(x_j) \psi_{ij}(x_i, x_j) \prod_{k \in N(j) \setminus i} m_{kj}(x_j)) $$
+        > - $N(j)$：节点 $x_j$ 的邻接节点
+        > - $m_{kj}$: 节点 $x_k$ 向 $x_j$ 传递的信息（中间因子函数）
+        -   消息 $m_{ji}(x_i)$ 为子节点 $x_j$ 向父节点 $x_i$ 传递的信息（中间因子函数）
+    -   因子（图）树：忽略因子节点、变量节点差别，若形成得无向图为无向树，则因子图为因子树
+        $$\begin{align*}
+        m^{VF}_{ij}(x_j) &= \prod_{k \in N(j) \setminus i} m^{FV}_{ki}(x_i) \\
+        m^{FV}_{ji}(x_i) &= \sum_{N(j) \setminus i} (f_j(N(j)) \prod_{k \in N(j) \setminus i} m^{VF}_{kj}(x_k))
+        \end{align*}$$
+        > - $N(i)$：节点 $i$ 的邻接节点
+        > - $m^{VF}_{ij}, m^{FV}_{ji}$：变量节点 $i$、因子节点 $j$ 之间传递的信息
+        -   变量向因子消息 $m^{VF}_{ij}$ 中，仅将变量节点 $x_i$ 收到的消息连乘，**但并未求和消去 $x_i$**
+        -   而，因子向变量消息 $m^{FV}_{ji}$中，将因子节点 $x_j$ 势函数、邻接变量节点消息乘积中统一消去 $N(j) \setminus i$
+            -   即，因子节点充当中介汇总多变量节点消息、因子势函数
+            -   并，传递消息前集中消去 “下层” 邻接节点
+        -   事实上，
+    -   类树结构图：若无向图极大团最多共享 1 个节点，则其可转换为树形结构的因子图，可应用和积算法
+        ![pgm_mrf_to_factor_graph_tree](imgs/pgm_mrf_to_factor_graph_tree.png)
+        -   无向图的势函数因子化方案有多种，即转换后因子图有多种，是否为树结构依赖因子化方案
+    -   多重树同样可以转换为树形结构的因子图，并应用和积算法
+        ![pgm_poly_tree_to_factor_graph_tree](imgs/pgm_poly_tree_to_factor_graph_tree.png)
+
+> - *Polytree* 多重树：存在有多个父节点的有向无环图
+> - 9.加和乘积算法：<https://www.zhangzhenhu.com/probability_model/9.%E5%92%8C%E7%A7%AF%E7%AE%97%E6%B3%95_lecture_8.html>
+> - *Belief Propagation* 算法学习笔记：<https://zhuanlan.zhihu.com/p/589477908>
+> - 概率图模型（三）：精确推理（变量消元/团树传播/信念传播/二值图切法）：<https://zhuanlan.zhihu.com/p/365538673>
+> - 概率图模型（四）：近似推理（BP算法/图切法）：<https://zhuanlan.zhihu.com/p/367680209>
+
+##  *Latent Variables* 隐变量问题
+
+```mermaid
+graph LR
+    Z((Z)) ----> X((X))
+    theta(("$$\theta$$")) ----> Z
+    theta ----> X
+```
+> - $X,Z,\theta$：分别为观测结果、隐变量、待求解参数
+
+-   含隐变量问题可简化为求解三节点 $X,Z,\theta$ 构成的三角形贝叶斯网络中的推断问题
+    -   参数最大后验估计 $\arg\max_{\theta} P(X;\theta)$
+        $$\begin{align*}
+        l(\theta;X) &= log P(X;\theta) \\
+            &= log \sum_Z P(X,Z;\theta) \\
+            &= log \sum_Z P(X|Z;\theta) P(Z;\theta) \\
+        \end{align*}$$
+        > - $X,Z,\theta$：证据变量（样本点取值）、隐变量、待估计参数
+        -   显然，模型变量都是 *Observable Variable*、给定数据情况下，可以直接使用 *MLE*、*MAP* 求参数
+        -   但贝叶斯估计思路，利用全概率公式消去隐变量 $Z$ （即计算在隐变量条件分布下期望）后
+            -   形如 $log \sum_Z p(\cdots,\theta)$ 结构难以计算对参数 $\theta$ 的梯度解析式
+        -   即，对含有隐变量问题，*MLE* 可能无法计算参数解析形式的最优解
+            -   当然，可考虑使用 *SGD* 方法迭代求解
+            -   或者，考虑对数似然函数 $l(X;\theta)$ 的变换（*EM* 算法）
+    -   条件分布推断 $P(Z|X;\theta)$
+        $$\begin{align*}
+        P(Z|X;\theta) &= \frac {P(Z,X;\theta)} {P(X;\theta)} \\
+            &= \frac {P(Z,X;\theta)} {\sum_Z P(X|Z;\theta) P(Z;\theta)} \\
+        \end{align*}$$
+        -   按频率学派 $\theta$ 为固定值、且 $P(Z;\theta)$ 形式已知，则问题即参数最大后验估计
+        -   按贝叶斯学派 $\theta$ 为随机变量、或 $P(Z;\theta)$ 形式未知，考虑变分法求解
+            -   构造分布 $P(Z;\psi)$ 拟合 $P(Z|X;\theta)$
+            -   用 $KL(P(Z;\psi)||P(Z|X))$ 评估分布差异、**作为优化目标**
+
+> - 高斯混合模型 （GMM）：宝宝级教程：<https://zhuanlan.zhihu.com/p/655018030>
+> - 次梯度法解决高斯混合模型问题：<https://juejin.cn/post/7321779046615711771>
+
+### *Expectation Maximization*
+
+$$\begin{align*}
+l(\theta) & = log P(X;\theta) \\
+    & = log \sum_Z P(Z,X;\theta) \\
+    & = log \sum_Z P(X|Z,\theta) P(Z;\theta)
+\end{align*}$$
+> - $Y,Z$：观测变量、隐随机变量，合称为完全数据
+
+-   *EM* 算法：优化 *Q 函数* 以极大化（对数）似然在隐变量下的期望 $l(\theta;X)$，以估计参数
+    -   目标：极大化观测数据（不完全数据）$Y$ 关于参数 $\theta$ 的对数似然函数
+        -   模型含有 *Latent Variable*、*Hidden Variable*，似然函数将没有解析解，需迭代求解
+            -   *Expection* 步：估计缺失值分布、缺失值分布下似然函数期望，构造、计算 *Q* 函数
+            -   *Maximization* 步：求解极大化 *Q* 函数更新参数 $\theta$
+        -   通过极大化 *Q* 函数（似然函数的一个下界）间接优化似然函数
+    -   算法特点
+        -   参数估计结果依赖初值，不够稳定，不能保证找到全局最优解
+        -   非常简单，稳定上升的步骤能非常可靠的找到较优估计值
+        -   应用广泛，能应用在多个领域中
+            -   生成模型的非监督学习
+        -   计算复杂、收敛较慢，不适合高维数据、大规模数据集
+
+> - 【机器学习】EM——期望最大：<https://zhuanlan.zhihu.com/p/78311644>
+> - 证据下界、*EM* 算法、变分推断、变分自编码器、混合高斯模型：<https://zhuanlan.zhihu.com/p/685814830>
+> - *EM* 算法及其推广：<https://www.cnblogs.com/eryoyo/p/16772757.html>
+> - 高斯混合模型 （GMM）：宝宝级教程：<https://zhuanlan.zhihu.com/p/655018030>
+
+####    *Q 函数*
+
+-   *Q 函数*：*EM* 算法中替代对数似然函数的优化目标
+    -   变换 $l(\theta;X)$ 得到其的一个下界 $B(\theta;\theta^{(t)})$（也即 *ELBO*）
+        $$\begin{align*}
+        l(\theta;X) &= log P(X;\theta) \\
+            &= log \int_Z P(Z,X;\theta) dZ \\
+            &= log \int_Z P(Z|X;\theta^{(t)}) \frac {P(Z,X;\theta)} {P(Z|X;\theta^{(t)})} dZ \\
+            &\geq \int_Z P(Z|X;\theta^{(t)}) log \frac {P(Z,X;\theta)} {P(Z|X;\theta^{(t)})} dZ \\
+            &= \int_Z P(Z|X;\theta^{(t)}) log P(Z,X;\theta) dZ
+                - \int_Z P(Z|X;\theta^{(t)}) log P(Z|X;\theta^{(t)}) dZ \\
+            &= E_{P(Z|X;\theta^{(t)})} log P(Z,X;\theta) - E_{P(Z|X;\theta^{(t)})} log P(Z|X;\theta^{(t)}) \\
+            &=: B(\theta;\theta^{(t)}) \\
+        \end{align*}$$
+        > - $\theta, \theta^{(t)}$：待估计参数（真值、待求解）、第 $t$ 轮迭代过程参数估计值（已估计值）
+        -   利用 *Jensen 不等式* 放缩对数似然函数，**以交换 $log,\sum$ 位置，降低求解难度**
+        -   下界 $B(\theta;\theta^{(t)})$ 在作为优化目标的同时，引入迭代过程中参数估计值 $\theta^{(t)}$
+    -   考虑优化 $B(\theta;\theta^{(t)})$ 替代优化原对数似然
+        $$\begin{align*}
+        \theta^{*} &= \arg\max_{\theta} B(\theta;\theta^{(i)}) \\
+            &= \arg\max_{\theta} \int_Z P(Z|X;\theta^{(t)}) log P(Z,X;\theta) dZ
+                - \int_Z P(Z|X;\theta^{(t)}) log P(Z|X;\theta^{(t)}) dZ \\
+            &= \arg\max_{\theta} \int_Z P(Z|X;\theta^{(t)}) log P(Z,X;\theta) dZ \\
+            &=: \arg\max_{\theta} Q(\theta, \theta^{(i)}) \\
+        \end{align*}$$
+        -   舍去下界 $B(\theta;\theta^{(t)})$ 中无关常数，即得到真正待优化目标 $Q(\theta;\theta^{(i)})$
+        -   *Q 函数* 即完全数据的对数似然函数 $log P(Z,X;\theta)$ 在隐变量条件分布 $P(Z|X;\theta^{(t)})$ 的期望
+
+> - 不按 *VI* 中 *KL 散度* 思路，*EM* 推导过程中引入 $P(Z|X;\psi)$ 并利用 *Jensen 不等式* 得到下界比较突然，但似乎原算法即如此
+
+#####   *Q 函数* 性质
+
+-   定理1：考虑 $\theta^{t},t=0,\cdots$ 为使得 $Q(\theta{(t+1)};\theta^{(t)}$ 上升的序列，则 $l(\theta^{(t)}) = log P(X;\theta^{(t)})$ 是上升的
+    -   由 *Q 函数*、*Jensen 不等式* 易证
+        $$\begin{align*}
+        0 &\leq Q(\theta^{(t+1)};\theta^{(t)}) - Q(\theta^{(t)};\theta^{(t)}) \\
+            &= \int_Z P(Z|X;\theta^{(t)}) log \frac {P(Z,X;\theta^{(t+1)})} {P(Z,X;\theta^{(t)})} dZ \\
+            &\leq log \int_Z P(Z|X;\theta^{(t)}) \frac {P(Z,X;\theta^{(t+1)})} {P(Z,X;\theta^{(t)})} dZ \\
+            &= log \int_Z \frac {P(Z,X;\theta^{(t+1)})} {P(X;\theta^{(t)})} dZ \\
+            &= log \int_Z \frac {P(Z,X;\theta^{(t+1)})} {P(X;\theta^{(t)})} dZ \\
+            &= log \int_Z P(Z,X;\theta^{(t+1)}) dZ - log P(X;\theta^{(t)}) \\
+            &= log P(X;\theta^{(t+1)}) - log P(X;\theta^{(t)}) \\
+        \end{align*}$$
+    -   即，对 *ELBO* 极大化同样能极大化对数似然
+        -   显然，若 $l(\theta^{(t)})$ 有上界，则收敛至定值 $l^{*}$
+        -   另外，满足一定条件下，$\theta^{(t)}$ 的收敛值 $\theta^{*}$ 是 $l(\theta)$ 的稳定点（未证明）
+        -   但，也只能保证 $\theta^{(t)}$ 收敛只 $l(\theta)$ 稳定点，**而不是极大点**，可以选择多个初值迭代选择其中最优者
+
+####    *EM 算法* 步骤
+
+-   *EM* 算法步骤
+    -   初始化：参数 $\theta$，轮次 $t=0$
+    -   若 $\theta^{(t)} 未收敛
+        -   *E 步*：计算 *Q 函数* $Q(\theta;\theta^{(t)}) = \int_Z P(Z|X;\theta^{(t)}) log P(Z,X;\theta) dZ$
+        -   *M 步*：极大化化 *Q 函数* 求解参数值 $\theta^{(t+1)} = \arg\max_{\theta} Q(\theta;\theta^{(t)})$
+            -   直接求解：对 *GMM* 等问题，可直接求出 $\theta^{(t+1)}$ 解析解，带入求值即可
+            -   *ADMM*：假设参数各分量不相关，逐个优化各分量 $\theta_i^{(t+1)}$
+            -   次优解替代最优解：*Q 函数* 保证若 $Q(\theta^{(t+1)};\theta^{(t)}) > Q(\theta^{(t)},\theta^{(t)})$，则对数似然也上升
+
+####    *Gaussion Mixture Model*
+
+$$\begin{align*}
+P(X;\theta) &= \sum_{k=1}^K \alpha_k \phi(X;\mu_k,\sigma_k) \\
+\end{align*}$$
+> - $\alpha_k \geq 0, \sum_{k=1}^K \alpha_k=1$：从各高斯分布抽样概率的权重系数
+> - $\theta_k=(\alpha_k, \mu_k, \sigma_k)$：第 $k$ 个高斯分布权重、均值、标准差
+> - $\phi(y;\theta_k)$：高斯分布概率密度函数
+
+-   *GMM* 高斯混合模型：以固定概率 $\alpha_k$ 从 $K$ 个不同高斯分布抽样
+    -   *GMM* 即含有隐变量的概率图模型
+        -   证据（观测）变量：$x_j, j=1,\cdots,N$ 抽样结果（样本取值）
+        -   隐变量：$\gamma_j,j=1,\cdots,N$ 样本抽样所属的高斯分布
+        -   模型参数：$\theta=(\alpha_1,...,\alpha_2,\theta_1,...,\theta_K)$ 各高斯分布均值、标准差、抽样权重
+    -   *EM* 算法可估计 *GMM* 参数 $\theta=(\alpha_1,...,\alpha_2,\theta_1,...,\theta_K)$，类似 *K-Means* 算法
+        -   *E* 步类似于 *K-Means* 中计算各点和各聚类中心之间距离
+            -   *K-Means*：计算样本点、聚类中心距离，将点归类为离其最近类
+            -   *EM*：（等价于）计算样本点抽样自各高斯分布的期望
+        -   *M* 步类似于 *K-Means* 中根据聚类结果更新聚类中心
+            -   *K-Means*：重新计算样本点、聚类中心距离，将点归类为离其最近类
+            -   *EM*：更新参数
+    -   带入数据点即有
+        $$\begin{align*}
+        \gamma_{j,k} &= \left \{ \begin{array}{l}
+                1, & 第j个观测来自第k个分模型 \\
+                0, & 否则
+            \end{array} \right. \\
+        p(y,\gamma|\theta) & = \prod_{j=1}^N p(y_j,\gamma_{j,1},\cdots,\gamma_{j,N}|\theta) \\
+            & = \prod_{k=1}^{K} \prod_{j=1}^N [\alpha_k \phi(y_j|\theta_k)]^{\gamma_{j,k}} \\
+            & = \prod_{k=1}^{K} \alpha_k^{n_k} \prod_{j=1}^N [\phi(y_j|\theta_k)]^{\gamma_{j,k}} \\
+        log p(y, \gamma|\theta) &= \sum_{k=1}^K \left \{
+            n_k log \alpha_k + \sum_{j=1}^N \gamma_{j,k}
+            [log \frac 1 {\sqrt {2\pi}} - log \sigma_k - \frac 1 {2\sigma_k}(y_j - \mu_k)^2]
+            \right \}
+        \end{align*}$$
+        > - $j=1,2,\cdots,N$：观测编号
+        > - $k=1,2,\cdots,K$：高斯分布编号
+        > - $n_k = \sum_{j=1}^{N} \gamma_{j,k}$
+        > - $\sum_{k=1}^K n_k = N$
+
+> - 次梯度法解决高斯混合模型问题：<https://juejin.cn/post/7321779046615711771>
+> - *EM* 算法及其推广：<https://www.cnblogs.com/eryoyo/p/16772757.html>
+> - 高斯混合模型 （GMM）：宝宝级教程：<https://zhuanlan.zhihu.com/p/655018030>
+> - 如何简单易懂的理解变分推断：<https://www.jianshu.com/p/99d2b3183a10>
+
+#####   *EM 算法 E 步*
+
+-   *E 步*：确定 *Q 函数*
+    -   由 *Q* 函数定义
+        $$\begin{align*}
+        Q(\theta, \theta^{(i)}) & = E_{P(Z|Y,\theta^{(i)})} logP(y,\gamma|\theta) \\
+            & = E \sum_{k=1}^K \left \{ n_k log\alpha_k + \sum_{j=1}^N \gamma_{j,k}
+                [log \frac 1 {\sqrt {2\pi}} - log \sigma_k - \frac 1 {2\sigma_k}(y_j - \mu_k)^2] \right \} \\
+            & = \sum_{k=1}^K \left \{ \sum_{k=1}^K (E\gamma_{j,k}) log\alpha_k + \sum_{j=1}^N (E\gamma_{j,k})
+                [log \frac 1 {\sqrt {2\pi}} - log \sigma_k - \frac 1 {2\sigma_k}(y_j - \mu_k)^2] \right \} \\
+        E\gamma_{j,k} &= E(\gamma_{j,k}|y,\theta)
+        \end{align*}$$
+    -   记 $\hat \gamma_{j,k} = E\gamma_{j,k}$
+        $$\begin{align*}
+        \hat \gamma_{j,k} & = E(\gamma_{j,k}|y,\theta) = P(\gamma_{j,k}|y,\theta) \\
+            & = \frac {P(\gamma_{j,k}=1, y_j|\theta)} {\sum_{k=1}^K P(\gamma_{j,k}=1,y_j|\theta)} \\
+            & = \frac {P(y_j|\gamma_{j,k}=1,\theta) P(\gamma_{j,k}=1|\theta)} {\sum_{k=1}^K
+                P(y_j|\gamma_{j,k}=1,\theta) P(\gamma_{j,k}|\theta)} \\
+            & = \frac {\alpha_k \phi(y_j|\theta _k)} {\sum_{k=1}^K \alpha_k \phi(y_j|\theta_k)}
+        \end{align*}$$
+    -   带入可得
+        $$
+        Q(\theta, \theta^{(i)}) = \sum_{k=1}^K \left\{
+            n_k log\alpha_k + \sum_{j=1}^N \hat \gamma_{j,k}
+            [log \frac 1 {\sqrt{2\pi}} - log \sigma_k - \frac 1 {2\sigma^2}(y_j - \mu_k)^2]
+        \right \}
+        $$
+
+#####   *EM 算法 M 步*
+
+-   *M* 步：求新一轮模型参数 $\theta^{(i+1)}=(\hat \alpha_1,...,\hat \alpha_2,\hat \theta_1,...,\hat \theta_K)$
+    $$\begin{align*}
+    \theta^{(i+1)} &= \arg\max_{\theta} Q(\theta,\theta^{(i)}) \\
+    \hat \mu_k &= \frac {\sum_{j=1}^N \hat \gamma_{j,k} y_j} {\sum_{j=1}^N \hat \gamma_{j,k}} \\
+    \hat \sigma_k^2 &= \frac {\sum_{j=1}^N \hat \gamma_{j,k} (y_j - \mu_p)^2} {\sum_{j=1}^N \hat \gamma_{j,k}} \\
+    \hat \alpha_k &= \frac {n_k} N = \frac {\sum_{j=1}^N \hat \gamma_{j,k}} N
+    \end{align*}$$
+    > - $\hat \theta_k = (\hat \mu_k, \hat \sigma_k^2)$：直接求偏导置 0 即可得
+    > - $\hat \alpha_k$：在$\sum_{k=1}^K \alpha_k=1$ 条件下求偏导置 0 求得
+
+### *Variation Inference*
+
+$$\begin{align*}
+q^{*}(z) &= \arg\min_{q(z) \in Q} KL(q(z) || p(z|x)) \\
+KL(q(z)||p(z|x)) &= E_q log q(z) - E_q log p(z|x) \\
+    &= E_q log q(z) - E_q log p(z,x) + E_q log p(x) \\
+    &= E_q log q(z) - E_q log p(z,x) + log p(x) \\
+    &=: log p(x) - ELBO(q) \geq 0 \\
+\end{align*}$$
+> - $p(z|x), z, x$：目标条件概率分布函数、隐变量、证据变量（观测结果）（省略参数变量）
+> - $q(z), Q$：期望贴合 $p(z|x)$ 的拟合分布（省略参数变量）、变分（概率密度）函数族
+> - $E_q(\cdot) = \int_z q(z)\cdot dz$：对拟合分布 $q(z)$ 的期望
+> - $ELBO(q) \leq log p(x)$：*Evidence Lower Bound* 证据（$p(x)$）下界
+> - 为突出重点，此处所有分布以函数形式而非概率分布表示，并省略变分参数
+
+-   *Variation Inference* 变分推断：构建概率密度函数族，利用最优化方法（**迭代更新**）、根据 *KL散度* 从中选择最接近分布，近似估计目标
+    -   变分：**自变量函数** 的微小扰动带来的变化，微分概念在泛函上的推广
+        -   即，以函数作为待优化自变量
+    -   变分（概率密度）函数族 **形式应已知、简单**（假设、限制越多、越强，模型误差越大）
+        -   常为（假设）*Mean-Field Variational Family* 平均场变分函数族
+            $$ q(z) = \prod_{j=1}^J q_j(z_j) $$
+            -   即，隐变量之间相互独立，仅由其自身变分因子 $q_j(z_j)$ 决定
+            -   此时，可考虑使用坐标下降（上升）法按轮次优化 $q_j$
+        -   变分函数族具体形式取决于目标分布 $p(z|x)$
+        -   注意：变分函数族本身不涉及证据变量 $x$，仅用于拟合目标条件分布 $p(z|x)$，并由此关联至相关数据、模型
+    -   *KL-散度* $KL(q(z) || p(z|x))$ 度量分布之间差异
+        -   *KL-散度* 非对称，$q(z)$ 作为积分项而不是 $p(z|x)$ 可简化问题（即顺序不应交换）
+        -   但，**其中 $log p(x) = \int_z p(z|x) p(z)$ 难以计算，故考虑极大化 $ELBO(q)$**
+            -   高维积分数值计算复杂
+            -   $p(x|z),p(z)$ 形式复杂导致积分没有闭式解，$p(x,z)$ 相对而言计算简单
+            -   蒙特卡罗等数值模拟近似积分计算成本高
+
+![vi_inference_into_optimization](imgs/vi_inference_into_optimization.png)
+
+> - *Variational Inference: A Review for Statisticians*：<https://arxiv.org/abs/1601.00670>
+> - 黑盒变分推断简介：<https://zhuanlan.zhihu.com/p/66551277>
+> - 变分推断——深度学习第十九章：<https://zhuanlan.zhihu.com/p/49401976>
+> - 变分推断 variational inference：<https://zhuanlan.zhihu.com/p/51567052>
+> - 变分推断：<https://www.zhihu.com/question/41765860>
+> - *Understanding Diffusion Models: A Unified Perspective*：<https://arxiv.org/pdf/2208.11970>
+> - 变分推断：<https://www.yuque.com/bystander-wg876/yc5f72/eh602n>
+
+####    *ELBO*
+
+$$\begin{align*}
+ELBO(q) &= E_q log p(z,x) - E_q log q(z) \\
+    &= lop p(x) - KL(q(z) || p(z|x)) \leq log p(x) \\
+    &= E_q log p(x|z) + E_q log p(z) - E_q log q(z) = E_q log p(x|z) - KL(q(z) || p(z)) \\
+\end{align*}$$
+
+-   *ELBO* 含义：（变分推断问题中）由 $KL(q(z) || p(z|x))$ 变换得到 *ELBO* 最自然，同时
+    -   $ELBO(q) = lop p(x) - KL(q(z) || p(z|x)) \leq log p(x)$ 是对数似然 $log p(x)$ 的下界
+        -   则，极大化 *ELBO* 的优化可视为极大化对数似然 $log p(x)$，且同时减少变分、目标条件分布差异 $KL(q(z) || p(z|x))$
+        -   即，可将 $ELBO(q)$ 作为优化目标
+        -   事实上，直接从 $log p(x)$ 出发应用 *Jensen 不等式* 即可证明（也是最初变分推断的思路）
+            $$\begin{align*}
+            log p(x) &= log \int_z p(z,x) dz \\
+                &= log \int_z q(z) \frac {p(z,x)} {q(z)} dz \\
+                &\geq \int_z q(z) log \frac {p(z,x)} {q(z)} \\
+                &= E_q log \frac {p(z,x)} {q(z)} = ELBO(q) \\
+            \end{align*}$$
+        -   且，直接从 $log p(x)$ 出发更灵活，进一步，可给出负交叉熵 $-H(q(x), p(x))$ 的下界
+            $$\begin{align*}
+            log p(x) &= log \int_z p(z,x) dz \\
+                &\geq \int_z q(z|x) log \frac {p(z,x)} {q(z|x)} \\
+                &= E_{q(z|x)} log \frac {p(z,x)} {q(z|x)} \\
+            -H(q(x), p(x)) &= E_{q(x)} log p(x) \\
+                &\geq E_{q(x)} (E_{q(z|x)} log \frac {p(z,x)} {q(z|x)}) \\
+                &= E_{q(z,x)} log \frac {p(z,x)} {q(z|x)} \\
+            \end{align*}$$
+    -   $ELBO(q) = E_q log p(x|z) - KL(q(z) || p(z))$：拟合分布 $q(z)$ 下的对数条件似然 $log p(x|z)$ 的期望
+        -   $E_q log p(x|z)$：对数条件似然在拟合分布 $q(z)$ 下的期望，体现隐变量 $z$ 对证据变量 $x$ 的解释程度
+        -   $KL(q(z) || p(z))$：变分 $q(z)$ 与先验 $p(z)$ 的差异
+    -   $ELBO(q) = E_q log p(z,x) - E_q log q(z)$：*EM* 算法中待优化的完全对数似然
+        -   $q(z)$ 即对应 *EM* 算法中前一轮迭代结果 $p(z|x;\theta^{(t)})$
+        -   相较于变分推断，*EM* 算法 **假定 $p(z|x)$ 是形式已知、可计算的**
+            -   *E-Step* 中期望 $E_{p(z|x)} log p(x,z)$ 要求 $p(z|x)$ 可计算
+            -   并在 *M-Step* 中最大化完全对数似然，以估计（经典）参数（公式中未体现）
+        -   变分推断适合隐变量无法精确计算条件分布 $p(z|x)$ 场合
+            -   按贝叶斯学派观点，（经典）参数被视为隐变量（$z$ 的一部分）
+            -   即，$p(z|x)$ 无法精确计算，故需要从变分函数族中选择 $q(z)$ 拟合
+
+> - *细说 ELBO*：<https://zhuanlan.zhihu.com/p/1900299484749072056>
+> - *Variational Inference: A Review for Statisticians*：<https://arxiv.org/abs/1601.00670>
+> - 变分推断——深度学习第十九章：<https://zhuanlan.zhihu.com/p/49401976>
+> - *Understanding Diffusion Models: A Unified Perspective*：<https://arxiv.org/pdf/2208.11970>
+
+#####   *Free Energy、F 函数*
+
+$$ F(q,\theta) = E_q log p(z,x,\theta) - E_q log q(z) $$
+> - $p(z,x,\theta) = P(Z,X;\theta)$：完全数据联合分布
+> - 将参数 $\theta$ 带入 *ELBO* 并定义为 *F 函数*，**并假设 *F 函数* 为连续函数**
+
+-   定理：对于固定 $\theta$，存在唯一分布 $q_{\theta}(z) = P(Z|X;\theta)$ 极大化 $F(q,\theta)$，并且 $q_{\theta}$ 随 $\theta$ 连续变化
+    -   证明逻辑（$X,\theta$ 都是确定值）
+        -   对于固定的 $\theta$，求使得 $F(q, \theta)$ 的极大，构造 *Lagrange* 函数
+            $$ L(q, \lambda, \mu) = F(q, \theta) + \lambda(1 - \sum_z q(z)) - \mu q(z) $$
+            -   其中 $q(z)$ 为概率密度函数，自然包含两个约束
+        -   对 $q(z)$ 求偏导，得
+            $$ \frac {\partial L} {\partial q(z)} = log P(Z,X;\theta) - log q(z) - 1 - \lambda - \mu $$
+            置偏导为 0，有
+            $$\begin{align*}
+                log P(Z,X;\theta) - log q(z) & = \lambda + \mu + 1 \\
+                \frac {P(Z,X;\theta)} {q(z)} & = e^{\lambda + \mu + 1}
+            \end{align*}$$
+        -   则使得 $F(q, \theta)$ 极大的 $q_{\theta}(z)$ 应该和 $P(Z,X;\theta)$ 成比例，由概率密度自然约束有
+            $$ q_{\theta}(z) = P(Z|X;\theta) $$
+            而由假设条件，$P(Z|X;\theta)$ 是 $\theta$ 的连续函数
+    -   另，带入 $q(z) = P(Z|X;\theta)$ 有 $ F(q,\theta) = log P(X;\theta) = l(\theta;X) $，则
+        -   若 $F(q,\theta)$ 在 $q^{*}, \theta^{*}$ 上有局部极大值，则 $l(\theta)$ 在 $\theta^{*}$ 也有局部最大值
+        -   若 $F(q,\theta)$ 在 $q^{*}, \theta^{*}$ 达到全局最大，则 $l(\theta)$ 在 $\theta^{*}$ 也达到全局最大
+
+#####   *Generalizad EM*
+
+-   *GMM* 广义期望最大算法：两步极大化 *F* 函数
+    -   *EM 算法* 可视为 *GMM 算法* 特例：可由 *F 函数* 的 **两步最大化** 达到
+        -   固定 $\theta^{(t)}$，最大化 $q^{(t+1)}(z) = \arg\max_q F(q,\theta^{(t)}) = P(Z|X;\theta^{(t)})$
+            -   对应 *EM 算法 E 步*：构造 *Q 函数*
+            -   $q^{(t+1)}$ 带入即得目标函数 $F(q^{(t+1)},\theta)$
+        -   固定 $q^{(t+1)}(z)$，最大化 $\theta^{(t+1)} = \arg\max_{\theta} F(q^{(t+1)},\theta) = \arg\max_{theta} Q(\theta,\theta^{(t)})$
+            -   对应 *EM 算法 M 步*：极大化 *Q 函数*
+
+####    *Coordinate Ascent Variational Inference*
+
+$$\begin{align*}
+ELBO(q_j) &= E_{q_j} (E_{q_{-j}} log p(z_j, z_{-j}, x)) - E_{q_j} log q_j(z_j) + const \\
+q_j^{*}(z_j) &= e^{E_{q_{-j}} log p(z_j, z_{-j}, x)} \\
+    &\propto e^{E_{q_{-j}} log p(z_j | z_{-j}, x)} \\
+\end{align*}$$
+> - $ELBO(q_j)$：固定其余隐变量，仅考虑当前待优化隐变量因子 $q_j$ 时证据下界
+> - $E_{q_j}, E_{q_{-j}}$：变分因子 $q_j$下的期望、除变分因子 $q_j$ 外其他变分因子下的期望
+> - $const$：不含有 $q_j$ 的常量
+> - $q_j^{*}(z_j)$：隐变量因子 $q_j$ 当前步优化结果
+
+-   *CAVI* 坐标上升变分推断：依次固定其余隐变量仅优化单个隐变量 $q_j$ 直至收敛
+    -   *CAVI* 仅适合平均场变分函数族作为拟合分布族的问题
+        -   此时，待优化变分因子之间无关，适合用坐标方法独立优化
+    -   算法步骤
+        -   初始化：变分因子 $q_j^{(0)}, j=1,\cdots,J$，轮次 $t=0$
+        -   若 $ELBO(q^{(t)})$ 未收敛
+            -   依次优化变分因子 $q_j^{(t)}$，取
+                $$ q_j^{(t+1)} \propto e^{E_{q_{-j}} log p(z_j | z_{-j}, x)} $$
+            -   计算 $ELBO(q^{(t+1)}) = E_q log p(z,x) - E_q log q^{(t+1)}(z)$
+
+> - *Variational Inference: A Review for Statisticians*：<https://arxiv.org/abs/1601.00670>
+> - 变分推断：<https://www.jianshu.com/p/b8ecabf9af07>
+> - 变分推断：<https://www.zhihu.com/question/41765860>
+
+####    *Black Box Variational Inference*
+
+$$\begin{align*}
+\nabla_q ELBO(q) &= \nabla_q E_q log p(z,x) - \nabla_q E_q log q(z) \\
+    &= \frac {\partial} {\partial q} \int_z q(z) (log p(z,x) - log q(z)) dz \\
+    &= \int_z \frac {\partial} {\partial q} q(z) (log p(z,x) - log q(z)) dz \\
+    &= \int_z \frac {\partial} {\partial q} q(z) (log p(z,x) - log q(z)) dz \\
+    &= \int_z (log p(z,x) - log q(z) - 1) dz \\
+    &= \int_z q(z) * \frac {\partial log q(z)} {\partial q} (log p(z,x) - log q(z) - 1) dz \\
+    &= E_q \frac {\partial log q(z)} {\partial q} (log p(z,x) - log q(z) - 1) \\
+\nabla_{\theta} ELBO(\theta) &= \nabla_q ELBO(q) * \frac {\partial q(z;\theta)} {\partial \theta} \\
+    &= E_q \frac {\partial log q(z;\theta)} {\partial \theta} (log p(z,x) - log q(z;\theta))
+        - \int_z q(z;\theta) \frac {\partial log q(z;\theta)} {\partial \theta} dz \\
+    &= E_q \frac {\partial log q(z;\theta)} {\partial \theta} (log p(z,x) - log q(z;\theta))
+        - \int_z \frac {\partial q(z;\theta)} {\partial \theta} dz \\
+    &= E_q \frac {\partial log q(z;\theta)} {\partial \theta} (log p(z,x) - log q(z;\theta))
+        - \frac {\partial \int_z q(z;\theta) dz} {\partial \theta} \\
+    &= E_q \frac {\partial log q(z;\theta)} {\partial \theta} (log p(z,x) - log q(z;\theta)) \\
+\end{align*}$$
+> - 期望形式：最后改写成期望形式，以利用采样方法计算梯度值
+> - 参数 $\theta$：前部分省略拟合分布 $q(z)$ 中参数 $\theta$，最后按链式法则乘上 $\frac {\partial q} {\partial \theta}$ 即可
+
+-   *BBVI* 黑盒变分推断：利用蒙特卡罗采样从变分分布中采样，用于估计 *ELBO* 对参数的梯度、更新参数
+    -   *EM* 算法、*CAVI* 算法等变分推断求解算法中，需给出参数的最优解解析解、带入求值
+        -   但，解析解依赖模型的条件分布、变分族
+        -   一般的，模型可能难以计算隐变量条件分布 $p(z|x)$，无法给出参数最优解的解析解
+    -   黑盒变分推断使用蒙特卡罗采样方法从变分分布中采样，用样本值直接估计 $\nabla_q ELBO(\theta)$
+        -   初始化：变分分布族 $q(z;\theta)$，轮次 $t=0$
+        -   若 $ELBO(\theta^{(t)})$ 未收敛
+            -   从变分分布 $q(z;\theta^{(t)})$ 中抽样 $Z_i \sim q(z;\theta^{(t)}), i=1, \cdots, N$
+            -   利用样本估计 $\nabla_{\theta} ELBO(\theta)$
+                $$
+                \nabla_{\theta} ELBO(\theta) \simeq \frac 1 N \sum_{i=1}^N
+                    \frac {\partial log q(Z_i;\theta)} {\partial \theta} (log p(Z_i,x) - log q(Z_i;\theta))
+                $$
+            -   更新参数 $\theta^{(t+1)} = \theta^{(t)} + \eta \nabla_{\theta} ELBO(\theta)$
+    -   黑盒变分推断问题
+        -   蒙特卡洛采样估计梯度方差较大，可能导致算法不稳定
+        -   采样数量需随参数数量增加而增加
+
+> - 黑盒变分推断简介：<https://zhuanlan.zhihu.com/p/66551277>
+> - *Black Box Variational Inference*：<https://moodle2.units.it/pluginfile.php/757740/mod_resource/content/1/Ranganath%20et%20al.%20-%202013%20-%20Black%20Box%20Variational%20Inference.pdf>（7.Appendix 部分推导过程有误）
+> - 变分推断 variational inference：<https://zhuanlan.zhihu.com/p/51567052>

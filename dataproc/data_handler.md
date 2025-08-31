@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-10 10:55:52
-updated: 2025-07-22 10:44:00
+updated: 2025-08-31 20:37:47
 toc: true
 mathjax: true
 description: 
@@ -1232,11 +1232,11 @@ IV &= \sum IV_i
 ### *Entropy*
 
 $$ \begin{align*}
-H(X) & = -E_P log P(x) \\
+H(X) & = -E_P log P(X) \\
 & = \sum_d^D P(x_d) log \frac 1 {P(x_d)} \\
 & = - \sum_d^D p_d log p_d \\
 \end{align*} $$
-> - $p_d$：随机变量各取值对应概率
+> - $p_d=P(X=x_d)$：随机变量各取值对应概率
 > - 事件 $i$ 发生概率 $p_d=0$：约定 $p_d log(p_d)$ 为 0
 > - 其中 $log$ 以 2 为底，单位为 *bit*，以 $e$ 为底，单位为 *nat*
 
@@ -1281,7 +1281,7 @@ H(X) & = -E_P log P(x) \\
     -   极值性
         -   所有符号有同等机会出现的情况下，熵达到极大（琴生不等式）
             $$\begin{align*}
-            H(X) & = E[log(\frac 1 {P(X)})] \leq log(E[\frac 1 {P(x)}]) \\
+            H(X) & = E[log(\frac 1 {P(X)})] \leq log(E[\frac 1 {P(X)}]) \\
             & = log(n)
             \end{align*}$$
         -   仅有一个符号确定出现的情况下，熵达到极小 0
@@ -1316,12 +1316,11 @@ H(X) & = -E_P log P(x) \\
 ####    *Conditinal Entropy*
 
 $$\begin{align*}
-H(Y|X) & = \sum_{i=1}^N p_i H(Y|X=x_i) \\
-H(Y|x=x_i) & = - \sum_j P(y_j|x_i) log P(y_j|x_i)
+H(Y|X) & = \sum_{i=1}^N P(X=x_i) H(Y|X=x_i) \\
+    & = - \sum_{i=1}^N P(X=x_i) (\sum_j P(Y_j|x_i) log P(Y_j|x_i)) \\
+H(Y|X=x_i) & = - \sum_{j=1}^M P(Y=Y_j|X=x_i) log P(Y=Y_j|X=x_i)
 \end{align*}$$
-> - $P(X=x_i, Y=y_j)=p_{i,j}$：随机变量 $(X,Y)$ 联合概率分布
-> - $p_i=P(X=x_i)$
-> - $H(Y|X=x_i)$：后验熵
+> - $H(Y|X=x_i)$：*Postorior Entropy* 后验熵，给定 $X=x_i$ 事实下 $Y$ 的熵
 
 -   条件熵：随机变量 $X$ 给定条件下，随机变量 $Y$ 的**条件概率分布的熵**对 $X$ 的数学期望
     -   特别的，考虑数据集 $D$ 被分为 $D_1,\cdots,D_m$，条件经验熵可计算如下
@@ -1353,57 +1352,109 @@ g(Y|X) & = H(Y) - H(Y|X) \\
     $$ g_R(Y|X) = \frac {g(Y|X)} {H(X)} $$
     -   考虑熵大小，减弱熵绝对大小的影响
 
+### *Entropy* 衍生指标
+
+$$\begin{align*}
+H(P, Q) &= - E_P log Q \\
+KL(P || Q) &= H(P, Q) - H(P) \\
+PSI &= KL(P || Q) + KL(Q || P) \\
+    &= H(P, Q) + H(Q, P) - H(P) - H(Q) \\
+\end{align*}$$
+
+-   *KL 散度*、交叉熵、*PSI* 对比
+    -   *KL 散度* 度量分布之间差异，最常用的、度量分布差异的指标
+        -   交叉熵数学上可视为 *KL 散度* 叠加（拟合）分布自身熵
+            -   若分布 $P$ 固定、已知，则在优化场合与 *KL 散度* 效果一致，且 **计算简单**
+            -   故，交叉熵常用作损失函数：标签的分布 $P$ 固定、已知
+            -   特别的，若分布 $Q$ 为条件分布时，常将 *KL 散度* 变换为 *ELBO*
+        -   反过来，*KL 散度* 则可视为交叉熵排除尺度分布 $P$ 对分布差异的影响
+    -   交叉熵则可视为 **分布 $Q$ 在分布 $P$ 尺度下的负对数似然**
+        -   将分布 $P,Q$ 视为先验（事实）、后验，极小化交叉熵即极小化对先验的调整
+            -   极大化对数似然即，均匀分布（无法归一化，但不影响优化任务）作为先验下的极小化分布调整
+        -   即，**（带先验的）负对数似然、交叉熵实质上（至少形式上）一致**
+            -   某种意义上（至少形式上），**负对数似然即分布对均匀分布的交叉熵**
+    -   *PSI* 更像是 *KL 散度* 的对称化处理
+        -   一般仅用于评估分布变化、差异，实际使用较少
+
+```mermaid
+graph
+    KL("KL(P(Z)||Q(Z))") --"排除H(P(Z))"--> H("H(P(Z),Q(Z))")
+    H --"叠加H(P(Z))"--> KL
+    H --"限定P(Z)为均匀分布"--> NL("-log Q(Z)")
+    NL --"求期望 E_P(Z) Q(Z)"--> H
+    KL --"对称化"--> PSI("PSI(P(Z), Q(Z))")
+
+    KL --"Q(Z) 条件化"--> KLC("KL(P(Z)||Q(Z|X))")
+    KLC --"极小、极大等价"--> L("log Q(X)")
+    L --"极大、极小等价" --> KLC
+    L --"相差KL(P(Z)||Q(Z|X))的下界" --> ELBO("ELBO(P(Z))")
+```
+
+> - 熵、交叉熵和 *KL 散度*：<https://www.cnblogs.com/outs/p/19051442>
+
 ####    *Cross Entropy*
 
 $$\begin{align*}
 H(P, Q) & = E_P[-log Q] = \left \{ \begin{array}{l}
-    -\sum_{X} P(x) logQ(x), & 离散分布 \\
-    -\int_X P(x) log(Q(x)) d(r(x)), & 连续分布
-\end{array} \right. \\
-& = H(P) + D_{KL}(P||Q)
+        -\sum_x P(x) logQ(x), & 离散分布 \\
+        -\int_x P(x) log(Q(x)) d(r(x)), & 连续分布
+    \end{array} \right. \\
+    & = H(P) + KL(P||Q)
 \end{align*}$$
 > - $P(x), Q(x)$：概率分布（密度）函数
 > - $r(x)$：测度，通常是 $Borel \sigma$ 代数上的勒贝格测度
-> - $D_{KL}(P||Q)$：$P$ 到 $Q$ 的 *KL* 散度（$P$ 相对于 $Q$ 的相对熵）
+> - $KL(P||Q)$：$P$ 到 $Q$ 的 *KL* 散度（$P$ 相对于 $Q$ 的相对熵）
 
--   交叉熵
+-   交叉熵：分布 $P,Q$ 的拟合误差
     -   信息论角度：基于相同事件测度的两个概率分布 $P, Q$，基于非自然（相较于真实分布 $P$）概率分布 $Q$ 进行编码，在事件集合中唯一标识事件所需 *bit*
         -   即，交叉熵可以看作是信息片段在错误分布 $Q$ 分布下的期望编码长度
         -   信息实际分布实际为 $P$，所以期望基于 $P$
     -   概率论角度：交叉熵衡量概率分布 $P, Q$ 之间差异
-    -   交叉熵是常用的损失函数：效果等价于 *KL* 散度，但计算方便
-        -   *Sigmoid* 激活函数时：相较于二次损失，收敛速度更快
-
-### *Entropy* 衍生指标
+    -   交叉熵是常用的损失函数
+        -   配合 *Sigmoid* 激活函数，相较于二次损失，收敛速度更快
 
 ####    *Kullback-Leibler Divergence*
 
 $$\begin{align*}
-D_{KL}(P||Q) & = E_P[(-log Q(x)) - (-log P(x))] \\
-& = E_P[log P(x) - log Q(x)] \\
-& = \sum_{d=1}^D P(x_d) (log P(x_d) - log Q(x_d)) \\
-& = \sum_{d=1} P(x_d) log \frac {P(x_d)} {Q(x_d)}
+KL(P||Q) & = E_P[(-log Q(x)) - (-log P(x))] = H(P, Q) - H(P) \\
+    & = \sum_{d=1}^D P(x_d) (log P(x_d) - log Q(x_d)) \\
+    & = \sum_{d=1} P(x_d) log \frac {P(x_d)} {Q(x_d)} \\
 \end{align*}$$
 
--   *KL* 散度/相对熵：衡量概率分布 $P, Q$ 之间差异的量化指标
-    -   *KL* 散度含义
+-   *KL 散度*、相对熵：衡量概率分布 $P, Q$ 之间差异的量化指标
+    -   *KL 散度* 含义
         -   原始分布 $P$、近似分布 $Q$ 之间对数差值期望
         -   若使用观察分布 $Q$ 描述真实分布 $P$，还需的额外信息量
-    -   *KL* 散度不对称，分布 $P$ 度量 $Q$、$Q$ 度量 $P$ 损失信息不同
-        -   从计算公式也可以看出
-        -   KL散度不能作为不同分布之间距离的度量
+    -   *KL 散度* 不对称 $KL(P||Q) \neq KL(Q||P)$
+        -   即，分布 $P$ 度量 $Q$、$Q$ 度量 $P$ 损失信息不同（从计算公式也可以看出）
+        -   即，*KL 散度* 不能作为不同分布之间距离的度量（距离要求对称）
 
 ####    *Population Stability Index*
 
 $$\begin{align*}
 PSI &= \sum_d^D (P_d - Q_d) * log \frac {P_d} {Q_d} \\
-&= \sum_d^D P_d log \frac {P_d} {Q_d} + \sum_d^D Q_d log \frac {Q_d} {P_d} \\
-&= D_{KL}(P||Q) + D_{KL}(Q||P)
+    &= \sum_d^D P_d log \frac {P_d} {Q_d} + \sum_d^D Q_d log \frac {Q_d} {P_d} \\
+    &= KL(P||Q) + KL(Q||P)
 \end{align*}$$
 
 -   *PSI*：衡量分布 $P, Q$ 之间的差异程度
     -   是 *KL* 散度的对称操作
         -   更全面的描述两个分布的差异
+
+####    *Evidence Lower Bound*
+
+$$\begin{align*}
+log Q(x) &= log \int_z dz Q(z,x) \\
+    &= log \int_z dz Q(z,x) \\
+    &= log \int_z dz P(z) \frac {Q(z,x)} {P(z)} \\
+    &\geq \int_z dz P(z) log \frac {Q(z,x)} {P(z)} := ELOB(q(z)) \\
+-H(P(x), Q(x)) &= E_{P(x)} log Q(x) \\
+    &\geq \int_x dx P(x) \int_z dz P(z|x) log \frac {Q(z,x)} {P(z|x)} \\
+    &= \int_x dx \int_z dz P(x) P(z|x) log \frac {Q(z,x)} {P(z|x)} \\
+    &= \int_{x,z} dxz P(z,x) log \frac {Q(z,x)} {P(z|x)} := ELOB(q(z|x))\\
+\end{align*}$$
+
+-   *ELBO* 证据下界：证据变量的对数似然、负交叉熵下界
 
 ### *Gini* 指数
 
