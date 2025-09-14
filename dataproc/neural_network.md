@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-08-31 23:33:08
+updated: 2025-09-14 23:39:19
 toc: true
 mathjax: true
 description: 
@@ -562,7 +562,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
     -   思路：引入噪声、训练网络复原至原始数据，学习鲁棒性更好的表示
         $$\begin{align*}
         x &\approx D_{\theta}(E_{\phi}(\tilde x)) \\
-        \tilde x = Corruption(x)
+        \tilde x &= Corruption(x)
         \end{align*}$$
         > - $Corruption(x)$：随机映射，向输入数据中引入噪声
         -   噪声扰动可以融入先验知识，引入多种不同类型的噪声扰动：遮蔽噪声、高斯噪声、椒盐噪声等
@@ -596,7 +596,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
             -   则，*Encoder* 部分训练、输出均值、对数方差 $\mu_k, log \sigma_k^2$ 即可
                 -   方差要求 $\sigma^2 > 0$ 需要额外增加变换（激活）函数
                 -   而，对数方差 $log \sigma^2$ 取值无额外限制，也可直接用于后续计算
-            -   *Reparameterization Trick* 重采样：从 $N(0, I)$ 中采样 $\epsilon$，计算 $ z_k = \mu_k + \epsilon * \sigma $
+            -   *Reparameterization Trick* 重参数化：从 $N(0, I)$ 中采样 $\epsilon$，计算 $ z_k = \mu_k + \epsilon * \sigma $
                 -   等价于，后验分布 $p(z|x_k)$ 中抽样 $z_k$、作为 *Decoder* 部分恢复为 $x_k^{'}$
                 -   因，直接从 $p(z|x_k)$ 抽样 $z_k$ 无法与 $\mu_k, log \sigma_k^2$ 建立计算联系，梯度反向传播将被中断
         -   同时，还要求 $p(z|x_k)$ **接近标准正态分布，避免 *Encoder* 部分将方差压缩至 0**
@@ -639,13 +639,18 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 
 ###    *Reparameterization*
 
--   *Reparameterization Trick* 重采样：从易得分布中采样、经过变换，得到满足给定分布的样本
-    -   重采样实质上 **将神经网络确定性计算与生成分离**
-        -   模型（或者说图灵计算体系）只具备确定性计算能力，无法生成
-        -   故，采样作为生成的源头，通过重采样被独立于模型计算过程
-    -   即，生成式模型学习的是变换，将输入模式变换为目标输出模式
-        -   而，变换核心即函数形式、参数
-        -   即，神经网络的拟合、学习能力
+-   *Reparameterization Trick* 重参数化：学习（采样）替代目标、通过变换得到原目标结果
+    -   常见即，**从易得分布中采样、并训练变换参数**，通过变换得到满足给定分布的样本
+        -   避免直接对复杂采样
+        -   借此，**将神经网络确定性计算与随机抽样（即生成）分离**
+            -   模型（或者说图灵计算体系）只具备确定性计算能力，随机抽样将中断模型确定性计算过程
+            -   故，通过仅训练确定性的变换参数（分布参数），将随机抽样被独立于模型计算过程
+        -   即，生成式模型学习的是变换（参数），将输入模式变换为目标输出模式
+            -   而，变换核心即函数形式、参数
+            -   即，神经网络的拟合、学习能力
+            -   而，生成（随机抽样）部分被独立与模型计算
+    -   或，训练替代参数，并通过变换到目标参数结果
+        -   以，替代直接训练原目标，简化模型结构、损失函数
 
 ### *Conditional VAE*
 
@@ -826,7 +831,6 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
                 -   训练过程中参数更新更有可能使得输入移向激活函数饱和区
                 -   且该效应随着网络深度加深被进一步放大
             -   参数初始化需要更复杂考虑
--   
 
 > - 换用 *RELU* 等非饱和激活函数等也可避免陷入梯度饱和区
 > - *How Does Batch Normalization Help Optimization?*：<https://arxiv.org/abs/1805.11604>
@@ -1356,10 +1360,11 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
     -   扩散过程为马尔可夫过程，逐步转换即重复应用 *Markov Diffusion Kernel*，即状态转移（条件概率）分布 $q(x^{(t)}|x^{(t-1)})$（离散即转移矩阵）
         $$\begin{align*}
         \pi(x^{(t)}) &= N(x^{(t)};0,I) \\
-        q_(x^{(t)}|x^{(t-1)}) &= N(x^{(t)}; \sqrt {1 - \beta^{(t)}} x^{(t-1)}, \beta^{(t)} I) \\
-        q_(x^{(1:T)}|x^{(0)}) &= \prod_{t=1}^T q(x^{(t)}|x^{(t-1)}) \\
+        q(x^{(t)}|x^{(t-1)}) &= N(x^{(t)}; \sqrt {1 - \beta^{(t)}} x^{(t-1)}, \beta^{(t)} I) \\
+        q(x^{(1:T)}|x^{(0)}) &= \prod_{t=1}^T q(x^{(t)}|x^{(t-1)}) \\
         \end{align*}$$
         > - $\beta^{(t)}$：第 $t$ 步扩散速率
+        > - $\pi(x^{(T)})$：易采样分布
     -   同样，需要类似 *VAE* 中利用重采样技术解耦随机采样、参数训练，实现上述分布的随机抽样
         $$\begin{align*}
         x^{(0)} &\sim q(x^{(0)}) \\
@@ -1368,18 +1373,18 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
                 + \sqrt {1 - \alpha^{(t)}} z^{(t)} \\
             &= \cdots \\
             &= \sqrt {\bar \alpha^{(t)}} x^{(0)} + \sqrt {1 - \bar \alpha^{(t)}} \bar z^{(t)} \\
+        q(x^{(t)}|x^{(0)}) &= N(x^{(t)};\sqrt {\bar \alpha^{(t)}} x^{(0)}, 1 - \bar \alpha^{(t)} I) \\
         \bar \alpha^{(t)} &= \prod_{i=1}^t \alpha^{(i)} \\
-        \bar z^{(t)} &\sim N(0,(1 - \prod_{i=1}^t \alpha^{(i)}) I) \\
+        \bar z^{(t)} &\sim N(0, I) \\
         \end{align*}$$
         > - $x^{(0)}$ 原始数据，服从分布 $x^{(0)} \sim q(x^{(0)})$
         > - $\alpha^{(t)} = 1 - \beta^{(t)}, \beta^{(t)}$：第 $t$ 步原数据权重、噪声权重
-        > - $z^{(t)} \sim N(0,I)$：第 $t$ 步混入的随机噪声，各步混入噪声相互独立
+        > - $z^{(t)} \sim N(0,I),\bar z^{(t)}$$：第 $t$ 步混入的随机噪声、前 $t$ 步累计混入的随机噪声（各步混入噪声相互独立）
         -   从标准正态分布中抽样 $z^{(t)}$
         -   根据扩散速率 $\beta^{(t)}$ ，按比例叠加 $x^{(t-1)},z^{(t)}$ 得到 $x^{(t)}$
-    -   且，上述前向过程中
-        -   由递推式，任意 $t$ 步状态 $x^{(t)}$ 由 $x^{(0)}$ 一步计算得到
+        -   且，此前向过程中，由递推式，任意 $t$ 步状态 $x^{(t)}$ 分布易得、取值由 $x^{(0)}$ 一步抽样计算得到
 
-> - *Deep Unsupervised Learning using Nonequilibrium Thermodynamics*：<https://arxiv.org/abs/1503.03585>，原始论文中提到二项分布作为采样分布的案例
+> - *Deep Unsupervised Learning using Nonequilibrium Thermodynamics*：<https://arxiv.org/abs/1503.03585>，原始论文中提到二项分布作为采样分布的案例，但 **论文中不涉及具体满足条件概率的由 $x^{(t-1)}$ 构造 $x^{(t)}$ 的方式**
 > - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
 
 ####    *Reverse Diffusion* 逆向（恢复）过程
@@ -1387,47 +1392,301 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 -   逆向（恢复）过程：将分布 $\pi(x^{(T)})$ 逐步转换为原始数据分布 $q(x^{(0)})$ 的过程
     -   同样的，逆向过程为马尔可夫过程，逐步转换即重复应用 *Markov Diffusion Kernel*，即状态转移（条件概率）分布 $p(x^{(t-1)}|x^{(t)})$（离散即转移矩阵）
         $$\begin{align*}
-        p(x^{(t-1)}|x^{(t)};\theta) &= N(x^{(t-1)}; \mu(x^{(t)},t;\theta), \Sigma(x^{(t)},t;\theta)) \\
+        p(x^{(t-1)}|x^{(t)};\theta) &= N(x^{(t-1)}; \mu_{\theta}(x^{(t)},t), \Sigma_{\theta}(x^{(t)},t)) \\
         p(x^{(0:T)};\theta) &= p(x^{(T)}) \prod_{t=1}^T p(x^{(t-1)}|x^{(t)}) \\
         \end{align*}$$
         > - $\theta$：模型参数
-        > - $\mu(x^{(t)},t;\theta), \Sigma(x^{(t)},t;\theta)$：逆向状态转移条件概率高斯分布均值、方差
-        -   对高斯扩展核，当扩散速率 $\beta$ 较小时，逆向过程状态转移分布形式与正向过程相同
-        -   则，模型训练核心即拟合 $\mu(x^{(t)},t;\theta), \Sigma(x^{(t)},t;\theta)$
+        > - $\mu_{\theta}(x^{(t)},t), \Sigma_{\theta}(x^{(t)},t)$：逆向状态转移条件概率高斯分布均值、方差
+        -   对高斯扩散核，**当扩散速率 $\beta$ 较小时，逆向过程状态转移分布形式与正向过程相同**
+        -   则，模型核心即训练 $\mu_{\theta}(x^{(t)},t), \Sigma_{\theta}(x^{(t)},t)$
             -   以（并），计算逆向扩散（高斯）核均值、方差，确定用于采样的分布
     -   同样，需要类似 *VAE* 中利用重采样技术解耦随机采样、参数训练，实现上述分布的随机抽样
 
 > - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
+> - 论文简析 *Deep Unsupervised Learning using Nonequilibrium Thermodynamics*：<https://www.bilibili.com/video/BV19v4y1C7De>
+> - 论文代码：<https://github.com/Sohl-Dickstein/Diffusion-Probabilistic-Models>
+
+#####   逆向过程条件概率
+
+-   为实现逆向过程 **分步拟合** 前向过程，需要计算 $q(x^{(t-1)}|x^{(t)})$
+    $$\begin{align*}
+    q(x^{(t-1)}|x^{(t)},x^{(0)}) &= q(x^{(t)}|x^{(t-1)}, x^{(0)}) \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})} \\
+        &= q(x^{(t)}|x^{(t-1)}) \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})} \\
+        &= C_1 exp(-\frac 1 2 (
+            \frac {(x^{(t)} - \sqrt {\alpha^{(t)}} x^{(t-1)})^2} {\beta^{(t)}}
+            + \frac {(x^{(t-1)} - \sqrt {\bar \alpha^{(t-1)}} x^{(0)})^2} {1 - \bar \alpha^{(t-1)}}
+            - \frac {(x^{(t)} - \sqrt {\bar \alpha^{(t)}} x^{(0)})^2} {1 - \bar \alpha^{(t)}}
+            )) \\
+        &= C_1 exp(-\frac 1 2 (
+            (\frac {\alpha^{(t)}} {\beta^{(t)}} + \frac 1 {1 - \bar \alpha^{(t)}}) {x^{(t)}}^2
+            - 2(\frac {\sqrt {\alpha^{(t)}} x^{(t)}} {1 - \alpha^{(t)}}
+                + \frac {\sqrt {\bar \alpha^{(t-1)}} x^{(0)}} {1 - \bar \alpha^{(t-1)}}) x^{(t)}
+            + C_2
+            )) \\
+        &= N(x^{(t-1)}; \tilde \mu^{(t)}, \tilde \beta^{(t)} I) \\
+    \tilde \beta^{(t)} &= \frac {1 - \bar \alpha^{(t-1)}} {1 - \bar \alpha^{(t)}} \beta^{(t)} \\
+    \tilde \mu^{(t)} &= \frac {\sqrt {\alpha^{(t)}} (1 - \bar \alpha^{(t-1)})} {1 - \bar \alpha^{(t)}} x^{(t)}
+            + \frac {\sqrt {\bar \alpha^{(t-1)}} \beta^{(t)}} {1 - \bar \alpha^{(t)}} x^{(0)} \\
+        &= \frac {\sqrt {\alpha^{(t)}} (1 - \bar \alpha^{(t-1)})} {1 - \bar \alpha^{(t)}} x^{(t)}
+            + \frac {\sqrt {\bar \alpha^{(t-1)}} \beta^{(t)}} {1 - \bar \alpha^{(t)}}
+                (\frac 1 {\sqrt {\bar \alpha^{(t)}}} (x^{(t)} - \sqrt {1 - \bar \alpha^{(t)}} \bar z^{(t)})) \\
+        &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}} {\sqrt {1 - \bar \alpha^{(t)}}} \bar z^{(t)})
+    \end{align*}$$
+    -   事实上，$q(x^{(t-1)}|x^{(t)})$ 无法计算得到解析式，故转而计算 $q(x^{(t-1)}|x^{(t)}, x^{(0)})$
+        -   根据概率图模型的条件独立性质，二者应取值相等，但变换不同
+        -   当然，后续损失函数也需配合做相应变换
+    -   上述推导由条件概率公式计算、并匹配高斯分布形式得到
+        -   事实上，可直接从正向过程根据 $x^{(t)}$ 构造 $x^{(t)}$ 出发
+        -   结合小扩散速率 $\beta$ 情况下逆过程分布满足高斯构造方程组求解得到 $\tilde \beta^{(t)}, \tilde \mu^{(t)}$ 表达式
+    -   类似正向过程，反向过程由 $x^{(t)}$ 构造 $x^{(t-1)}$、并重参数化至 $z^{(')}$ 有
+        $$\begin{align*}
+        x^{(t-1)} &= \tilde \mu^{(t)} + \sqrt {\tilde \beta^{(t)}} z^{'} \\
+        z^{'} &\sim N(0, 1) \\
+        \end{align*}$$
 
 ####    损失函数
 
 $$\begin{align*}
-H(q(x^{(0)}), p(x^{(0)})) &= -E_{q(x^{(0)})} log p(x^{(0)}) \\
-    &\leq -E_{q(x^{(0)})} (ELOB(q(x^{(1:T)}|x^{(0)})) \\
-    &= -\int_{x^{(0)}} dx^{(0)} q(x^{(0)}) \int_{x^{(1:T)}} dx^{(1:T)} q(x^{(1:T)}|x^{(0)})
+-H(q(x^{(0)}), p(x^{(0)})) &= E_{q(x^{(0)})} log p(x^{(0)}) \\
+    &\geq E_{q(x^{(0)})} (ELOB(q(x^{(1:T)}|x^{(0)}))) \\
+    &= \int_{x^{(0)}} dx^{(0)} q(x^{(0)}) \int_{x^{(1:T)}} dx^{(1:T)} q(x^{(1:T)}|x^{(0)})
         log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})} \\
-    &= -\int_{x^{(0)}} dx^{(0)} \int_{x^{(1:T)}} dx^{(1:T)} q(x^{(0)}) q(x^{(1:T)}|x^{(0)})
+    &= \int_{x^{(0)}} dx^{(0)} \int_{x^{(1:T)}} dx^{(1:T)} q(x^{(0)}) q(x^{(1:T)}|x^{(0)})
         log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})} \\
-    &= -\int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})} \\
-    &= E_{q(x^{(0:T)})} log \frac {q(x^{(1:T)}|x^{(0)})} {p(x^{(0:T)})} \\
+    &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) log \frac {p(x^{(0:T)})} {q(x^{(1:T)}|x^{(0)})}
+        = E_{q(x^{(0:T)})} log \frac {q(x^{(1:T)}|x^{(0)})} {p(x^{(0:T)})} =: VLB(q^{(0)}) \\
 \end{align*}$$
 > - $log p(x^{(0)})$ 直接被缩放为 $ELOB(q(x^{(1:T)}|x^{(0)}))$
 
 -   损失函数：常用原始数据分布、逆向恢复分布的交叉熵 $E_{q(x^{(0)})} p(x^{(0)};\theta)$
-    -   实际优化则为类似 *ELBO* 的一个交叉熵的上界
+    -   类似 *ELBO*（*Jensen* 不等式交换积分、对数），变换为优化交叉熵的一个（变分）下界 *VLB*
+    -   依马尔可夫链条件独立性 $q(x^{(t)}|x^{(t-1)}) = q(x^{(t)}|x^{(t-1)},x^{(0)})$，进一步变换如下
+        $$\begin{align*}
+        VLB(q(x^{(0)})) &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) log
+                \frac {p(x^{(T)}) \prod_{t=1}^T p(x^{(t-1)}|x^{(t)})} {\prod_{t=1}^T q(x^{(t)}|x^{(t-1)})} \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                + \sum_{t=1}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t)}|x^{(t-1)})}) \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                + log \frac {p(x^{(0)}|x^{(1)})} {q(x^{(1)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t)}|x^{(t-1)})}) \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                + log \frac {p(x^{(0)}|x^{(1)})} {q(x^{(1)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t)}|x^{(t-1)},x^{(0)})}) \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                + log \frac {p(x^{(0)}|x^{(1)})} {q(x^{(1)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)},x^{(0)})}
+                    \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})}) \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                + log \frac {p(x^{(0)}|x^{(1)})} {q(x^{(1)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)},x^{(0)})}
+                + \sum_{t=2}^T log \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})}) \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                + log \frac {p(x^{(0)}|x^{(1)})} {q(x^{(1)}|x^{(0)})}
+                + log \frac {q(x^{(1)}|x^{(0)})} {q(x^{(T)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)},x^{(0)})}) \\
+            &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (
+                log \frac {p(x^{(T)})} {q(x^{(T)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)},x^{(0)})}
+                + log {p(x^{(0)}|x^{(1)})}) \\
+            &= E_{q(x^{(0:T)})} (
+                log \frac {p(x^{(T)})} {q(x^{(T)}|x^{(0)})}
+                + \sum_{t=2}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)},x^{(0)})}
+                + log {p(x^{(0)}|x^{(1)})}) \\
+        \end{align*}$$
+        -   上述推导中，$t=1$ 时项 $log \frac {p(x^{(0)}|x^{(1)})} {q(x^{(1)}|x^{(0)})}$ 被单独拆出
+            -   显然，该项不满足添加前向过程各步条件概率对 $x^{(0)}$ 的独立性
+            -   且，该项为逆向过程最后收束项，单独特殊处理可能效果较好
+        -   当然可变换如下，但是其中 $q(x^{(t-1)}|x^{(t)})$ 无解析结果
+            $$\begin{align*}
+            VLB(q^{(0)}) &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                    + \sum_{t=1}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)})}
+                        \frac {q(x^{(t-1)})} {q(x^{(t)})}) \\
+                &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                    + \sum_{t=1}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)})}
+                    + \sum_{t=1}^T log \frac {q(x^{(t-1)})} {q(x^{(t)})}) \\
+                &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (log p(x^{(T)})
+                    + \sum_{t=1}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)})}
+                    + log \frac {q(x^{(0)})} {q(x^{(T)})}) \\
+                &= \int_{x^{(0:T)}} dx^{(0:T)} q(x^{(0:T)}) (
+                    log q(x^{(0)}) + log \frac {p(x^{(T)})} {q(x^{(T)})}
+                    + \sum_{t=1}^T log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)})}) \\
+            \end{align*}$$
+        -   变分下界 $VLB(q(x^{(0)}))$ 可进一步按扩散（前向、逆向）步次 $t$ 拆分（并补充参数）
+            $$\begin{align*}
+            VLB(q^{(0)}) &= \int_{x^{(0)},x^{(T)}} q(x^{(0)},x^{(T)}) log \frac {p(x^{(T)})} {q(x^{(T)}|x^{(0)})}
+                    + \sum_{t=2}^T \int_{x^{(0)},x^{(t-1)},x^{(t)}} q(x^{(0)},x^{(t-1)},x^{(t)})
+                        log \frac {p(x^{(t-1)}|x^{(t)})} {q(x^{(t-1)}|x^{(t)},x^{(0)})}
+                    + \int_{x^{(0)},x^{(1)}} q(x^{(0)},x^{(1)}) log {p(x^{(0)}|x^{(1)})} \\
+                &= -(\int_{x^{(0)}} q^{(0)} KL(q(x^{(T)}|x^{(0)})|p(x^{(T)}))
+                    + \sum_{t=2}^T \int_{x^{(0)},x^{(t)}} q(x^{(0)},x^{(t)})
+                        KL({q(x^{(t-1)}|x^{(t)},x^{(0)})}|{p(x^{(t-1)}|x^{(t)})})
+                    - \int_{x^{(0)},x^{(1)}} q(x^{(0)},x^{(1)}) log {p(x^{(0)}|x^{(1)})}) \\
+                &=: -(L^{(T)} + \sum_{t=1}^{T-1} L^{(t)} + L^{(0)}) \\
+            L^{(T)} &=: \int_{x^{(0)}} q^{(0)} KL(q(x^{(T)}|x^{(0)})|p(x^{(T)};\theta)) \\
+            L^{(t)} &=: \int_{x^{(0)},x^{(t+1)}} q(x^{(0)},x^{(t+1)})
+                KL({q(x^{(t)}|x^{(t+1)},x^{(0)})}|{p(x^{(t)}|x^{(t+1)})};\theta),t=1,\cdots,T-1 \\
+            L^{(0)} &=: -\int_{x^{(0)},x^{(1)}} q(x^{(0)},x^{(1)}) log {p(x^{(0)}|x^{(1)};\theta)} \\
+            \end{align*}$$
+            -   则，生成问题转为在逆向过程中训练 $p(\cdots;\theta)$ 极小化如上损失函数
+            -   当然，$\beta^{(t)}$ 也可在作为参数，在前向过程中训练
+
+> - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
+> - *Denoising Diffusion Probabilistic Models*：<https://arxiv.org/abs/2006.11239> 中也提及两种损失函数变换方式
+> - 注意：推导中 $x^{(0)}$ 是随机变量（为区分不同轮次添加上标），**计算中即数值化为真实取值，即数值化的样本表示分布**
 
 ### *Denoising Diffusion Probabilistic Models*
 
-#TODO
+-   *DDPM* 可视为是对扩散模型的一个具体化、优化实现
+    -   固定化扩散速率 $\beta^{(t)}$
+    -   固定化逆向过程噪声方差仅与 $t$ 相关 $\Sigma_{\theta}(x_t, t) = (\sigma^{(t)})^2 I$
+    -   重参数化训练目标从原（均）值到噪声 $\bar z^{(t)}$
+    -   简化损失函数为预测噪声、实际噪声的均方误差 $MSE(\bar z^{(t)},z_{\theta}(x^{(t)},t)))$
 
 > - 由浅入深了解 *Diffusion Model*：<https://zhuanlan.zhihu.com/p/525106459>
-> - 生成扩散模型漫谈（一）：DDPM = 拆楼 + 建楼：<https://spaces.ac.cn/archives/9119/>
 > - 从贝叶斯公式理解 *Diffusion* 模型：<https://zhuanlan.zhihu.com/p/586362713>
 > - *Denoising Diffusion Probabilistic Models*：<https://arxiv.org/abs/2006.11239>
 > - *DDPM* 论文解读：<https://arxiv.org/abs/2006.11239>
 > - *Diffusion Model* 扩展模型详解：<https://segmentfault.com/a/1190000043744225>
 > - *Understanding Diffusion Models: A Unified Perspective*：<https://arxiv.org/abs/2208.11970>
 > - *Diffusion* 是谱自回归：<https://zhuanlan.zhihu.com/p/1909982309534377428>
+
+####    正向过程
+
+-   前向过程 $q(x^{(t)}|x^{(t-1)}) = N(x^{(t)}; \sqrt {1 - \beta^{(t)}} x^{(t-1)}, \beta^{(t)} I)$、$L^{(T)}$
+    -   将学习参数扩散速率 $\beta^{(t)}$ 固定为常数
+        -   则，前向过程中将没有可学习参数
+        -   损失函数 $VLB(q(x^{(0)}))$ 中 $L^{(T)}$ 项将为固定值，可忽略
+
+####    逆向过程
+
+-   逆向过程 $p(x^{(t-1)}|x^{(t)};\theta) = N(x^{(t-1)}; \mu_{\theta}(x^{(t)},t), \Sigma_{\theta}(x^{(t)},t))$、$L^{(1:T-1)}$
+    -   设置条件分布方差仅与步次 $t$ 相关 $\Sigma_{\theta}(x_t, t) = (\sigma^{(t)})^2 I$
+        -   试验表明取 ${\sigma^{(t)}}^2 = \beta^{(t)}$、${\sigma^{(t)}}^2 = \tilde \beta^{(t)}$ 结果类似
+    -   重参数化 $\mu_{\theta}(x^{(t)},t)$ 至 $z_{\theta}(x^{(t)},t)$，即训练模型预测噪声 $\bar z$ 而不是原（均）值 $\mu$
+        $$\begin{align*}
+        L^{(t)} &= \int_{x^{(0)},x^{(t+1)}} q(x^{(0)},x^{(t+1)})
+                KL({q(x^{(t)}|x^{(t+1)},x^{(0)})}|{p(x^{(t)}|x^{(t+1)})}) \\
+            &= \int_{x^{(0)},x^{(t+1)}} q(x^{(0)},x^{(t+1)}) \frac
+                {\|\tilde \mu^{(t)} - \mu_{\theta}(x_t,t)\|^2}
+                {2 \|\Sigma_{\theta}(x_t,t)\|^2_2} + C \\
+            &= E_{q(x^{(0)},x^{(t)})} \frac
+                {\|\tilde \mu^{(t)} - \mu_{\theta}(x_t,t)\|^2}
+                {2 \|\Sigma_{\theta}(x_t,t)\|^2_2} + C \\
+        L^{(t)} - C &= E_{q(x^{(0)},\bar z^{(t)})} \frac
+                {\| \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+                    {\sqrt {1 - \bar \alpha^{(t)}}} \bar z^{(t)})
+                    - \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+                    {\sqrt {1 - \bar \alpha^{(t)}}} \bar z_{\theta}(x^{(t)},t)) \|^2}
+                {2 \|\Sigma_{\theta}(x_t,t)\|^2_2} \\
+            &= E_{q(x^{(0)},\bar z^{(t)})} \frac
+                {{\beta^{(t)}}^2 \| \bar z^{(t)} - \bar z_{\theta}(x^{(t)},t) \|^2}
+                {2 \bar \alpha^{(t)} (1 - \bar \alpha^{(t)})\|\Sigma_{\theta}(x_t,t)\|^2_2} \\
+            &= E_{q(x^{(0)},\bar z^{(t)})} \frac
+                {{\beta^{(t)}}^2} {2 \bar \alpha^{(t)} (1 - \bar \alpha^{(t)}) {\sigma^{(t)}}^2}
+                \| \bar z^{(t)} - \bar z_{\theta}(x^{(t)},t) \|^2 \\
+            &= E_{q(x^{(0)},\bar z^{(t)})} \frac
+                {{\beta^{(t)}}^2} {2 \bar \alpha^{(t)} (1 - \bar \alpha^{(t)}) {\sigma^{(t)}}^2}
+                \| \bar z^{(t)} - \bar z_{\theta}(x^{(t)},t) \|^2 \\
+        \end{align*}$$
+        -   $\mu_{\theta}(x^{(t)},t)$ 需拟合 $\tilde \mu^{(t)}$，故考虑将其按 $\tilde \mu^{(t)}$ 形式相应重参数化至 $\bar z^{(t)}$，带入如下即得上述推导
+            $$\begin{align*}
+            \tilde \mu^{(t)} &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+                {\sqrt {1 - \bar \alpha^{(t)}}} \bar z^{(t)}) \\
+            \mu_{\theta}(x^{(t)},t) &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+                {\sqrt {1 - \bar \alpha^{(t)}}} z_{\theta}(x^{(t)},t)) \\
+            \end{align*}$$
+            > - $z_{\theta}(x^{(t)},t), \theta$ ：（逆向过程）模型、模型参数
+        -   且，此变分推断下界的得到优化目标形式类似去噪得分匹配
+            -   由 $x^{(t)},t$ 估计拟合扩散过程中添加的 **（累计）噪声 $\bar z^{(t)}$**
+
+#####   逆向过程构造逻辑（采样算法）
+
+-   则，类似正向过程可得 $x^{(t-1)}$ 构造逻辑
+    $$\begin{align*}
+    x^{(t-1)} &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+            {\sqrt {1 - \bar \alpha^{(t)}}} z_{\theta}(x^{(t)},t)) + \sigma^{(t)} z^{'} \\
+    z^{'} &\approx N(0, 1)
+    \end{align*}$$
+    > - $z^{'}$：逆向过程中随机抽样噪声
+    > - $z_{\theta}, \theta$：（逆向过程）模型、模型参数
+
+####    边缘过程处理
+
+-   解码器最后一步特殊处理、$L^{(0)}$
+    -   为逆向过程的输入 **可从标准高斯分布** 抽样，图像数据需由整形 $0,\cdots,255$ 被变换至 $[-1,1]$ 间的浮点
+    -   故，可对逆向过程中最后一步条件概率（也即，$L^{(0)}$ 损失）如下处理以获得离散（对数）似然
+        $$\begin{align*}
+        p(x^{(0)}|x^{(1)};\theta) &= \prod_{d=1}^D \int_{\sigma_{-}({x_d^{(0)}})}^{\sigma_{+}(x_d^{(0)})}
+                N(x;\mu_{i;\theta}(x^{(1)},1),\sigma^{(1)}I) dx \\
+        \sigma_{+}(x) &= \begin{cases}
+            \infty &,x = 1 \\
+            x + \frac 1 {255} &,x < 1 \\
+        \end{cases} \\
+        \sigma_{-}(x) &= \begin{cases}
+            -\infty &,x = -1 \\
+            x - \frac 1 {255} &,x > -1 \\
+        \end{cases} \\
+        \end{align*}$$
+        > - $D,d$：数据维数、维度序号
+        > - $\sigma^{(1)}$：逆向过程第 $1$ 步采用的噪声方差（系数）
+        -   即，将预测得到的分布 $N(x;\mu_{i;\theta}(x^{(1)},1),\sigma^{(1)}I)$ 分段累计 $[-\infty, -1 + 1/255, -1 + 3/255, \cdots, 1 - 3/255, 1 - 1/255, \infty]$ 概率分布
+        -   以，离散化、匹配图像数据取值模式
+
+####    损失函数
+
+-   损失函数简化：剔除 $L_{1:T}$ 中权重、仅保留噪声估计、将步次 $t=1,\cdots,T$ 随机化
+    $$\begin{align*}
+    L_{simple}(\theta) &= E_{t,q(x^{(0)},\bar z^{(t)})} \| \bar z^{(t)} - \bar z_{\theta}(x^{(t)},t) \|^2 \\
+        &= E_{t,q(x^{(0)},\bar z^{(t)})} \| \bar z^{(t)} - \bar z_{\theta}(\sqrt {\bar \alpha^{(t)}}x^{(0)}
+            + \sqrt {1 - \bar \alpha^{(t)}} \bar z^{(t)},t) \|^2 \\
+    \end{align*}$$
+    -   丢弃权重系数后的 $L_{simple}^{(t)}$ 相当于是原变分界限的加权
+        -   考虑到 $\beta^{(t)}$ 的配置，$L_{simple}^{(t)}$ 降低了（相对带系数原版）较小 $t$ 项的权重
+        -   即，能更关注更困难、较大 $t$ 项的损失
+    -   此时，损失即为预测噪声、实际噪声的均方误差 $MSE(\bar z^{(t)},z_{\theta}(x^{(t)},t)))$
+        -   $E_{t,q(x^{(0)},\bar z^{(t)})}$ 为全局期望（积分、加总）
+        -   **在实际算法中即按样本计算损失、加总**
+            -   步次 $t$：可针对单个样本随机从 $[1, T]$ 抽样，代表不同程度噪声叠加
+            -   累计噪声 $z^{(t)}$：已知为标准高斯分布已知，但依然通过抽样、加总代表期望
+            -   原数据 $x^{(0)}$：分布形式未知，即按一般情况下对全体样本计算损失、加总
+        -   这也表明，模型实质上可视为是学习高斯分布噪声的模式、对高斯分布噪声去噪
+            -   即，若噪声不满足高斯分布，则去噪效果较差
+    -   损失函数被拆分为 $T$ 块、步次 $t$ 被随机化，对应实现中即
+        -   单个样本步次 $t$ 通过随机抽样确定、加噪
+        -   并对单个样本，**仅依据第 $t$ 块损失进行优化**
+-   简化损失函数后，**忽略条件概率推断，将正、逆视为逐步加噪、去噪出发也可得到 *DDPM* 模型**
+    -   核心即，根据正向过程中由 $x^{(t-1)}$ 构造 $x^{(t)}$ 逻辑逆推
+        -   正向：假定噪声分布、噪声叠加方式，逐步得到 $x_{(t)}$
+        -   逆向：由正向过程从 $x^{(t)}$ 逆推导 $x^{(t-1)}$
+        -   模型：模型根据 $x^{(t)}, t$ 拟合 $x^{(t-1)}$，并最小化 *MSE*
+        -   重参数化：结合 $x^{(t-1)},x^{(t)}$ 逆推式，重参数化至学习噪声
+    -   但，此思路无法推导出采样算法
+        -   注意到，预测噪声 $\bar z^{(t)}$ 是前 $t$ 步的混合噪声，按构造逻辑可一步由 $x^{(t)}$ 恢复到 $x^{(0)}$
+        -   但，实际中 $\bar z^{(t)}$ 在由 $x^{(t-1)}$ 构造 $x^{(t)}$ 逆推式中被引入、用于逐步逆推
+
+> - 生成扩散模型漫谈（一）：DDPM = 拆楼 + 建楼：<https://spaces.ac.cn/archives/9119/> 中从加噪、去噪角度出发推导 *DDPM* 模型，但无法直接得到抽样算法
+> - 注意：推导中 $x^{(0)}$ 是随机变量（为区分不同轮次添加上标），**计算中即数值化为真实取值，即数值化的样本表示分布**
+
+##  *UNet*
+
+![unet_structure](imgs/unet_structure.png)
+
+-   *UNet*：通过 *Encoder-Decoder*、*Skip-Connection* 架构实现像素级分类、分割
+    -   *U* 型结构特点
+        -   编码器：下采样、缩小特征图空间尺寸以捕获局部信息
+            -   逐层卷积、池化
+        -   解码器：上采样、恢复空间细节以精确分类像素点
+            -   逐层上采样（或逆卷积）、卷积层
+        -   *Skip Connection* 跳跃连接：编码器特征图输出直接作为编码器输入，融合、保留更多空间信息
+            -   编码器同层、解码器上层输出 **沿通道方向拼接**，作为解码器下层输入
+                -   待拼接内容尺寸可能不同，需要通过裁切、填补方式先对齐
+            -   此结构将高阶特征与原始数据融合，实现高阶特征、像素点的对应
+
+> - *U-Net: Convolutional Networks for Biomedical Image Segmentation*：<https://arxiv.org/pdf/1505.04597>
+> - Pytorch 深度学习实战教程（二）：UNet 语义分割网络：<https://zhuanlan.zhihu.com/p/142985678>
+> - Pytorch 深度学习实战教程（三）：UNet 模型训练，深度解析！：<https://zhuanlan.zhihu.com/p/143621989>
+> - UNet 图像分割在 PyTorch 上的实现：<https://zhuanlan.zhihu.com/p/97488817>
+> - *UNet* 论文超级详解：<https://zhuanlan.zhihu.com/p/716339396>
 
 #   *CTR*
 
