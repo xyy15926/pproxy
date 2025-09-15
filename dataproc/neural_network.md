@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-09-14 23:39:19
+updated: 2025-09-15 14:35:45
 toc: true
 mathjax: true
 description: 
@@ -1379,7 +1379,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
         \end{align*}$$
         > - $x^{(0)}$ 原始数据，服从分布 $x^{(0)} \sim q(x^{(0)})$
         > - $\alpha^{(t)} = 1 - \beta^{(t)}, \beta^{(t)}$：第 $t$ 步原数据权重、噪声权重
-        > - $z^{(t)} \sim N(0,I),\bar z^{(t)}$$：第 $t$ 步混入的随机噪声、前 $t$ 步累计混入的随机噪声（各步混入噪声相互独立）
+        > - $z^{(t)} \sim N(0,I),\bar z^{(t)}$：第 $t$ 步混入的随机噪声、前 $t$ 步累计混入的随机噪声（各步混入噪声相互独立）
         -   从标准正态分布中抽样 $z^{(t)}$
         -   根据扩散速率 $\beta^{(t)}$ ，按比例叠加 $x^{(t-1)},z^{(t)}$ 得到 $x^{(t)}$
         -   且，此前向过程中，由递推式，任意 $t$ 步状态 $x^{(t)}$ 分布易得、取值由 $x^{(0)}$ 一步抽样计算得到
@@ -1408,39 +1408,44 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 #####   逆向过程条件概率
 
+$$\begin{align*}
+q(x^{(t-1)}|x^{(t)},x^{(0)}) &= q(x^{(t)}|x^{(t-1)}, x^{(0)}) \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})} \\
+    &= q(x^{(t)}|x^{(t-1)}) \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})} \\
+    &= C_1 exp(-\frac 1 2 (
+        \frac {(x^{(t)} - \sqrt {\alpha^{(t)}} x^{(t-1)})^2} {\beta^{(t)}}
+        + \frac {(x^{(t-1)} - \sqrt {\bar \alpha^{(t-1)}} x^{(0)})^2} {1 - \bar \alpha^{(t-1)}}
+        - \frac {(x^{(t)} - \sqrt {\bar \alpha^{(t)}} x^{(0)})^2} {1 - \bar \alpha^{(t)}}
+        )) \\
+    &= C_1 exp(-\frac 1 2 (
+        (\frac {\alpha^{(t)}} {\beta^{(t)}} + \frac 1 {1 - \bar \alpha^{(t)}}) {x^{(t)}}^2
+        - 2(\frac {\sqrt {\alpha^{(t)}} x^{(t)}} {1 - \alpha^{(t)}}
+            + \frac {\sqrt {\bar \alpha^{(t-1)}} x^{(0)}} {1 - \bar \alpha^{(t-1)}}) x^{(t)}
+        + C_2
+        )) \\
+    &= N(x^{(t-1)}; \tilde \mu^{(t)}, \tilde \beta^{(t)} I) \\
+\tilde \beta^{(t)} &= \frac {1 - \bar \alpha^{(t-1)}} {1 - \bar \alpha^{(t)}} \beta^{(t)} \\
+\tilde \mu^{(t)} &= \frac {\sqrt {\alpha^{(t)}} (1 - \bar \alpha^{(t-1)})} {1 - \bar \alpha^{(t)}} x^{(t)}
+        + \frac {\sqrt {\bar \alpha^{(t-1)}} \beta^{(t)}} {1 - \bar \alpha^{(t)}} x^{(0)} \\
+    &= \frac {\sqrt {\alpha^{(t)}} (1 - \bar \alpha^{(t-1)})} {1 - \bar \alpha^{(t)}} x^{(t)}
+        + \frac {\sqrt {\bar \alpha^{(t-1)}} \beta^{(t)}} {1 - \bar \alpha^{(t)}}
+            (\frac 1 {\sqrt {\bar \alpha^{(t)}}} (x^{(t)} - \sqrt {1 - \bar \alpha^{(t)}} \bar z^{(t)})) \\
+    &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}} {\sqrt {1 - \bar \alpha^{(t)}}} \bar z^{(t)})
+\end{align*}$$
+
 -   为实现逆向过程 **分步拟合** 前向过程，需要计算 $q(x^{(t-1)}|x^{(t)})$
-    $$\begin{align*}
-    q(x^{(t-1)}|x^{(t)},x^{(0)}) &= q(x^{(t)}|x^{(t-1)}, x^{(0)}) \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})} \\
-        &= q(x^{(t)}|x^{(t-1)}) \frac {q(x^{(t-1)}|x^{(0)})} {q(x^{(t)}|x^{(0)})} \\
-        &= C_1 exp(-\frac 1 2 (
-            \frac {(x^{(t)} - \sqrt {\alpha^{(t)}} x^{(t-1)})^2} {\beta^{(t)}}
-            + \frac {(x^{(t-1)} - \sqrt {\bar \alpha^{(t-1)}} x^{(0)})^2} {1 - \bar \alpha^{(t-1)}}
-            - \frac {(x^{(t)} - \sqrt {\bar \alpha^{(t)}} x^{(0)})^2} {1 - \bar \alpha^{(t)}}
-            )) \\
-        &= C_1 exp(-\frac 1 2 (
-            (\frac {\alpha^{(t)}} {\beta^{(t)}} + \frac 1 {1 - \bar \alpha^{(t)}}) {x^{(t)}}^2
-            - 2(\frac {\sqrt {\alpha^{(t)}} x^{(t)}} {1 - \alpha^{(t)}}
-                + \frac {\sqrt {\bar \alpha^{(t-1)}} x^{(0)}} {1 - \bar \alpha^{(t-1)}}) x^{(t)}
-            + C_2
-            )) \\
-        &= N(x^{(t-1)}; \tilde \mu^{(t)}, \tilde \beta^{(t)} I) \\
-    \tilde \beta^{(t)} &= \frac {1 - \bar \alpha^{(t-1)}} {1 - \bar \alpha^{(t)}} \beta^{(t)} \\
-    \tilde \mu^{(t)} &= \frac {\sqrt {\alpha^{(t)}} (1 - \bar \alpha^{(t-1)})} {1 - \bar \alpha^{(t)}} x^{(t)}
-            + \frac {\sqrt {\bar \alpha^{(t-1)}} \beta^{(t)}} {1 - \bar \alpha^{(t)}} x^{(0)} \\
-        &= \frac {\sqrt {\alpha^{(t)}} (1 - \bar \alpha^{(t-1)})} {1 - \bar \alpha^{(t)}} x^{(t)}
-            + \frac {\sqrt {\bar \alpha^{(t-1)}} \beta^{(t)}} {1 - \bar \alpha^{(t)}}
-                (\frac 1 {\sqrt {\bar \alpha^{(t)}}} (x^{(t)} - \sqrt {1 - \bar \alpha^{(t)}} \bar z^{(t)})) \\
-        &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}} {\sqrt {1 - \bar \alpha^{(t)}}} \bar z^{(t)})
-    \end{align*}$$
-    -   事实上，$q(x^{(t-1)}|x^{(t)})$ 无法计算得到解析式，故转而计算 $q(x^{(t-1)}|x^{(t)}, x^{(0)})$
-        -   根据概率图模型的条件独立性质，二者应取值相等，但变换不同
-        -   当然，后续损失函数也需配合做相应变换
-    -   上述推导由条件概率公式计算、并匹配高斯分布形式得到
+    -   事实上，$q(x^{(t-1)}|x^{(t)}),t \geq 2$ 无法计算得到解析式，故转而计算 $q(x^{(t-1)}|x^{(t)}, x^{(0)})$
+        -   根据概率图模型的条件独立性质，二者应取值相等
+        -   考虑到，边缘分布 $q(x^{(t)})$ 未知，而条件分布 $q(x^{(t)}|x^{(0)})$ 可根据正向过程得到
+        -   当然，**后续损失函数因此配合做相应变换**
+    -   另外，上述推导基于 **条件概率公式计算后验分布**（并匹配高斯分布形式）
         -   事实上，可直接从正向过程根据 $x^{(t)}$ 构造 $x^{(t)}$ 出发
         -   结合小扩散速率 $\beta$ 情况下逆过程分布满足高斯构造方程组求解得到 $\tilde \beta^{(t)}, \tilde \mu^{(t)}$ 表达式
     -   类似正向过程，反向过程由 $x^{(t)}$ 构造 $x^{(t-1)}$、并重参数化至 $z^{(')}$ 有
         $$\begin{align*}
-        x^{(t-1)} &= \tilde \mu^{(t)} + \sqrt {\tilde \beta^{(t)}} z^{'} \\
+        x^{(t-1)} &= \begin{cases}
+            \tilde \mu^{(t)} + \sqrt {\tilde \beta^{(t)}} z^{'} &, t \geq 2\\
+            \tilde \mu^{(t)} &, t = 1\\
+        \end{cases} \\
         z^{'} &\sim N(0, 1) \\
         \end{align*}$$
 
@@ -1603,8 +1608,12 @@ $$\begin{align*}
 
 -   则，类似正向过程可得 $x^{(t-1)}$ 构造逻辑
     $$\begin{align*}
-    x^{(t-1)} &= \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
-            {\sqrt {1 - \bar \alpha^{(t)}}} z_{\theta}(x^{(t)},t)) + \sigma^{(t)} z^{'} \\
+    x^{(t-1)} &= \begin{cases}
+            \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+                {\sqrt {1 - \bar \alpha^{(t)}}} z_{\theta}(x^{(t)},t)) + \sigma^{(t)} z^{'} &, t \geq 2 \\
+            \frac 1 {\sqrt {\alpha^{(t)}}}(x^{(t)} - \frac {\beta^{(t)}}
+                {\sqrt {1 - \bar \alpha^{(t)}}} z_{\theta}(x^{(t)},t)) &, t=1 \\
+        \end{cases} \\
     z^{'} &\approx N(0, 1)
     \end{align*}$$
     > - $z^{'}$：逆向过程中随机抽样噪声
