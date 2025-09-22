@@ -7,7 +7,7 @@ tags:
   - Setuptools
   - Pip
 date: 2025-01-19 20:13:19
-updated: 2025-02-08 16:33:08
+updated: 2025-09-22 22:19:10
 toc: true
 mathjax: true
 description: 
@@ -63,6 +63,7 @@ description:
 | `conda`                   | 系统级包管理器                                                    |
 | `pipenv`                  | 整合 `Pipfile`、`pip`、`virtualenv`，方便开发应用程序（而不是库） |
 | `poetry`                  | 整合 `pip`、`virutalenv`、`setuptools`，管理项目全周期            |
+| `pixi`                    | 系统级包管理器，基于 *Conda* 生态同时支持 *PyPI* 生态             |
 
 -   说明
     -   `virtualenv` 是最初的 Python 虚拟环境管理工具
@@ -78,10 +79,16 @@ description:
         -   即，`pyenv` 无需 Python 环境，不支持 Windows 平台
         -   `pyenv` 介入 Bash 中 `python` 命令执行链路，将分发 `python` 调用至指定的 Python 工具链
         -   `pyenv-virtualenv` 在 Python3.3 后将尝试 `python -m venv` 而不是 `virtualenv`
-    -   `pip` 依赖 *PyPi* 实现 Python 包管理，包括安装、**构建**（前端）
+    -   `pip` 依赖 *PyPI* 实现 Python 包管理，包括安装、**构建**（前端）
     -   `conda` 是系统级包管理器
         -   `conda` 提供单独的执行环境，可以以独立、用户空间的方式安装软件包
         -   即，`conda` 可在无需 root 权限方式安装软件链，可视为 *Docker* 的轻量级替代
+    -   `pixi` 是基于 *Conda* 生态、对标 *Conda* 的系统级包管理器
+        -   相较于 *Conda* 侧重项目管理，即为项目配置环境、而不是激活全局环境
+            -   默认环境在项目目录目录 `.pixi` 文件夹中（也可更改为集中放置）
+            -   无默认全局激活环境（但可配置全局暴露环境）
+        -   整合、统一管理 *Conda* 生态、*PyPI* 生态
+#TODO
 
 > - *The difference between venv, pyenv...*：<https://stackoverflow.com/questions/41573587/what-is-the-difference-between-venv-pyvenv-pyenv-virtualenv-virtualenvwrappe>
 > - *Conda v.s. Pip*：<https://www.reddit.com/r/Python/comments/w564g0/can_anyone_explain_the_differences_of_conda_vs_pip/>
@@ -92,7 +99,7 @@ description:
 | 包、应用     | 说明                                                 |
 |--------------|------------------------------------------------------|
 | `distutils`  | 标准库，后续所有打包工具的依赖，通过 `setup.py` 配置 |
-| `setuptools` | `distutils` 增强版，最常用的打包工具                 |
+| `setuptools` | `distutils` 增强版，最常用的打包工具，构建后端       |
 | `distribute` | `setuptools` 分支，现已合并回 `setuptools`           |
 | `distutils2` | 试图加入标准库失败，已废弃                           |
 | `packaging`  | 打包核心模块                                         |
@@ -132,6 +139,7 @@ description:
 > - *PEP 517 - A build-system independent format for source trees*：<https://peps.python.org/pep-0517/#terminology-and-goals>
 > - *Python 打包指南*：<https://packaging.pythonlang.cn/en/latest/guides/>
 > - *Python Packaging Guide*：<https://packaging.python.org/en/latest/guides/>
+> - *Conda & PyPI*：<https://pixi.sh/latest/concepts/conda_pypi/>
 
 ####    `pyproject.toml`
 
@@ -177,6 +185,7 @@ build-backend = "setuptools.build_meta"
     -   `[tool]` 表：包含与工具相关的子表，具体配置依赖构建工具
 
 > - *Writing your pyproject.toml*：<https://packaging.python.org/en/latest/guides/writing-pyproject-toml/>
+> - Python 打包发布：`pyproject.toml` 现代配置指南：<https://zhuanlan.zhihu.com/p/1893271684603159649>
 
 ## *Pip*
 
@@ -227,3 +236,149 @@ build-backend = "setuptools.build_meta"
 > - *Why you shouldn't invoke setup.py directly*：<https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html>
 > - Python 打包分发工具 `setuptool`：<https://zhuanlan.zhihu.com/p/460233022>
 > - Python `setup.py`：<https://zhuanlan.zhihu.com/p/276461821>
+
+##  *Conda*
+
+-   *Conda*：包、环境管理工具
+
+> - *Conda* 入门：<https://docs.conda.org.cn/projects/conda/en/stable/user-guide/getting-started.html>
+
+### *Conda* 配置
+
+-   *Conda* 配置：`~/.condarc`
+    -   包源配置
+        -   `channels`：实际搜索包源通道，列表
+            -   默认仅包含 `defaults`
+                -   即，默认包源为下述 `default_channels` 字段中全体
+                -   若其被修改，且不包含 `defaults` 项，则 `default_channels` 默认包源中包源不被搜索
+            -   非 *URL* 格式通道被解释为 *Anaconda.org* 用户、组织名
+                -   即，其之前被添加 `channel_alias` 指定的 *URL* 路径组成完整路径
+        -   `default_channels`：默认包源通道，列表
+            -   默认指向 `https://repo.anaconda.org/` 库中的多个包源通道
+                -   硬编码，在 25.3.0 版本后将被移除
+                -   可视为包含多项形如 `https://repo.anaconda.org/XXX` 的列表
+            -   可自定义、覆盖
+        -   `channel_alias`：通道别名，即 **添加在社区包源通道（非 *URL* 通道）的前缀**
+            -   社区包源通道
+                -   `conda-forge`
+                -   `bioconda`
+            -   默认为 `https://conda.anaconda.org/`
+            -   用于简化 *Anaconda* 社区包源配置
+                -   `channels` 字段中非 *URL* 通道
+                -   命令行 `-c`、`--channel` 指定的非 *URL* 通道
+        -   `custom_channels`：指定 **特定社区包源通道地址**，字典
+            -   其中社区包源通道将被直接指定为配置地址，优先级高于 `channel_alias`
+            -   其余未指定的社区（非 *URL* 格式）包源通道依然添加 `channel_alias` 字段作为前缀
+        -   包源说明配置
+            -   `channels`：优先级最高，真正包源通道配置
+            -   `default_channels`：优先级最低，默认包源通道，需要 `defaults` 被加入 `channels` 中生效
+            -   `channels_alias`：社区包源通道前缀（镜像站点）
+            -   `custom_channels`：特定社区包源镜像地址
+
+> - *Conda Settings*：<https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/settings.html>
+> - *Conda Mirror Channels*：<https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/mirroring.html>
+> - *Conda* 设置：<https://docs.conda.org.cn/projects/conda/en/stable/user-guide/configuration/settings.html>
+
+##  *Pixi*
+
+-   *Pixi*：*Pixi* 基于 *Conda* 生态系统，且同时支持 *PyPI* 包管理（依赖 `uv` 项目）
+    -   功能支持
+        -   工作台（项目）环境管理
+            -   多环境管理
+            -   跨平台环境支持
+        -   全局环境管理 `$ pixi global`
+        -   任务配置、执行
+    -   `pixi.toml`：*Pixi* 默认配置文件
+        -   *Pixi* 也支持 `pyproject.toml` 模式的配置文件
+
+> - *Basic Usage of Pixi*：<https://pixi.sh/latest/getting_started/>
+> - *Windows* 中使用 *Pixi* 替代 *Conda*：<https://zhuanlan.zhihu.com/p/1891081313118839047>
+> - *Pixi Global*：<https://pixi.sh/latest/reference/cli/pixi/global/>
+
+### *Pixi* 配置
+
+-   *Pixi* 配置：`~/.pixi/config.toml` 全局配置、`<PROJ_ROOT>/.pixi/config.toml` 项目配置
+    -   *Conda* 包源
+        -   `default-channels`：默认包源，列表
+            -   默认为 `[ conda-forge ]` 
+            -   仅用于初始化工作目录时，项目包源由项目内配置确定
+        -   `mirrors`：替换包源 *URL* 地址中匹配前缀部分为镜像站地址，值为列表的字典
+            -   *Pixi* 优先匹配最长前缀并替换
+            -   镜像站地址应为列表，按顺序尝试作为替换目标
+                -   首个镜像地址被用于获取 *repodata*
+            -   此配置同样影响 *PyPI* 包源
+    -   *PyPI* 包源
+        -   `index-url`：默认 *PyPI* 包索引地址
+            -   `$ pixi init` 时，将被加入项目的 *manifest* 文件中
+            -   全局配置对项目配置不生效
+        -   `extra-index-url`：额外的 *PyPI* 包索引地址，列表
+            -   `$ pixi init` 时，将被加入项目的 *manifest* 文件中
+            -   全局配置对项目配置不生效
+        -   `allow-insecure-host`：允许的不安全地址（非 `https`），列表
+            -   全局配置对项目配置不生效
+
+> - *The Configuration of Pixi Itself*：<https://pixi.sh/dev/reference/pixi_configuration/>
+> - *Pixi Manifest*：<https://pixi.sh/latest/reference/pixi_manifest/>
+
+### 工作台（项目）管理
+
+| 工作台（项目）命令 | 说明                 |
+|--------------------|----------------------|
+| `pixi init`        | 在当前工作目录初始化 |
+| `pixi add`         | 添加依赖             |
+| `pixi remove`      | 移除依赖             |
+| `pixi update`      | 更新配置文件中依赖   |
+| `pixi upgrade`     | 更新依赖项           |
+| `pixi lock`        | 创建 lockfile        |
+| `pixi info`        | 工作台信息           |
+| `pixi shell`       | 启动激活环境 Shell   |
+| `pixi list`        | 列出依赖             |
+| `pixi tree`        | 列出依赖树           |
+| `pixi clean`       | 移除环境             |
+
+####    多特性、环境管理
+
+| `feature.<NAME>` 环境描述字段 | 描述                                   |
+|-------------------------------|----------------------------------------|
+| `dependecies`                 | 依赖                                   |
+| `pypi-dependencies`           | *PyPI* 依赖                            |
+| `system-requirements`         | 系统需求                               |
+| `activation`                  | 环境激活配置                           |
+| `platforms`                   | 平台要求                               |
+| `channels`                    | 包源通道，可添加 `priority` 项避免覆盖 |
+| `target`                      | 目标平台子项                           |
+| `tasks`                       | 任务                                   |
+
+
+-   *Pixi* 通过配置 `feature`、`environment` 管理多环境
+    -   每个 `feature` 可以包含完整的环境描述
+        -   默认环境即为 `default`，无前缀环境描述字段可认为是省略 `feature.default` 的缩写
+    -   环境 `environment` 可由多个 `feature` 组成
+        -   未置位 `no-default-feature` 时，所以环境默认包含 `default` 环境描述
+        -   可配置 `solve-group` 以保证多个环境共同解析，确保多个环境依赖一致
+
+> - *Pixi Multi Environment*：<https://pixi.sh/latest/workspace/multi_environment/>
+> - 一分钟带你上手 *Pixi* 多环境：<https://zhuanlan.zhihu.com/p/1943035961463243343>
+
+### *Pixi Global*
+
+| `pixi global` 子命令 | 说明                                       |
+|----------------------|--------------------------------------------|
+| `install`            | 全局安装包至其自身环境                     |
+| `uninstall`          | 从全局空间移除环境                         |
+| `add`                | 向环境中添加包                             |
+| `sync`               | 依全局配置文件 `pixi-global.toml` 同步环境 |
+| `edit`               | 编辑全局配置文件                           |
+| `update`             | 更新全局环境                               |
+| `list`               | 列出全局环境                               |
+
+-   *Pixi Global*：安装、管理全局工具（非全局工具无意义）
+    -   *Pixi Global* 将隔离安装全局工具在各自环境
+        -   只暴露各环境中必要调用点，可通过 `--with`、`add` 避免暴露
+        -   注意，多个环境是 **同时都在生效**
+    -   *Pixi Global* 支持从源文件 `--path`、`--git` 安装
+    -   配置文件为 `~/.pixi/manifest/pixi-global.toml`
+        -   其中可配置 `channels`、`dependencies`、`exposed`
+
+> - *Pixi Global Tools*：<https://pixi.sh/latest/global_tools/introduction/>
+> - *Pixi Global Manifes*：<https://pixi.sh/latest/global_tools/manifest/>
