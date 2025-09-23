@@ -7,7 +7,7 @@ tags:
   - Setuptools
   - Pip
 date: 2025-01-19 20:13:19
-updated: 2025-09-22 22:19:10
+updated: 2025-09-23 20:38:05
 toc: true
 mathjax: true
 description: 
@@ -64,6 +64,8 @@ description:
 | `pipenv`                  | 整合 `Pipfile`、`pip`、`virtualenv`，方便开发应用程序（而不是库） |
 | `poetry`                  | 整合 `pip`、`virutalenv`、`setuptools`，管理项目全周期            |
 | `pixi`                    | 系统级包管理器，基于 *Conda* 生态同时支持 *PyPI* 生态             |
+| `hatch`                   | 涵盖项目的依赖管理、环境管理、测试、打包、发布全流程              |
+| `uv`                      | Python 包管理、环境管理                                           |
 
 -   说明
     -   `virtualenv` 是最初的 Python 虚拟环境管理工具
@@ -88,7 +90,6 @@ description:
             -   默认环境在项目目录目录 `.pixi` 文件夹中（也可更改为集中放置）
             -   无默认全局激活环境（但可配置全局暴露环境）
         -   整合、统一管理 *Conda* 生态、*PyPI* 生态
-#TODO
 
 > - *The difference between venv, pyenv...*：<https://stackoverflow.com/questions/41573587/what-is-the-difference-between-venv-pyvenv-pyenv-virtualenv-virtualenvwrappe>
 > - *Conda v.s. Pip*：<https://www.reddit.com/r/Python/comments/w564g0/can_anyone_explain_the_differences_of_conda_vs_pip/>
@@ -105,6 +106,7 @@ description:
 | `packaging`  | 打包核心模块                                         |
 | `build`      | 兼容 *PEP 517* 的构建前端                            |
 | `twine`      | 上传包至 *PyPI*                                      |
+| `hatch`      | 涵盖项目的依赖管理、环境管理、测试、打包、发布全流程 |
 
 -   *Python* 打包：需要根据项目受众、运行环境选择相应的打包技术
     -   打包 *Python* 库和工具：为开发人员在开发环境中使用的库、工具、基本程序
@@ -144,6 +146,7 @@ description:
 ####    `pyproject.toml`
 
 ```toml
+# Project infomation.
 [project]
 name = "pyproj"
 version = 0.0.1
@@ -171,21 +174,44 @@ cli = [
 Homepage = "https://example.com"
 Issues = "https://example.com/issues"
 
+# Specify build system.
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools >= 60.0"]
 build-backend = "setuptools.build_meta"
 
-[tool]
-# Build backend specific.
+# Specifications for tools such as linter, build-backend and etc.
+[tool.<MOD>]
 ```
 
--   `pyproject.toml`：打包工具所需的配置文件（代码检查工具等也使用此配置文件）
-    -   `[project]` 表：包含构建工具所需的项目基本元信息
+-   `pyproject.toml`：现代 Python 项目配置文件（代码检查工具等也使用此配置文件）
+    -   `[project]` 表：项目基本元信息
+        -   构建工具将根据此部分项目元信息设置 Python 包信息
     -   `[build-system]` 表：指定构建后端
-    -   `[tool]` 表：包含与工具相关的子表，具体配置依赖构建工具
+    -   `[tool]` 表：项目中涉及的、特定工具相关的配置
+        -   包括构建后端配置、代码检查工具配置等
+        -   子表名一般即工具包名，子表具体配置项取决于工具自身
 
 > - *Writing your pyproject.toml*：<https://packaging.python.org/en/latest/guides/writing-pyproject-toml/>
 > - Python 打包发布：`pyproject.toml` 现代配置指南：<https://zhuanlan.zhihu.com/p/1893271684603159649>
+
+####    `MANIFEST.in`
+
+```conf
+# Include files matching pattern.
+include data/*.txt
+# Exclude files matching pattern.
+exclude data/*.rst
+# Include the whole directory and keep the file-tree structure.
+recursive-include templates *
+```
+
+-   `MANIFEST.in` 文件：指示打包、发布 Python 应用程序时应包含的文件、目录
+    -   使用 *Setuptools* 工具构建、打包 Python 项目时，工具默认会自动检查、打包所需文件目录
+        -   大部分情况下，无需配置 `MANIFEST.in` 文件
+        -   仅在需要自定义打包范围，添加、排除特定文件、目录时需要配置 `MANIFEST.in`
+
+> - *Controlling files in the distribution*：<https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html>
+> - Python 项目是否需要 `MANIFEST.in` 文件：<https://geek-docs.com/python/python-ask-answer/511_python_do_python_projects_need_a_manifestin_and_what_should_be_in_it.html>
 
 ## *Pip*
 
@@ -213,27 +239,84 @@ build-backend = "setuptools.build_meta"
 ##  *Setuptools*
 
 -   *Setuptools*：Python 最常用打包与分发工具
-    -   功能
-        -   Python 库的打包与分发：资源文件、数据文件、命名空间包
-        -   依赖包安装与版本管理：必须依赖、可选依赖
-        -   指定 Python 版本
-        -   可执行脚本生成：*Entry Points*
-        -   *C/C++* 扩展
-    -   `setuptools.setup` 函数：打包配置函数
-        -   `setup` 函数参数即打包配置：类似 `pyproject.toml` 中 `[project]`、`[tool.setuptools]` 表
-            -   `name`：项目名
-            -   `packages`：待打包包（子包需要分别独立指定）
-            -   `package_dir`：包所在目录（仅在包不位于根目录、或包结构与目录结构不对应时需配置）
-        -   传统配置 `setup.py` 文件核心即此函数
-            -   带参数执行文件（即调用 `setup` 函数）即可完成打包工作（不再推荐）
--   `setuptools` 功能
-    -   （命名空间）包自动发现：`setuptools` 支持两种常见的项目层次下的包、命名空间包自动发现
-        -   `src-layout`：`<PROJECT-ROOT>/src/pkg/.../`
-        -   `flat-layout`：`<PROJECT-ROOT>/pkg/.../`
-
+    -   *Setuptools* 最开始即是 Python 项目构建后端
+        -   现在已扩展功能包括构建、安装、元信息管理等
+        -   常被用于构建陈旧的项目，历史包袱重
+        -   为此，为确保功能稳定，开发者不应依赖具体实现细节
+    -   工具链
+        -   构建前端 `build`：
+        -   包上传管理 `twine`：
 > - *Setuptools User Guide*：<https://setuptools.pypa.io/en/latest/userguide/index.html>
-> - 构建与发布：<https://pyloong.github.io/pythonic-project-guidelines/guidelines/project_management/distribution/>
+> - *Supported Interface*：<https://setuptools.pypa.io/en/latest/userguide/interfaces.html>
+
+### `setuptools.setup`
+
+-   `setuptools.setup` 函数：打包配置函数
+    -   `setup` 函数参数即打包配置：`pyproject.toml` 中 `[project]`、`[tool.setuptools]` 表即来源其参数
+        -   `name`：项目名
+        -   `packages`：待打包包（子包需要分别独立指定）
+        -   `package_dir`：包所在目录（仅在包不位于根目录、或包结构与目录结构不对应时需配置）
+    -   传统配置 `setup.py` 文件核心即此函数
+        -   带参数执行文件（即调用 `setup` 函数）即可完成打包工作（不再推荐）
+
 > - *Why you shouldn't invoke setup.py directly*：<https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html>
+
+### *Setuptools* 功能、配置
+
+```toml
+# Dependency management.
+[project]
+...
+dependencies = [
+    "<SOME_DEP>",
+    "<SOME_DEP> >= 0.1",
+    ...
+]
+
+# Entry points.
+[project.scritps]
+cli-name = "<PKG>.<MOD>:some_func"
+
+# Package discovery.
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*"]
+exclude = []
+namespaces = true
+```
+
+-   *Setuptools* 功能
+    -   Python 版本管理、依赖版本管理、包安装
+        -   安装项目时，未安装依赖将通过 *PyPI* 获取、构建、安装
+        -   可分别配置必须依赖、可选依赖
+        -   通过 `pip install -e <PKG>` 以可编辑方式安装项目
+            -   `-e` 选项将在安装包目录创建链接指向项目
+            -   项目的更改被整个环境事实感知
+    -   项目打包与分发
+        -   包、命名空间包发现
+            -   对简单项目目录结构，*Setuptools* 能自动发现所有包、命名空间包
+                -   `src-layout`：`<PROJECT-ROOT>/src/pkg/.../`
+                -   `flat-layout`：`<PROJECT-ROOT>/pkg/.../`
+            -   对复杂项目目录结构，可通过配置打包范围
+                -   `setuptools.packages` 列表：直接指定所有需打包包
+                    -   包结构需要与项目目录结构相匹配
+                    -   当，包结构需要与项目目录结构不匹配时可用 `package-dir` 表为各包指定路径
+                -   `setuptools.packages.find` 表：配置包发现逻辑
+                    -   包发现根路径
+                    -   指定待打包的包包名、路径的模式
+        -   资源（数据）文件
+            -   `setuptools.include-package-data` 置位：打包包内 `MANIFEST.in` 文件指定、或版本控制系统管理的资源文件
+                -   由版本控制系统控制范围时，需配置 `setuptools-scm` 等插件
+            -   `setuptools.package-data` 表：打包包内名称符合模式的资源
+                -   可为各包分别指定资源文件名模式（`*` 表示所有包）
+            -   `setuptools.exclude-package-data` 表：排除包内名称符合模式的资源
+    -   配置 *Entry Points* 执行入口
+        -   项目安装时将为执行入口创建可执行脚本
+            -   `[project.scripts]` 表单：定义执行入口
+    -   构建 *C/C++* 扩展模块
+
+> - *Setuptools Quickstart*：<https://setuptools.pypa.io/en/latest/userguide/quickstart.html>
+> - 构建与发布：<https://pyloong.github.io/pythonic-project-guidelines/guidelines/project_management/distribution/>
 > - Python 打包分发工具 `setuptool`：<https://zhuanlan.zhihu.com/p/460233022>
 > - Python `setup.py`：<https://zhuanlan.zhihu.com/p/276461821>
 
