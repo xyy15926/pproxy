@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-16 09:53:49
-updated: 2025-08-31 20:36:59
+updated: 2025-10-07 21:28:06
 toc: true
 mathjax: true
 description: 
@@ -1340,6 +1340,102 @@ H_t(T) & = -\sum_k (\frac {N_{t,k}} {N_t} log \frac {N_{t,k}} {N_t})
 
 > - <http://www.mclover.cn/blog/index.php/archives/60.html>
 > - <http://www3.stat.sinica.edu.tw/statistica/oldpdf/A7n41.pdf>
+
+##  *Principal Component Analysis* 
+
+### 线性降维
+
+-   考虑对数据 $X \in R^{n * p}$ 通过线性变化降维，得到 $Z = XA, Z \in R^{n * m}, A \in R^{p * m} , m < p$
+    -   为保证降维前后信息不丢失，即存在 $A^{'} \in R^{m * p}$ 使得可从 $Z$ 恢复 $X = ZA^{'}$，则应有 $rank(X) = m$
+    -   实际上，数据不可能满足 $rank(X) = m$，只需要 $Z$ 能包含 $X$ 中大部分信息，即有 $X = ZA^{'} + \epsilon$ 即可
+        -   此时，$Z, A^{'}$ 都是未知量，无法直接求解，需要添加限制
+
+### *PCA*
+
+$$\begin{align*}
+Z &= XA \\
+    &= (X_{.,1}, \cdots, X_{.,p}) (A_{.,1}, \cdots, A_{.,p}) \\
+    &= (XA_{.,1}, \cdots, XA_{.,p}) \\
+
+\arg\max_{A_{.,i}} & Var(Z_{.,i}) = Var(XA_{.,i}), i=1,\cdots,p \\
+s.t. & A_{.,i}A_{.,i}^T = 1, i=1,\cdots,p \\
+    & A_{.,i}A_{.,j}^T = 0, i \neq j \\
+\end{align*}$$
+
+-   *PCA* 主成分分析：将原始变量 $X$ 转换为原始变量的线性组合 $Z$（主成分），以在保留主要信息的基础上实现简化、降维
+    -   限制条件
+        -   $Z$ 的协方差矩阵为对角阵，且对角线元素逐渐减小
+            -   $Z = (Z_{.,1}, \cdots, Z_{.,p})$ 各分量（列向量）之间线性无关
+            -   $Z = (Z_{.,1}, \cdots, Z_{.,p})$ 各分量方差按顺序递减
+        -   变换矩阵 $A$ 为正交阵
+    -   由线性代数，$A$ 为矩阵 $X$ 的单位特征向量组成的矩阵，且其中特征向量顺序按特征根 $\lambda_i, i=1,\cdots,p$ 大小排列符合要求
+        -   $X = ZA^T$：由正交矩阵 $A$ 性质
+        -   $Z = XA$ 定义为主成分得分矩阵，有
+            $$\begin{align*}
+            Var(Z_{.,i},Z_{.,j}) &= 0, i \neq j \\
+            Var(Z_{.,i},Z_{.,i}) &= \lambda_i \\
+            \sum_{i=1}^p \sigma_{j,j} = \sum_{i=1}^p Var(Z_{.,i}) &= \sum_{i=1}^p \lambda_i
+            \end{align*}$$
+            > - $\sigma_{j,j} =  Var(X_{.,i})$ 为 $X$ 协方差矩阵对角线元素
+        -   $\rho(Z_{.,i}, X_{.,j})$ 定义为因子载荷 ：度量主成分 $Z_{.,i}$ 对数据分量 $X_{.,j}$ 方差贡献度
+            $$\begin{align*}
+            \rho(Z_{.,i}, X_{.,j}) &= \sqrt {\frac {\lambda_i} {\sigma_{j,j}}} A_{j,i} \\
+            \sum_{i=1}^p \rho^2(Z_{.,i}, X_{.,j}) &= 1 \\
+            \sum_{j=1}^p \sigma_{j,j} \rho^2(Z_{.,i}, X_{.,j}) &= \lambda_i
+            \end{align*}$$
+    -   （方差）贡献度
+        -   $\frac {\lambda_i} {\sum_{i=1}^p \lambda_i}$：主成分 $Z_{.,i}$ 对数据 $X$ 的方差贡献度
+        -   $\frac {\sum_{i=1}^m \lambda_i} {\sum_{i=1}^p \lambda_i}$：前 $m$ 个主成分 $Z_{.,i}$ 对数据 $X$ 的方差贡献度
+        -   $\sum_{i=1}^m \rho(Z_{.,i}, X_{.,j}) = \sum_{i=1}^m \sqrt {\frac {\lambda_i} {\sigma_{j,j}}} A_{j,i}$：前 $m$ 个主成分 $Z_{.,i}$ 对数据分量 $X_{.,j}$ 贡献度
+    -   若有必要，主成分分析前需要对数据 $X$ 标准化（否则大方差分量可能占主导地位，影响结果）
+        $$\begin{align*}
+        \rho(Z_{.,i}, X_{.,j}) &= \sqrt {\lambda_i} A_{j,i} \\
+        \sum_{j=1}^p \rho^2(Z_{.,i}, X_{.,j}) &= \lambda_i \\
+        Z_{.,i}Z_{.,j}^T &= Var(Z_{.,i}, Z_{0,j}) = 0, i \neq j \\
+        Z_{.,i}Z_{.,i}^T &= Var(Z_{.,i}, Z_{0,i}) = \lambda_i \\
+        \end{align*}$$
+
+> - 多元统计分析第11讲（主成分分析：基本思想以及性质）：<https://zhuanlan.zhihu.com/p/337179553>
+
+### 因子分析
+
+$$\begin{align*}
+X - \mu &= F A^T + \epsilon \\
+Var(X - \mu) &= A^T Var(F) A + Var(\epsilon) \\
+    &= A^T A + Var(\epsilon)
+\end{align*}$$
+> - $X \in R^{n * p}$：原始数据矩阵
+> - $\mu \in R^n$：回归方程常数项
+> - $F \in R^{n * m}$：公共因子矩阵，公共因子协方差矩阵为单位阵
+> - $A^T \in R^{m * p}$：系数矩阵、因子载荷矩阵（为保持和主成分分析中符号一致使用转置）
+> - $\epsilon \in R^{n * p}$：特殊因子矩阵，特殊因子矩阵协方差矩阵为对角矩阵（即特殊因子之间两两不相关，$X$ 分量间相关性由因子矩阵 $F$ 刻画）
+
+-   因子分析：用少数变量（因子）表示众多变量间的基本结构、主要信息
+    -   因子分析模型特征
+        -   因子分析模型不受数据矩阵 $X$ 线性变换影响
+        -   因子载荷矩阵 $F$ 不唯一
+    -   因子载荷矩阵 $A^T$ 的特征（数据矩阵 $X$ 标准化后，此处因子载荷与主成分分析中因子载荷是一致的）
+        $$\begin{align*}
+        E(X_{.,i}, F_{.,j}) &= A^T_{j,i} \\
+        Var(X{.,i}, X_{.,i}) &= \sum_{j=1}^m (A^T_{j,i})^2 Var(F_{.,i}) + Var(\epsilon_i) \\
+            &= \sum_{j=1}^m (A^T_{j,i})^2 + Var(\epsilon_i) \\
+            &= h_i^2 + Var(\epsilon_i), h_i^2 = \sum_{j=1}^m (A^T_{j,i})^2 \\
+        \end{align*}$$
+        -   $h_i^2 = \sum_{j=1}^m (A^T_{j,i})^2$：变量 $i$ 的共同度，共同度越大因子模型效果越好
+        -   $q_j^2 = \sum_{i=1}^p (A^T_{j,i})^2$：公共因子 $j$ 的方差贡献，方差贡献越大公共因子的重要程度越大
+    -   因子载荷矩阵 $A^T$ 的求解
+        -   迭代求解：以主成分分析中线性变换矩阵 $A, A^T$ 作为迭代起始
+        -   主成分分析法
+            -   求解主成分分析中线性变换矩阵 $A, A^T$
+            -   忽略 $A$ 末尾 $m+1,p$ 分量、并对剩余分量乘以 $\sqrt {\lambda_i}$ 得到 $\hat A^T$ 即为一个可行因子载荷矩阵
+                $$\begin{cases}
+                \hat A^T &= (\sqrt {\lambda_1} A_{.,1}, \cdots, \sqrt {\lambda_m} A_{.,m})^T \\
+                \hat h_i^2 &= \sum_{j=1}^m (\hat A^T_{j,i})^2 \\
+                \end{cases}$$
+            -   基于 $\hat A^T$ 做旋转可以得到其他满足要求的因子载荷矩阵
+
+> - 多元统计分析第12讲（主成分分析应用，因子模型初步）：<https://zhuanlan.zhihu.com/p/338842227>
+> - 多元统计分析第13讲（因子分析：载荷矩阵的估计，因子旋转；典型相关分析基本思想）：<https://zhuanlan.zhihu.com/p/340497643>
 
 ##  *K-Nearest Neigbhor*
 
