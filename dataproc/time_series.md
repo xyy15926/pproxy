@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-22 15:48:34
-updated: 2024-07-22 19:23:26
+updated: 2025-11-04 22:58:31
 toc: true
 mathjax: true
 description: 
@@ -580,9 +580,215 @@ Y_t & = c + \Pi_1 Y_{t-1} + \Pi_2 Y_{t-2} + \cdots + \Pi_k Y_{t-k} + u_t + \Phi 
     -   方差分析
     -   模型预测
 
-##  *ARIMA* 模型
+##  *Stationary Time Series*
 
-### 建模流程
+-   平稳时间序列
+    -   *Weak Statinarity* 弱平稳：若时间序列 $x_t$ 满足一阶矩、二阶矩随时间 $t$ 不变，则称为弱平稳
+        -   均值恒等：$E(x_t) = \mu$
+        -   方差恒定：$Var(x_t) = \gamma_0$
+        -   自协方差仅与滞后步数 $k$ 相关：$Cov(x_t, x_{t-k}) = \gamma_k$
+
+### 相关系数
+
+$$\begin{align*}
+\rho_k &= \frac {Cov(x_t, x_{t-k})} {\sqrt {Var(x_t) Var(x_{t-k})}} = \frac {\gamma_k} {\gamma_0} \\
+\hat \rho_k &= \frac {\sum_{t=k+1}^T (x_t - \bar x) (x_{t-k} - \bar x) / (T - k)}
+    {\sum_{t=1}^T (x_t - \bar x)^2 / T}
+\end{align*}$$
+> - $\rho_k, \hat \rho_k$：滞后 $k$ 步自相关系数、*ACF* 估计值
+
+-   *Auto-Correlation Function* 自相关系数 $\rho_k$：当前值 $x_t$ 与前 $k$ 步值 $x_{t-k}$ 间相关性
+    -   平稳序列自相关系数仅与滞后步数 $k$ 有关
+
+### 差分、延迟
+
+####    差分运算
+
+$$\begin{cases}
+\Delta x_t &= x_t - x_{t-1} = (1 - B) x_t &, 一阶差分 \\
+\Delta_k x_t &= x_t - x_{t-k} = (1 - B^k) x_t &, k 步差分 \\
+\Delta^p x_t &= \Delta^{p-1} x_t - \Delta^{p-1} x_{t-1} = (1 - B)^p x_t &, p 阶差分 \\
+\end{cases}$$
+
+-   差分运算：时间序列中相差 $k$ 步元素 $p$ 阶做差
+
+####    延迟算子
+
+$$\begin{cases}
+B^0 &= 1 \\
+B(c x_t) &= c B(x_t) = c x_{t-1} \\
+B(x_t \pm y_t) &= x_{t-1} \pm y_{t-1} \\
+B^k x_t &= x_{t-k} \\
+(1 - B)^p x_t &= \sum_{i=1}^n C_n^i (-1)^i B^i \\
+\end{cases}$$
+
+-   延迟算子：类似时间指针，将序列值乘以延迟算子相当于将序列值向过去拨去一个时刻（下标减 1）
+    -   如上，延迟算子可以用于表示差分运算
+
+#### （齐次）线性差分方程
+
+$$\begin{align*}
+& x_t + a_1 x_{t-1} + a_2 x_{t-2} + \cdots + a_p x_{t-p} = h(t) \equiv 0 \\
+\Rightarrow & \lambda^p + a_1 \lambda^{p-1} + \cdots + a_{p-1} \lambda + a_p = 0 \\
+\Rightarrow & x_t = \sum_{j=1}^J \sum_{i=1}^{D_j} c_{j,i} t^{i-1} \lambda_j^t
+    + \sum_{j=D+1}^{p - 2M} c_i \lambda_j^t 
+    + \sum_{j=1}^M r_j^t(c_{j0} cos(t w_j) + c_{j1} sin(t w_j))
+\end{align*}$$
+> - $\sum_{j=1}^D \sum_{i=1}^{D_j} c_{j,i} t^{i-1} \lambda_j^t$：对应 $D$ 个 $D_j$ 重实数根
+> - $\sum_{j=D+1}^{p - 2M} c_i \lambda_j^t$：对应 $p-2m-D$ 个实数单根
+> - $\sum_{j=1}^M r_j^t(c_{j0} cos(t w_j) + c_{j1} sin(t w_j))$：对应 $M$ 组复数根
+
+-   齐次线性差分方程：$h(t)$ 为常数 0 的线性差分方程
+    -   对齐次线性差分方程，可以构建特征方程、求解得到特征根 $\lambda_1, \cdots, \lambda_p$
+    -   根据特征根可构造齐次线性差分方程通解 $x^{'}$
+        -   一般的线性差分方程的解为使得方程成立的任意特解 $x^{''}$，加上对应齐次线性差分方程的通解 $x_t = x^{'} + x^{''}$
+
+### *AR* 模型
+
+$$\begin{align*}
+& \begin{cases}
+x_t = \phi_0 + \phi_1 x_{t-1} + \cdots + \phi_p x_{t-p} + \epsilon_t \\
+\phi_p \neq 0 \\
+\begin{cases}
+    E(\epsilon_t) &= 0 \\
+    Var(\epsilon_t) &= \sigma_{\epsilon}^2 \\
+    E(\epsilon_t \epsilon_s) &= 0, s \neq t \\
+\end{cases} \\
+E(x_s \epsilon_t) = 0, \forall s < t \\
+\end{cases} \\
+
+\Rightarrow & x_t - \phi_1 x_{t-1} - \cdots - \phi_p x_{t-p} = \phi_0 + \epsilon_t \\
+\Rightarrow & \begin{cases}
+    \Phi(B) x_t = \phi_0 + \epsilon_t \\
+    \Phi(B) = 1 - \phi_1 B - \phi_2 B^2 - \cdots - \phi_p B^p
+\end{cases}
+\end{align*}$$
+
+-   *AR(p)* 模型、*p* 阶自回归模型：满足如上结构的模型
+    -   *AR(p)* 模型可引入延迟算子可表示为 $\Phi(B) x_t = \phi_0 + \epsilon_t$
+    -   均值中心化 *AR(p)* 模型：$\phi_0 = 0$ 的 *AR(p)* 模型
+        -   （平稳序列）*AR(p)* 模型总可从序列减去均值 $\mu$ 变换为均值中性化形式
+        -   中心化 *AR(p)* 模型可用延迟算子表示为 $\Phi(B) (x_t - \mu) = \epsilon_t$
+    -   *AR(p)* 模型自相关系数 *ACF* 拖尾、偏自相关系数 *PACF* 在 $p$ 步后截尾
+
+> - 自回归模型及其平稳性：<https://www.math.pku.edu.cn/teachers/lidf/course/atsa/atsanotes/html/_atsanotes/atsa-arstation.html#arstation-arpmod-sol>
+> - 平稳时间序列分析（一）：<https://zhuanlan.zhihu.com/p/476926011>
+> - 平稳时间序列分析（二）：<https://zhuanlan.zhihu.com/p/477680256>
+> - 【应用统计笔记7】时间序列基础与自回归模型：<https://zhuanlan.zhihu.com/p/1969071184969699887>
+
+####    *AR* 模型均值
+
+-   *AR(p)* 模型序列均值 $\mu = \frac {\phi_0} {1 - \phi_1 - \cdots - \phi_p } \\
+    $$\begin{align*}
+    & E(x_t) = \phi_0 + \phi_1 E(x_{t-1}) + \cdots + \phi_p (x_{t-p}) + E(\epsilon_t) &&, 两边取期望 \\
+    \Rightarrow & \mu = \phi_0 + \phi_1 \mu + \cdots + \phi_p \mu + 0 &&, 假设序列平稳 \\
+    \Rightarrow & \mu = \frac {\phi_0} {1 - \phi_1 - \cdots - \phi_p } \\
+    \Rightarrow & (x_t - \mu) = \phi_1 (x_{t-1} - \mu) + \cdots + \phi_p (x_{t-p} - \mu) + \epsilon_t &&, 均值中心化 \\
+    \Rightarrow & \begin{cases}
+            y_t = \phi_1 y_{t-1} + \cdots + \phi_p y_{t-p} + \epsilon_t, y_t = x_t - \mu \\
+            \mu = \frac {\phi_0} {1 - \phi_1 - \cdots - \phi_p } \\
+            \Phi(B) y_t = \epsilon_t \\
+        \end{cases}
+    \end{align*}$$
+
+####    *AR* 模型方差
+
+-   *AR(p)* 模型序列方差（以 *AR(1)* 为例）
+    $$\begin{align*}
+    & Var(x_t) = Var(\phi_0 + \phi_1 x_{t-1} + \epsilon_t) &&, AR(1) 两边取方差 \\
+    \Rightarrow & Var(x_t) = \phi_1^2 Var(x_{t-1}) + Var(\epsilon_t) \\
+    & Var(x_t) = Var(x_{t-1}) = \gamma_0, Var(\epsilon_t) = \sigma_{\epsilon}^2 &&, 假设序列平稳 \\
+    \Rightarrow & \gamma_0 = \phi_1^2 \gamma_0 + \sigma_{\epsilon}^2 \\
+    \Rightarrow & \gamma_0 = \frac {\sigma_{\epsilon}^2} {1 - \phi_1^2} \\
+    \end{align*}$$
+
+####    *AR* 模型协方差、相关系数
+
+-   *AR(p)* 模型（假设已均值中心化）*ACF* 自相关系数 $\rho_k$
+    $$\begin{align*}
+    & E(x_t x_{t-k}) = \phi_1 E(x_t x_{t-k}) + \cdots + \phi_p E(x_{t-p} x_{t-k}) + E(\epsilon_t x_{t-k})
+        &&, 同乘 x_{t-k} 取期望 \\
+    & \gamma_k = E(x_t x_{t-k}), E(\epsilon_t x_{t-k}) = 0 &&, 假设序列平稳 \\
+    \Rightarrow & \gamma_k = \phi_1 \gamma_{k-1} + \cdots + \phi_p \gamma_{k-p} &&,\forall k > p \\
+    \Rightarrow & \rho_k = \phi_1 \rho_{k-1} + \cdots + \phi_p \rho_{k-p} &&, 两侧同除 \gamma_0 得到 YuleWalker 方程 \\
+    \end{align*}$$
+
+####    *AR* 模型平稳性
+
+$$ 1 - \phi_1 \lambda - \cdots - \phi_p \lambda^p = 0 $$
+
+-   *AR(p)* 模型弱平稳的充要条件：模型对应特征方程所有特征根的模均大于 1（在单位园外）
+    -   考虑 *AR(1)* $x_t = \phi_1 x_{t-1} + \epsilon_t$
+        -   特征方程 $1 - \phi_1 \lambda = 0$
+        -   特征根 $\lambda = 1 / \phi_1$
+        -   平稳域 $|\phi_1| < 1$
+        -   另外从方差角度，为保证方差恒定，显然需须有 $1 - \phi_1^2 > 0$
+    -   考虑 *AR(2)* $x_t = \phi_1 x_{t-1} + \phi_2 x_{t-2} + \epsilon_t$
+        -   特征方程 $1 - \phi_1 \lambda - \phi_2 \lambda^2 = 0$
+        -   特征根 $\lambda = (\phi_1 \pm \sqrt{\phi_1^2 + 4 \phi_2}) / 2$
+        -   平稳域 $|\phi_2| < 1, \phi_1 \pm \phi_2 < 1$
+
+> - 说明：还有这样 $ \lambda^p - \phi_1 \lambda^{p-1} - \cdots - \phi_p = 0 $ 的特征方程，此时特征根即上述特征根倒数，平稳条件为在单位圆内
+
+####    *Green* 函数
+
+$$\begin{align*}
+x^{''} &= \frac {\epsilon_t} {\Phi(B)} = \frac {\epsilon_t} {\prod_{i=1}^p (1 - \lambda_i B)} \\
+    &= \sum_{i=1}^p \frac {k_i} {B - \lambda_i} \epsilon_t \\
+    &= \sum_{i=1}^p \sum_{j=0}^{\inf} {k_i} (\lambda_i B)^j \epsilon_t \\
+\end{align*}$$
+
+
+$$\begin{align*}
+& x_t = \phi_1 x_{t-1} + \cdots + \phi_p x_{t-p} + \epsilon_t \\
+\Rightarrow & x_t - \phi_1 x_{t-1} - \cdots - \phi_p x_{t-p} = \epsilon_t \\
+\Rightarrow & \Phi(B) x_t = \epsilon_t \\
+\Rightarrow & x^{''} = \frac {\epsilon_t} {\Phi(B)} = \frac {\epsilon_t} {\prod_{i=1}^p (1 - \lambda_i B)}
+    = \sum_{i=1}^p \frac {k_i} {1 - \lambda_i B} \epsilon_t \\
+\end{align*}$$
+> - $\Phi(B) = 1 - \phi_1 B - \cdots - \phi_p B^p$
+
+-   任何中心化的 *AR(p)* 模型对应一个（非齐次）线性差分方程 $\Phi(B) x_t = \epsilon_t$
+    -   且，可求出对应线性差分方程有特解 $x^{'}$
+    -   则，可以求出对应线性差分方程通解 $x_t = x^{''} + x^{'}$
+#TODO
+
+### *MA* 模型
+
+$$\begin{align*}
+& \begin{cases}
+x_t = \epsilon_t + \theta_1 \epsilon_{t-1} + \cdots + \theta_q \epsilon_{t-q} \\
+\theta_q \neq 0 \\
+\begin{cases}
+    E(\epsilon_t) &= 0 \\
+    Var(\epsilon_t) &= \sigma_{\epsilon}^2 \\
+    E(\epsilon_t \epsilon_s) &= 0, s \neq t \\
+\end{cases} \\
+\end{cases} \\
+
+\end{align*}$$
+
+-   *MA(q)* $q$ 阶滑动平均模型
+    -   *MA(q)* 模型均值为 0
+    -   *MA(q)* 模型 *ACF* 自相关系数 $q$ 阶截尾、*PACF* 偏自相关系数拖尾
+
+####    *MA* 均值
+
+$$\begin{align*}
+E(x_t) &= 0 \\
+\gamma_k &= E(x_t x_{t-k}) = \begin{cases}
+        \sigma^2 \sum_{j=0}^{q-k} b_j b_{j+k} &&, 0 \leq k \leq q \\
+        0 &&, k > q \\
+    \end{cases} \\
+\rho_k &= \frac {\gamma_k} {\gamma_0} = \begin{cases}
+        \frac {\sum_{j=0}^{q-k} b_j b_{j+k}} {\sum_{j=0}^q b_j^2} &&, 0 \leq k \leq q \\
+        0 &&, k > q \\
+    \end{cases} \\
+\end{align*}$$
+
+###  *ARIMA* 模型
+
+####    建模流程
 
 -   白噪声检验：进行 *ARIMA* 模型拟合时，通过检验查询序列是否通过 *LB* 检验（白噪声检验）判断模型显著性，但是实际上
     -   *LB* 检验只检验了白噪声序列的纯随机性

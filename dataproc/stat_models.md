@@ -5,17 +5,171 @@ categories:
 tags:
   - 
 date: 2024-07-16 09:53:49
-updated: 2025-10-07 21:28:06
+updated: 2025-11-05 12:02:44
 toc: true
 mathjax: true
 description: 
 ---
 
+##  *Hypothesis Test*
+
+![hypothesis_test](imgs/hypothesis_test.png)
+
+-   *Hypothesis Test* 假设检验：
+    -   假设检验要素
+        -   *Null Hypothesis* 原假设：指定待检验的参数、默认为真的假设
+        -   *Alternative Hypothesis* 备择假设：指定拒绝原假设时、待检验参数的取值范围
+            -   备择假设通常即原假设的补集
+            -   *One-Sided Alternative Hypothese* 单边备择假设：待检验参数取值范围局限在单侧
+        -   *Test Statistic* 检验统计量：原假设为真时，分布已知的统计量
+            -   *Critical Value* 临界值：判断是否应拒绝原假设的临界值
+            -   *Confidence Interval* 置信区间：不拒绝原假设时，统计量取值范围
+            -   *Decision Rule* 判别规则：结合检验统计量、临界值判断是否拒绝原假设的规则
+            -   *p-value*：原假设为真时，样本或比样本更差情况出现的概率
+    -   两类错误
+        -   *Type I Error* 弃真错误：原假设为真时、错误的拒绝原假设
+            -   *Confidence Level* 置信水平、置信度 $1 - \alpha$：原假设为真时，不拒绝原假设的概率
+            -   *Test Size*、*Significance Level* 显著性水平 $\alpha$：原假设为真时，拒绝原假设的概率（常用 `5%`）
+                -   即，原假设为真时，检验统计量概率密度分布拒绝域的面积大小
+        -   *Type II Error* 取伪错误：原假设为假时，未拒绝原假设
+            -   *Test Power* 检验效力 $1 - \beta$：原假设为假时，正确拒绝原假设的概率
+                -   $\beta$ 即犯取伪错误的概率
+
+### 检验统计量
+
+####    *Z-Test*、*t-Test* 均值检验
+
+$$\begin{align*}
+Z &= \begin{cases}
+    \frac {\bar X - \mu} {\sigma / \sqrt n}
+        &\sim N(0, 1)
+        &, 检验均值为 \mu、总体方差 \sigma^2 已知 \\
+    \frac {(\bar X_1 - \bar X_2) - (\mu_1 - \mu_2)}
+        {\sqrt {\frac {\sigma_1^2} {n_1} + \frac {\sigma_2^2} {n_2}}}
+        &\sim N(0, 1)
+        &, 检验均值差为 \mu_1 - \mu_2、总体方差 \sigma^2 已知 \\
+\end{cases} \\
+
+t &= \begin{cases}
+    \frac {\bar X - \mu} {S / \sqrt n}
+        &\sim t(n-1)
+        &, 检验均值为 \mu、总体方差 \sigma^2 未知 \\
+    \frac {(\bar X_1 - \bar X_2) - (\mu_1 - \mu_2)}
+        {S_{1,2} \sqrt {\frac 1 {n_1} + \frac 1 {n_2}}}
+        &\sim t(n_1 + n_2 - 2)
+        &, 检验独立样本均值差为 \mu_1 - \mu_2、两总体方差 \sigma^2 未知但相等 \\
+    \frac {(\bar X_1 - \bar X_2) - (\mu_1 - \mu_2)}
+        {\sqrt {\frac {S_1^2 + S_2^2 - 2\rho S_1 S_2} {n}}}
+        &\sim t(n)
+        &, 检验配对样本均值差为 \mu_1 - \mu_2、两总体方差 \sigma^2 未知但相等 \\
+\end{cases} \\
+& S_{1,2} = \sqrt {\frac {(n_1 - 1) S_1^2 + (n_2 - 1) S_2^2} {n_1 + n_2 - 2}} \\
+\end{align*}$$
+
+-   *Z-Test*、*t-Test* 均可用于检验均值相关假设
+    -   样本数量足够大时，*t-分布* 接近正态分布，则 *t-统计量* 可近似认为服从标准正态分布
+
+| *Z-检验* 显著性水平 | 单边临界值 | 双边临界值 |
+|---------------------|------------|------------|
+| `0.05`              | `1.645`    | `1.960`    |
+| `0.01`              | `2.326`    | `2.576`    |
+| `0.001`             | `3.03`     |            |
+
+####    *Chi-Test*、*F-Test* 方差检验
+
+$$\begin{align*}
+\chi^2 &= \frac {(n - 1) S^2} {\sigma^2}
+    &\sim \chi^2(n - 1)
+    &, 检验方差为 \sigma^2 \\
+
+F &= \frac {S_1^2 / S_2^2} {\sigma_1^2 / \sigma_2^2}
+    &\sim F(n_1 - 1, n_2 - 1)
+    &, 检验方差比例 \sigma_1^2 / \sigma_2^2（是否相等）
+\end{align*}$$
+
+-   卡方检验、*F-Test* 常用于检验方差相关假设
+    -   卡方检验常用于判断样本方差是否为假设值
+    -   *F-Test* 常用于多元线性回归中，判断样本变量组整体是否显著
+
+### *Analysis of Variance*
+
+$$\begin{align*}
+SST &= SSA + SSE \\
+    &= \sum_{j=1}^J N_j (\bar X_j - \bar {\bar X})^2
+        + \sum_{j=1}^J \sum_{i=1}^{N_j} (X_{j,i} - \bar X_j)^2 \\
+SSA &= \sum_{j=1}^J N_j (\bar X_j - \bar {\bar X})^2 \\
+SSE &= \sum_{j=1}^J \sum_{i=1}^{N_j} (X_{j,i} - \bar X_j)^2 \\
+F &= \frac {SSA / (J - 1)} {SSE / (N - J)} \sim F(J-1, N-J) \\
+\end{align*}$$
+> - $J, N_j, N$：组别数、第 $j$ 组样本数、总样本数
+> - $SST, SSA, SSE$：总体误差、组间误差、组内误差
+> - $X_{j,i}, \bar X_j, \bar {\bar X}$：第 $j$ 组 $i$ 个样本取值、第 $j$ 组样本均值、全体样本均值
+> - $F$：*F-统计量*
+
+-   *ANOVA* 方差分析：检验两个、或多个组别均值差别显著性
+    -   通过 *F-统计量* 检验均值差异显著性
+        -   原假设：所有组别均值均相同
+        -   备择假设：至少有某一组别均值与其他组别均值不同
+
+### 正态分布检验
+
+
+$$\begin{align*}
+JB &= \frac {n-1} 6 (S^2 + \frac {(k - 3)^2} 4) \sim \chi^2(2)
+\end{align*}$$
+> - $n$：样本数量
+> - $S, K$：样本偏度（三阶中心矩）、峰度（四阶中心矩）
+
+-   正态分布检验
+    -   *Jarque-Bera Test*：通过样本偏度、峰度构造 *JB* 统计量，检验总体是否服从正态分布
+
 ##  *Linear Regression*
 
--   线性回归模型 $y = A\beta$：寻找一组系数用于将自变量的线性组合表示因变量
+-   线性回归模型 $y = X\beta$：寻找一组系数用于将自变量的线性组合表示因变量
     -   通常以最小化残差平方作为优化目标，即
-        $$ \min_{\beta \in R^n} \{ ||y - A\beta||_2^2 \} $$
+        $$ \min_{\beta \in R^n} \{ ||y - X\beta||_2^2 \} $$
+
+### 多元线性回归
+
+$$\begin{align*}
+& \min_{\beta in R^m} || y - X\beta ||_2^2 \\
+\Rightarrow & \hat \beta = (X^T X)^{-1} X^T y \\
+\end{align*}$$
+> - $y \in R^n$：因变量向量
+> - $X = [X^{'}, 1] \in R^{n*(m+1)}$：增广的自变量矩阵，原自变量矩阵 $X^{'}$ 添加全 1 向量列
+> - $\beta \in R^{m+1}$：线性回归系数（包含截距项）
+
+-   多元线性回归模型最小平方损失有解析解 $\hat \beta = (X^T X)^{-1} X^T y$
+    -   且，与极大似然估计、最小二乘估计相同
+
+####    回归系数 $\beta$
+
+$$\begin{align*}
+Var(\hat \beta) = Cov(\hat \beta, \hat \beta) &= Var((X^T X)^{-1} X^T y) \\
+    &= Var((X^T X)^{-1} X^T (X \beta + \epsilon)) \\
+    &= Var(\beta + (X^T X)^{-1} X^T \epsilon) \\
+    &= ((X^T X)^{-1} X^T) Var(\epsilon) ((X^T X)^{-1} X^T)^T \\
+    &= \sigma^2 ((X^T X)^{-1} X^T X ((X^T X)^{-1})^T) \\
+    &= \sigma^2 ((X^T X)^{-1})^T \\
+\end{align*}$$
+> - $\epsilon, \sigma^2$：回归残差项、回归残差项方差（同方差假设）
+
+#####   显著性检验
+
+$$\begin{align*}
+t_j &= \frac {\hat \beta_j - \beta_{j,0}} {\hat \sigma_j} &, 单系数 t 统计量 \\
+    &= \frac {\hat \beta_j - \beta_{j,0}} {\hat \sigma \sqrt {c_{j,j}}} \sim t(n - q) \\
+F_R &= \frac {(SSE_R - SSE) / q_R} {SSE / (n - q - 1)} &, 变量组 q_R 变量整体 F 统计量 \\
+    &= \frac {(R^2 - R_R^2) / q_R} {(1 - R^2) / (n - q - 1)} \sim F(q_R, n - q - 1) \\
+\end{align*}$$
+> - $t_j$：系数 $\beta_j$ 的 *t 统计量*
+> - $\hat \beta_j, \beta_{j,0}$：回归系数拟合值、回归系数原假设值（一般即 `0`）
+> - $\sigma$：回归残差项标准差
+> - $c = ((X^T X)^{-1})^T$：用于计算系数项 $\beta_j$ 的方差
+> - $F_R$：变量组 $R$ 整体的 *F 统计量*
+> - $SSE, SSE_R$：*Sum of Squares of Error* 残差平方和、排除变量组 $R$ 后拟合模型残差平方和
+> - $n, q, q_R$：样本数、全部自变量数量、变量组 $R$ 中自变量数量
+> - $R^2, R_R^2$：模型 $R^2$、排除变量组 $R$ 后拟合模型的 $R^2$
 
 ### 子集回归特征选择
 
@@ -44,7 +198,7 @@ description:
 
 ### *Ridge Regression*
 
-$$ \min_{\beta \in R^n} \left\{ ||y - A\beta||_2^2 + \lambda ||\beta||_2^2 \right\} $$
+$$ \min_{\beta \in R^n} \left\{ ||y - X\beta||_2^2 + \lambda ||\beta||_2^2 \right\} $$
 
 -   *Ridge Regression* 岭回归：在线性回归模型上添加 $L_2$ 范数
     -   作为连续收缩方法
@@ -54,7 +208,7 @@ $$ \min_{\beta \in R^n} \left\{ ||y - A\beta||_2^2 + \lambda ||\beta||_2^2 \righ
 
 ### *LASSO*
 
-$$ \min_{\beta \in R^n} \left\{ ||y - A\beta||_2^2 + \lambda||\beta||_1 \right\} $$
+$$ \min_{\beta \in R^n} \left\{ ||y - X\beta||_2^2 + \lambda||\beta||_1 \right\} $$
 
 -   *LASSO* ：在线性回归模型上添加 $L_1$ 范数
     -   特点：
@@ -86,14 +240,14 @@ $$ \min_{\beta \in R^n} \left\{ ||y - A\beta||_2^2 + \lambda||\beta||_1 \right\}
 ### *Elastic Net*
 
 $$ \begin{align*}
-& \min_{\beta \in R^n} \left\{ ||y - A\beta||_2^2 + \lambda_1||\beta||_1 + \lambda_2||\beta||_2^2 \right\} \\
+& \min_{\beta \in R^n} \left\{ ||y - X\beta||_2^2 + \lambda_1||\beta||_1 + \lambda_2||\beta||_2^2 \right\} \\
 \Rightarrow &
-\min_{\beta^* \in R^p} \left\{ ||y - A^*\beta^*||_2^2 + \lambda^*||\beta^*||_1 \right\} \\
+\min_{\beta^* \in R^p} \left\{ ||y - X^*\beta^*||_2^2 + \lambda^*||\beta^*||_1 \right\} \\
 
 where: & y^* = \begin{pmatrix} y \\
     \vec 0_p \end{pmatrix}  \\
-& A^* = \frac 1 {\sqrt {1+\lambda^2}}
-    \begin{pmatrix} A \\
+& X^* = \frac 1 {\sqrt {1+\lambda^2}}
+    \begin{pmatrix} X \\
     \sqrt {\lambda_2} I_p \end{pmatrix} \\
 & \beta^* = \sqrt {1+\lambda_2} \beta \\
 & \lambda^* = \frac {\lambda_1} {1+\lambda_2} \\
@@ -1370,7 +1524,7 @@ s.t. & A_{.,i}A_{.,i}^T = 1, i=1,\cdots,p \\
         -   变换矩阵 $A$ 为正交阵
     -   由线性代数，$A$ 为矩阵 $X$ 的单位特征向量组成的矩阵，且其中特征向量顺序按特征根 $\lambda_i, i=1,\cdots,p$ 大小排列符合要求
         -   $X = ZA^T$：由正交矩阵 $A$ 性质
-        -   $Z = XA$ 定义为主成分得分矩阵，有
+        -   $Z = XA$ 定义为主成分 **得分矩阵**，有
             $$\begin{align*}
             Var(Z_{.,i},Z_{.,j}) &= 0, i \neq j \\
             Var(Z_{.,i},Z_{.,i}) &= \lambda_i \\
@@ -1406,7 +1560,7 @@ Var(X - \mu) &= A^T Var(F) A + Var(\epsilon) \\
 \end{align*}$$
 > - $X \in R^{n * p}$：原始数据矩阵
 > - $\mu \in R^n$：回归方程常数项
-> - $F \in R^{n * m}$：公共因子矩阵，公共因子协方差矩阵为单位阵
+> - $F \in R^{n * m}$：公共因子矩阵，**公共因子协方差矩阵为单位阵**
 > - $A^T \in R^{m * p}$：系数矩阵、因子载荷矩阵（为保持和主成分分析中符号一致使用转置）
 > - $\epsilon \in R^{n * p}$：特殊因子矩阵，特殊因子矩阵协方差矩阵为对角矩阵（即特殊因子之间两两不相关，$X$ 分量间相关性由因子矩阵 $F$ 刻画）
 
@@ -1414,10 +1568,10 @@ Var(X - \mu) &= A^T Var(F) A + Var(\epsilon) \\
     -   因子分析模型特征
         -   因子分析模型不受数据矩阵 $X$ 线性变换影响
         -   因子载荷矩阵 $F$ 不唯一
-    -   因子载荷矩阵 $A^T$ 的特征（数据矩阵 $X$ 标准化后，此处因子载荷与主成分分析中因子载荷是一致的）
+    -   因子载荷矩阵 $A^T$ 的特征（若数据矩阵 $X$ 已标准化，此处因子载荷与主成分分析中因子载荷是一致的）
         $$\begin{align*}
-        E(X_{.,i}, F_{.,j}) &= A^T_{j,i} \\
-        Var(X{.,i}, X_{.,i}) &= \sum_{j=1}^m (A^T_{j,i})^2 Var(F_{.,i}) + Var(\epsilon_i) \\
+        Var(X_{.,i}, F_{.,j}) &= A^T_{j,i} = \rho(X_{.,i}, F_{.,j}) \\
+        Var(X_{.,i}, X_{.,i}) &= \sum_{j=1}^m (A^T_{j,i})^2 Var(F_{.,i}) + Var(\epsilon_i) \\
             &= \sum_{j=1}^m (A^T_{j,i})^2 + Var(\epsilon_i) \\
             &= h_i^2 + Var(\epsilon_i), h_i^2 = \sum_{j=1}^m (A^T_{j,i})^2 \\
         \end{align*}$$

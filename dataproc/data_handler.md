@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-10 10:55:52
-updated: 2025-08-31 20:37:47
+updated: 2025-11-05 22:11:48
 toc: true
 mathjax: true
 description: 
@@ -808,11 +808,21 @@ Q(s) & = exp(-J)
 #### *Bootstrap*
 
 -   重抽样自举：有放回的重复抽样，以模拟多组独立样本
-    -   对样本量为 $n$ 的样本集 $S$
-    -   做$k$次有放回的重复抽样
-        -   每轮次抽取 $n$ 个样本
-        -   抽取得到样本仍然放回样本集中
-    -   得到 $k$ 个样本容量仍然为 $n$ 的随机样本 $S_i，(i=1,2,...,k)$
+    -   一般抽样方法
+        -   对样本量为 $n$ 的样本集 $S$
+        -   做$k$次有放回的重复抽样
+            -   每轮次抽取 $n$ 个样本
+            -   抽取得到样本仍然放回样本集中
+        -   得到 $k$ 个样本容量仍然为 $n$ 的随机样本 $S_i，(i=1,2,...,k)$
+    -   对时间序列数据的 *Bootstrap* 方法
+        -   *Block Bootstrap*：将原始数据分块、以块为单位抽样，保留数据之间相关关系
+            -   *Moving Block Bootstrap* 滑动窗口分块：块之间有重叠
+            -   *Non-Overlapping Block Bootstrap* 无重叠的分块
+            -   *Circular Block Bootstrap* 首尾相接后分块：避免末端数据因分块数据无法被抽取
+            -   *Stationary Bootstrap* 变长分块
+        -   *AR-Sieve Boostrap* 建立 *AR(p)* 模型、基于模型构建序列
+
+> - 时间序列数据的 *Bootstrap* 方法：<https://zhuanlan.zhihu.com/p/28956503>
 
 ####    *Over-Sampling*
 
@@ -826,6 +836,86 @@ Q(s) & = exp(-J)
 -   *Borderline-SMOTE*
 
 ####    *Under-Sampling*
+
+### *Variance Reduction*
+
+-   方差减少技术：在相同样本量下降低估计方差，提升模拟精度（方差越小、估计值越接近真实值）
+    -   *Importance Sampling* 重要抽样法：增大高贡献区域抽样命中概率
+    -   *Stratified Sampling* 分层抽样法：将总体分层、分别抽样
+    -   *Antithetic Variables* 对偶变量法：同时使用正向、反向变量估计统计量
+    -   *Control Variables* 控制变量法：利用与目标变量相关的辅助变量修正估计
+    -   *Conditional Simulation* 重要区域模拟：针对罕见事件，限定条件集中采样
+
+> - 统计计算——随机方差减少技术：<https://www.cnblogs.com/haohai9309/p/18834543>
+
+####    *Importance Sampling* 重要抽样法
+
+$$\begin{align*}
+I &= E_f[h(x)] = \int h(x) f(x) dx = \int h(x) \frac {f(x)} {g(x)} g(x) dx \\
+    &= E_g (h(x) \frac {f(x)} {g(x)}) \\
+Var_g(\hat I) &= Var_g(h(x) \frac {f(x)} {g(x)}) \\
+    &= E_g((h(x) \frac {f(x)} {g(x)})^2) - (E_g(h(x) \frac {f(x)} {g(x)}))^2 \\
+    &= \int \frac {h^2(x) f^2(x)} {g(x)} dx - (\int h(x) f(x) dx)^2 \\
+\end{align*}$$
+> - $I, h(x), \hat I$：待估计统计量、统计量解析式、统计量估计值
+> - $f(x), g(x)$：随机变量 $x$ 概率密度函数、体现重要性的概率密度函数
+
+-   *Importance Sampling* 重要抽样法：增大高贡献区域抽样命中概率，以降低方差
+    -   一般选择 $g(x)$ 接近 $f(x)h(x)$ 以降低估计结果方差
+
+####    *Stratified Sampling* 分层抽样法
+
+$$\begin{align*}
+\hat I &= \sum_{l=1}^L p_l \hat I_l \\
+Var(\hat I) &= \sum_{l=1}^L p_l^2 Var(\hat I_l) \\
+\end{align*}$$
+> - $p_l$：第 $l$ 层样本数
+
+-   *Stratified Sampling* 分层抽样法：将总体分层、分别抽样，控制各层方差以降低整体方差
+    -   在抽样总数一定情况下，通过分配各层样本量降低整体方差
+
+####    *Antithetic Variables* 对偶变量法
+
+$$\begin{align*}
+I &= \frac 1 2 (E(h(x) + h(U(x)))) = E h(x) \\
+Var(\hat I) &= \frac 1 4 (Var(h(x)) + Var(h(U(x))) + 2 Cov(h(x), h(U(x)))) \\
+    &= \frac 1 2 (Var(h(x)) + Cov(h(x), h(U(x)))) \\
+    &= \frac {1 + \rho} 2 Var(h(x)) \\
+\end{align*}$$
+> - $U(x)$：获取随机变量对偶变量的函数
+> - $\rho$：$h(x), h(U(x))$ 间相关系数
+
+-   *Antithetic Variables* 对偶变量法：同时使用正向、反向（对偶）变量估计统计量，抵消抽样结果的偏差、减少波动
+    -   选择对偶函数 $U(x)$ 满足 $Cov(h(x), h(U(x))) < 0$ 即可降低统计量估计值方差
+
+![sampling_variance_reduction_antithetic_variable](imgs/sampling_variance_reduction_antithetic_variable.png)
+
+####    *Control Variables* 控制变量法
+
+$$\begin{align*}
+& I = E(h(x) - b y) = E(h(x)) - b * E(y) = E(h(x)) \\
+& Var(\hat I) = Var(h(x)) + b^2 * Var(y) - 2b * Cov(h(x), y) \\
+\Rightarrow & \begin{cases}
+    b^{*} &= \frac {Cov(h(x), y)} {Var(y)} \\
+    \min_b Var(\hat I) &= Var(h(x))(1 - \rho^2) \\
+\end{cases}
+\end{align*}$$
+> - $y$：零均值 $E(y) = 0$ 辅助变量
+> - $b, b^{*}$：辅助变量修正系数、最优修正系数
+> - $\rho$：$h(x), y$ 间相关系数
+
+-   *Control Variables* 控制变量法：利用与目标变量相关的零均值、辅助变量修正估计结果，降低方差
+
+![sampling_variance_reduction_control_variable](imgs/sampling_variance_reduction_control_variable.png)
+
+####    *Conditional Simulation* 重要区域模拟
+
+$$\begin{align*}
+P(A) &= P(A|B) * P(B) \\
+Var(\hat P(A)) &= (P(B))^2 \frac {P(A|B)(1 - P(A|B))} {n}
+\end{align*}$$
+
+-   *Conditional Simulation* 重要区域模拟：针对罕见事件，限定条件、在高概率区域内集中采样，再修正权重
 
 ##  *Feature Selection*
 
@@ -1670,13 +1760,14 @@ $$ KS = max \{|TPR - FPR|\} $$
 ####    $R^2$
 
 $$\begin{align*}
-R^2 & = 1 - \frac {SSE} {SST} = \frac {SSR} {SST} \\
-R^2_{adj} & = 1 - \frac {1 - R^2} {n - p - 1}
+R^2 &= 1 - \frac {SSE} {SST} = \frac {SSR} {SST} \\
+R^2_{adj} &= 1 - \frac {SSE / (n - p - 1)} {SST / (n - 1)} \\
+    &= 1 - \frac {n - 1} {n - p - 1} (1 - R^2) \\
 \end{align*}$$
 > - $n, p$：样本量、特征数量
-> - $SSE$：残差平方和
-> - $SSR$：回归平方和、组内平方和
-> - $SST$：离差平方和
+> - $SSE$：*Sum of Squares of Error*、*Residual Sum of Squares* 残差平方和
+> - $SSR$：*Sum of Squares of Regression*、*Explained Sum of Squares* 回归平方和、组内平方和
+> - $SST$：*Sum of Suqares of Total*、*Total Sum of Squares* 离差平方和
 > - $R^2_{adj}$：调整的$R^2$
 
 ####    *Akaike Information Criterion*
