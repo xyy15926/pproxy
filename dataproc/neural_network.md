@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-09-15 14:35:45
+updated: 2025-12-13 20:14:39
 toc: true
 mathjax: true
 description: 
@@ -719,6 +719,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 
 > - *Transformer Position-Encoding*：<https://ifwind.github.io/2021/08/17/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%884%EF%BC%89Poisition%20encoding>
 > - *Transformer* 的 *Position Encoding* 的总结：<https://zhuanlan.zhihu.com/p/95079337>
+> - *Transformer* 中使用的 *Position Embedding* 为什么是加法：<https://www.zhihu.com/question/485476372/answer/1961005053386134498>
 
 ### *Rotary Position Embedding*
 
@@ -1210,6 +1211,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 > - *Illustrated-Transformer*：<https://jalammar.github.io/illustrated-transformer/>
 > - *A Survery of Transformers*：<https://arxiv.org/abs/2106.04554>
 > - *Transformer* 的兄弟姐妹：<https://zhuanlan.zhihu.com/p/381899756>
+> - *Transformer* 为什么会这么强？：<https://www.zhihu.com/question/580810624/answer/1976600872675977173>
 
 ### *Transformer Encoder*
 
@@ -1338,6 +1340,31 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 > - *Transformer-BERT-相关*：<https://ifwind.github.io/2021/08/31/Transformer-BERT-%E5%AE%9E%E6%88%98/#bert%E7%9B%B8%E5%85%B3>
 > - *BERT* 模型：<https://ifwind.github.io/2021/08/20/BERT%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%883%EF%BC%89BERT%E6%A8%A1%E5%9E%8B/>
 
+### *MoE* 架构
+
+-   *Mixture of Experts*：用 “门控网络” 在多个 “专家网络” 中动态选择少量激活
+    -   即，将 *Transformer* 结构中 *FFN* 替代为多个 *Expert FFN*、和 *Gating Network* 做路由
+    -   *MoE* 结构将模型规模与计算量解耦
+        -   *MoE* 可在保证性能的情况下，降低训练、推理计算量（成本）
+            -   一般认为，*Transformer* 中知识存储在 *FFN* 层中
+        -   *MoE* 带来一定的稀疏性
+            -   每次只有部分专家网络被激活、执行计算
+            -   人为的禁止部分网络激活
+    -   门控网络的路由策略是 *MoE* 中的核心设计
+        -   门控网络一般为简单网络加 *Softmax* 函数，*Softmax* 函数输出作为权重
+            -   选择 *Top2*、*Top1 + 随机* 权重专家网络激活
+            -   专家网络输出按路由权重加总作为最终输出
+        -   专家网络负载均衡
+            -   受欢迎的专家网络训练更快、进而正反馈导致更可能被选择
+            -   可将专家负载（*batch* 内权重和）的波动（变异系数）引入损失函数，确保各专家网络负载均衡
+        -   专家网络容量
+            -   专家网络最终处理的序列长度依赖路由结果，长度不定
+            -   但，专家网络输入序列长度（上限）需预先指定，超过部分将被直接传递至下层或丢弃
+
+> - *MoE* 详解：结合 *Transformer* 架构的完整分析：<https://www.cnblogs.com/b1uesk9/p/19334555>
+> - *GShard: Scaling Giant Models with Conditional Computation and Automatic Sharding*：<https://arxiv.org/abs/2006.16668>
+> - 一文带你详细了解：大模型MoE架构（含DeepSeek MoE详解）：<https://zhuanlan.zhihu.com/p/31145348325>
+> - 主流 *LLM* 为何选用 *MoE* 架构，*MoE* 相较 *Dense* 的核心优点：<https://www.bilibili.com/video/BV1vThYz1Ef7/>
 
 # *CV*
 

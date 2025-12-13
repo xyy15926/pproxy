@@ -7,7 +7,7 @@ tags:
   - Setuptools
   - Pip
 date: 2025-01-19 20:13:19
-updated: 2025-09-23 20:38:05
+updated: 2025-12-10 22:20:55
 toc: true
 mathjax: true
 description: 
@@ -213,12 +213,17 @@ recursive-include templates *
 > - *Controlling files in the distribution*：<https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html>
 > - Python 项目是否需要 `MANIFEST.in` 文件：<https://geek-docs.com/python/python-ask-answer/511_python_do_python_projects_need_a_manifestin_and_what_should_be_in_it.html>
 
+### PyPI
+
+-   *PYthon Package Index*：最大的包索引仓库，*Pip* 默认的包搜索仓库
+    -   可供开发者自行上传、维护 *Python* 包
+
 ## *Pip*
 
 -   *Pip*：Python 包管理工具，从 *PyPI* 中获取 Python 包
     -   Pip 配置文件：`~/.config/pip/pip.conf`
     -   Pip 依赖管理：通过纯文本文件（一般命名为`requirements.txt`）来记录、管理 Python 项目依赖
-        -	`$ pip freeze`：按照 `package_name=version` 的格式输出已安装包
+        -   `$ pip freeze`：按照 `package_name=version` 的格式输出已安装包
         -   `$ pip install -r`：可按照指定文件（默认`requirements.txt`）安装依赖
     -   Pip 环境信息：无中心化包管理注册文件，而是通过收集 `PYTHONPATH` 路径下 `<XXX>.egg-info` 、`<XXX>.dist-info` 目录中信息获取已安装包信息
         -   `<XXX>.egg-info` 目录：由 `setuptools` 打包时在包开发目录生成
@@ -323,40 +328,67 @@ namespaces = true
 ##  *Conda*
 
 -   *Conda*：包、环境管理工具
+    -   *Conda* 配置文件
+        -   `~/.condarc`
 
 > - *Conda* 入门：<https://docs.conda.org.cn/projects/conda/en/stable/user-guide/getting-started.html>
 
-### *Conda* 配置
+### *Conda* 生态说明
 
--   *Conda* 配置：`~/.condarc`
-    -   包源配置
-        -   `channels`：实际搜索包源通道，列表
-            -   默认仅包含 `defaults`
-                -   即，默认包源为下述 `default_channels` 字段中全体
-                -   若其被修改，且不包含 `defaults` 项，则 `default_channels` 默认包源中包源不被搜索
-            -   非 *URL* 格式通道被解释为 *Anaconda.org* 用户、组织名
-                -   即，其之前被添加 `channel_alias` 指定的 *URL* 路径组成完整路径
-        -   `default_channels`：默认包源通道，列表
-            -   默认指向 `https://repo.anaconda.org/` 库中的多个包源通道
-                -   硬编码，在 25.3.0 版本后将被移除
-                -   可视为包含多项形如 `https://repo.anaconda.org/XXX` 的列表
-            -   可自定义、覆盖
-        -   `channel_alias`：通道别名，即 **添加在社区包源通道（非 *URL* 通道）的前缀**
-            -   社区包源通道
-                -   `conda-forge`
-                -   `bioconda`
-            -   默认为 `https://conda.anaconda.org/`
-            -   用于简化 *Anaconda* 社区包源配置
-                -   `channels` 字段中非 *URL* 通道
-                -   命令行 `-c`、`--channel` 指定的非 *URL* 通道
-        -   `custom_channels`：指定 **特定社区包源通道地址**，字典
-            -   其中社区包源通道将被直接指定为配置地址，优先级高于 `channel_alias`
-            -   其余未指定的社区（非 *URL* 格式）包源通道依然添加 `channel_alias` 字段作为前缀
-        -   包源说明配置
-            -   `channels`：优先级最高，真正包源通道配置
-            -   `default_channels`：优先级最低，默认包源通道，需要 `defaults` 被加入 `channels` 中生效
-            -   `channels_alias`：社区包源通道前缀（镜像站点）
-            -   `custom_channels`：特定社区包源镜像地址
+-   *Conda* 生态说明
+    -   *Anaconda Distribution*：包含 *Python*、*Conda*、*NumPy*、*SciPy*、*Pandas* 的发行版，生态起源
+        -   *Pip* 最初对有跨语言依赖的包支持较差
+            -   跨语言依赖指需要编译成二进制文件，再由 *Python* 封装
+            -   二进制文件依赖平台、甚至有不同实现，如：不同 *NumPy* 二进制包中 *BLAS*、*LAPACK* 不同，从源码编译安装时也可以指定 *BLAS*、*LAPACK* 版本
+        -   *Anaconda Distribution* 将解释器、常用包打包
+    -   *Conda*：*Python* 实现的环境管理、包安装工具
+    -   `ananconda.org`：*Ananconda* 公司维护的仓库 *channel* 平台
+        -   `defaults`：*Ananconda* 公司官方 *channel*
+            -   实际包含 `main`、`R`、`msys2` 3 个 *channel*
+            -   *MiniConda*、*Ananconda* 中 `conda` 命令默认安装包源
+            -   对商业用途收费
+        -   `conda-forge`：开源社区维护的 *channel*
+            -   兼容性稍差
+            -   包数量极多、更新快
+    -   *MiniConda*：*Ananconda* 公司提供的 *Conda* 安装包，仅包含 *Conda*
+    -   *Miniforge*：开源社区打包 *Conda* 安装包
+        -   类似 *MiniConda*，但其中 *Conda* 默认包源为 `conda-forge`
+    -   *Mamba*：开源社区的开发的替代 *Conda* 的工具
+        -   对 *Conda* 的依赖求解器、多线程下载的加强
+        -   也默认在 *Miniforge* 安装包中
+
+> - *Anaconda* 介绍：<https://www.bilibili.com/video/BV1Fm4ZzDEeY/>
+
+### *Conda* 包源配置
+
+-   包源配置
+    -   `channels`：实际搜索包源通道，列表
+        -   默认仅包含 `defaults`
+            -   即，默认包源为下述 `default_channels` 字段中全体
+            -   若其被修改，且不包含 `defaults` 项，则 `default_channels` 默认包源中包源不被搜索
+        -   非 *URL* 格式通道被解释为 *Anaconda.org* 用户、组织名
+            -   即，其之前被添加 `channel_alias` 指定的 *URL* 路径组成完整路径
+    -   `default_channels`：默认包源通道，列表
+        -   默认指向 `https://repo.anaconda.org/` 库中的多个包源通道
+            -   硬编码，在 25.3.0 版本后将被移除
+            -   可视为包含多项形如 `https://repo.anaconda.org/XXX` 的列表
+        -   可自定义、覆盖
+    -   `channel_alias`：通道别名，即 **添加在社区包源通道（非 *URL* 通道）的前缀**
+        -   社区包源通道
+            -   `conda-forge`
+            -   `bioconda`
+        -   默认为 `https://conda.anaconda.org/`
+        -   用于简化 *Anaconda* 社区包源配置
+            -   `channels` 字段中非 *URL* 通道
+            -   命令行 `-c`、`--channel` 指定的非 *URL* 通道
+    -   `custom_channels`：指定 **特定社区包源通道地址**，字典
+        -   其中社区包源通道将被直接指定为配置地址，优先级高于 `channel_alias`
+        -   其余未指定的社区（非 *URL* 格式）包源通道依然添加 `channel_alias` 字段作为前缀
+    -   包源说明配置
+        -   `channels`：优先级最高，真正包源通道配置
+        -   `default_channels`：优先级最低，默认包源通道，需要 `defaults` 被加入 `channels` 中生效
+        -   `channels_alias`：社区包源通道前缀（镜像站点）
+        -   `custom_channels`：特定社区包源镜像地址
 
 > - *Conda Settings*：<https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/settings.html>
 > - *Conda Mirror Channels*：<https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/mirroring.html>

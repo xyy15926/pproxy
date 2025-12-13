@@ -5,7 +5,7 @@ categories:
 tags:
   - 
 date: 2024-07-10 10:55:52
-updated: 2025-11-05 22:11:48
+updated: 2025-11-23 19:17:40
 toc: true
 mathjax: true
 description: 
@@ -1364,6 +1364,25 @@ H(X) & = -E_P log P(X) \\
 > > -   <https://zhuanlan.zhihu.com/p/73710585>
 > - *Stirling* 公式即用积分近似计算 $\sum logn$：<https://zhuanlan.zhihu.com/p/143992660>
 
+####    *Conditinal Entropy*
+
+$$\begin{align*}
+H(Y|X=x_i) &= - \sum_{j=1}^M P(Y=Y_j|X=x_i) log P(Y=Y_j|X=x_i)
+H(Y|X) &= \sum_{i=1}^N P(X=x_i) H(Y|X=x_i) \\
+    &= - \sum_{i=1}^N P(X=x_i) (\sum_j P(Y_j|x_i) log P(Y_j|x_i)) \\
+\end{align*}$$
+> - $H(Y|X=x_i)$：*Postorior Entropy* 后验熵，给定 $X=x_i$ 事实下 $Y$ 的熵
+
+-   条件熵 $H(Y|X)$：（随机变量 $X$ 给定条件下）随机变量 $Y$ **条件概率分布的熵** 对 $X$ 的数学期望
+    -   特别的，考虑数据集 $D$ 被分为 $D_1,\cdots,D_m$，条件经验熵可计算如下
+        $$\begin{align*}
+        H(D|A) & = \sum_{m=1}^M \frac {|D_m|} {|D|} H(D_m) \\
+        & = -\sum_{m=1}^M \frac {|D_m|} {|D|} \sum_{k=1}^K \frac {|D_{m,k}|} {|D_m|}
+            log_2 \frac {|D_{m,k}|} {|D_m|}
+        \end{align*}$$
+    -   *Postorior Entropy*：后验熵，随机变量 $X$ 给定条件下，随机变量 $Y$ 的**条件概率分布的熵**
+    -   *Empirical Conditional Kntropy*：经验条件熵，概率由数据估计
+
 ####    熵的性质
 
 -   熵的性质
@@ -1386,9 +1405,9 @@ H(X) & = -E_P log P(X) \\
             -   子系统熵之和则是利用已知信息消除多样性之后，系统剩余混乱程度
         -   一般的，两个事件 $X,Y$ 熵满足以下计算关系
             $$\begin{align*}
-            H(X, Y) & = H(X) + H(Y|X) \\
-            & = H(Y) + H(X|Y) \\
-            & \leqslant H(X) + H(Y) \\
+            H(X, Y) & = E_{X} log P(Y) \\
+                & = H(X) + H(Y|X) \\
+                & \leqslant H(X) + H(Y) \\
             H(X|Y) & \leqslant H(X) \\
             \end{align*}$$
         -   特别的，若事件 $X, Y$ 相互独立
@@ -1403,30 +1422,13 @@ H(X) & = -E_P log P(X) \\
         -   满足熵性质的测度泛函，只能具有（*Shannon* 熵和 *Hartley* 熵）或（*von Neumann* 熵和 *Shannon* 熵）线性组合的函数形式
         -   若不要求满足组合法则，还有 *Tsallis* 熵等
 
-####    *Conditinal Entropy*
-
-$$\begin{align*}
-H(Y|X) & = \sum_{i=1}^N P(X=x_i) H(Y|X=x_i) \\
-    & = - \sum_{i=1}^N P(X=x_i) (\sum_j P(Y_j|x_i) log P(Y_j|x_i)) \\
-H(Y|X=x_i) & = - \sum_{j=1}^M P(Y=Y_j|X=x_i) log P(Y=Y_j|X=x_i)
-\end{align*}$$
-> - $H(Y|X=x_i)$：*Postorior Entropy* 后验熵，给定 $X=x_i$ 事实下 $Y$ 的熵
-
--   条件熵：随机变量 $X$ 给定条件下，随机变量 $Y$ 的**条件概率分布的熵**对 $X$ 的数学期望
-    -   特别的，考虑数据集 $D$ 被分为 $D_1,\cdots,D_m$，条件经验熵可计算如下
-        $$\begin{align*}
-        H(D|A) & = \sum_{m=1}^M \frac {|D_m|} {|D|} H(D_m) \\
-        & = -\sum_{m=1}^M \frac {|D_m|} {|D|} \sum_{k=1}^K \frac {|D_{m,k}|} {|D_m|}
-            log_2 \frac {|D_{m,k}|} {|D_m|}
-        \end{align*}$$
-    -   *Postorior Entropy*：后验熵，随机变量 $X$ 给定条件下，随机变量 $Y$ 的**条件概率分布的熵**
-    -   *Empirical Conditional Kntropy*：经验条件熵，概率由数据估计
-
 ####    *Information Gain*、*Mutual Information*
 
 $$\begin{align*}
 g(Y|X) & = H(Y) - H(Y|X) \\
-& = \sum_{x \in X} \sum_{y \in Y} P(x,y) log \frac {P(x,y)} {P(x)P(y)}
+    & = H(X) + H(Y) - H(X, Y) \\
+    & = H(X, Y) - H(X|Y) - H(Y|X) \\
+    & = \sum_{x \in X} \sum_{y \in Y} P(x,y) log \frac {P(x,y)} {P(x)P(y)} \\
 \end{align*}$$
 
 -   *Mutual Information* 互信息、信息增益：（经验）熵与（经验）条件熵之差
