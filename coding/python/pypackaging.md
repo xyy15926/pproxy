@@ -7,7 +7,7 @@ tags:
   - Setuptools
   - Pip
 date: 2025-01-19 20:13:19
-updated: 2025-12-10 22:20:55
+updated: 2025-12-15 14:16:53
 toc: true
 mathjax: true
 description: 
@@ -213,10 +213,44 @@ recursive-include templates *
 > - *Controlling files in the distribution*：<https://setuptools.pypa.io/en/latest/userguide/miscellaneous.html>
 > - Python 项目是否需要 `MANIFEST.in` 文件：<https://geek-docs.com/python/python-ask-answer/511_python_do_python_projects_need_a_manifestin_and_what_should_be_in_it.html>
 
-### PyPI
+### *PyPI*
 
 -   *PYthon Package Index*：最大的包索引仓库，*Pip* 默认的包搜索仓库
     -   可供开发者自行上传、维护 *Python* 包
+
+
+####    *PyPI* 包名约定
+
+```
+# 获取支持的 python、abi、platform 包标签（3 元组列表）
+from pip import pep425tags
+pep425tags.get_supported()
+```
+
+-   *PyPI WHL* 包名约定 `{distribution}-{version}[-{build tag}]-{python tag}-{abi tag}-{platform tag}.whl`
+    -   `distribution`：包发行名称
+    -   `version`：版本
+    -   `build tag`：构建标签
+    -   `python tag`：指定包所需的 *Python* 平台、版本
+        -   `py`：无特定平台要求
+        -   `cp`：*CPython*
+        -   `ip`：*IronPython*
+        -   `pp`：*PyPy*
+        -   `jy`：*Jython*
+    -   `abt tag`：*Application Binary Interface* 标签，指定包内扩展模块所需的 *Python ABI*
+        -   对平台实现相关的 *ABI*，简写同 `python tag`
+        -   `abi3`：*CPython* 稳定 *ABI*
+        -   `none`：无扩展模块
+    -   `platform tag`：平台标签
+        -   `manylinux`
+        -   `linux_x86_64`
+        -   `win`
+        -   `win_amd64`
+
+> - *Platform Compatibility Tags*：<https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/>
+> - *Wheel* 包的命名规定：<https://segmentfault.com/a/1190000007591736>
+> - *Python ABI* 兼容性解析：编程语言接口标准与实现细节探讨*：<https://www.oryoy.com/news/python-abi-jian-rong-xing-jie-xi-bian-cheng-yu-yan-jie-kou-biao-zhun-yu-shi-xian-xi-jie-tan-tao.html>
+> - *ABI* 是什么：<https://www.zhihu.com/question/381069847>
 
 ## *Pip*
 
