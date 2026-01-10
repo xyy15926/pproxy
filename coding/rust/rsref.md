@@ -6,7 +6,7 @@ categories:
 tags:
   - Rust
 date: 2025-12-22 10:38:52
-updated: 2026-01-07 12:06:50
+updated: 2026-01-10 21:50:03
 toc: true
 mathjax: true
 description: 
@@ -17,18 +17,18 @@ description:
 ### 变量
 
 ```rust
-let x: u32 = 5;             // 不可变变量，显示指明类型
-let mut y = 4;              // 可变变量，编译器自动推断类型
-let later;                  // 仅声明，延迟初始化
+let x: u32 = 5;                     // 不可变变量，显示指明类型
+let mut y = 4;                      // 可变变量，编译器自动推断类型
+let later;                          // 仅声明，延迟初始化
 y = y + 1;
 {
-    let x = x + 2;          // 变量遮蔽
-    let x = "five";         // 变量遮蔽可以赋予不同类型
+    let x = x + 2;                  // 变量遮蔽
+    let x = "five";                 // 变量遮蔽可以赋予不同类型
     later = 5;
 }
-assert_eq!(x, 5);         // 变量遮蔽直到再次被遮蔽、作用域结束为止
-const SECS_IN_A_DAY = 3600 * 24;        // 常量
-assert_eq!(later, 5);     // `later` 作用域到此为止
+assert_eq!(x, 5);                   // 变量遮蔽直到再次被遮蔽、作用域结束为止
+const SECS_IN_A_DAY = 3600 * 24;    // 常量
+assert_eq!(later, 5);               // `later` 作用域到此为止
 ```
 
 -   *Rust* 中变量默认不可变、拥有绑定在其上的值的所有权
@@ -153,6 +153,38 @@ type Result<T> = std::result::Result<T, std::io::Error>;
 > - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
 > - 20.3 高级类型：<https://www.rust-book-cn.com/ch20-03-advanced-types.html>
 
+####    类型转换、强制转换
+
+```rust
+trait Trait {}
+fn foo<X: Trait>(t: X) {}
+impl<'a> Trait for &'a i32 {}
+fn main() {
+    let t: &mut i32 = &mut 0;
+    foo(t);                                 // `t: &mut i32` 不会强制转换为 `&i32`
+}
+```
+
+-   *Coercions* （类型）强制转换：在某些上下文中，类型可以被隐式的转换为其他类型
+    -   强制转换通常是 **类型弱化**，主要是引用、生命周期的变化
+    -   但，**强制转换应用以满足 *Trait Bound* **
+-   *Cast* （类型）转换 `EXPR as TYPE`
+    -   类型转换是强制转换超集，所有强制转换都可以通过转换显式完成
+    -   （类型）转换不是 `unsafe` 的（通常不违反内存安全）
+        -   转换很危险但不会执行失败，但可能出现 “难以理解” 情况
+        -   转换往往围绕 *Raw Pointer* 裸指针、原始数据类型进行
+    -   注意事项
+        -   转换原始切片时不会自动调整长度：`*const [u16] as *const [u8]` 得到切片包含一半内存
+        -   转换不可传递：`e as U1 as U2` 有效不保证 `e as U2` 有效
+
+
+> - 4.1 强制转换：<https://doc.rust-lang.net.cn/nomicon/coercions.html>
+> - 4.1 Coercions：<https://doc.rust-lang.org/nomicon/coercions.html>
+> - 4.3 转换：<https://doc.rust-lang.net.cn/nomicon/casts.html>
+> - 4.3 Cast：<https://doc.rust-lang.org/nomicon/casts.html>
+> - 10.7 类型转换 - 可强制转换的类型：<https://doc.rust-lang.net.cn/reference/type-coercions.html#coercion-types>
+> - 8.2.4 运算符表达式 - 类型转换表达式：<https://doc.rust-lang.net.cn/reference/expressions/operator-expr.html#type-cast-expressions>
+
 ### 表达式、函数、控制流
 
 | 关键字                    | 描述                              |
@@ -179,37 +211,37 @@ type Result<T> = std::result::Result<T, std::io::Error>;
 
 ```rust
 struct User {
-    pub(super) active: bool,        // `pub(super)` 仅对父模块可见
+    pub(super) active: bool,                // `pub(super)` 仅对父模块可见
     username: String,
 }
 
 impl User {
-    pub fn new(username: String) {  // 关联函数，首个参数非 `self`
+    pub fn new(username: String) {          // 关联函数，首个参数非 `self`
         User{
             active: true,
             username,
         }
     }
-    pub print(&self) {              // `&self` 是 `self: &Self` 的简写
+    pub print(&self) {                      // `&self` 是 `self: &Self` 的简写
         println!("{}", self.username);
     }
 }
 
-struct Color(i32, i32, i32);        // 元组结构体
+struct Color(i32, i32, i32);                // 元组结构体
 
 fn main() {
     let username = String::from("Rust");
     let user1 = User {
-        active: true,               // 显式键值对指定
-        username,                   // 同名自动初始化
+        active: true,                       // 显式键值对指定
+        username,                           // 同名自动初始化
     }
     let user1 = User {
         active: true,
-        ..user1                     // 从其他实例更新字段，会移动数据
+        ..user1                             // 从其他实例更新字段，会移动数据
     }
 
     let rgb = Color(255, 255, 255);
-    let Color(r, g, b) = rgb;       // 带类型的模式匹配解构
+    let Color(r, g, b) = rgb;               // 带类型的模式匹配解构
 }
 ```
 
@@ -223,8 +255,10 @@ fn main() {
             -   适合实例无需存储数据，仅需实现某 `trait` 的场合
     -   结构体类型、枚举类型通过 `impl` 块（可分多块）定义方法、关联函数（首个参数非 `self`）
         -   方法中 `self` 参数可以为多种类型（有限的）
-            -   对应不同类型，编译器会自动移动、取引用、**包装进智能指针** 后传给方法
-            -   甚至，智能指针可以嵌套
+        -   `.` 运算符（调用方法）会自动引用、解引用、强制转换直至调用者、方法签名类型匹配
+            -   引用除 `&`、`&mut` 外，还 **包装进智能指针**
+            -   解引用也包括智能指针解引用 `Deref`（甚至支持多层嵌套）
+            -   强制转换更多指转换为 `trait` 对象、调用 `trait` 中方法
 
 | `self` 类型        | 说明                 |
 |--------------------|----------------------|
@@ -238,8 +272,9 @@ fn main() {
 
 > - 2.7 方法 Method：<https://course.rs/basic/method.html>
 > - 5.1 定义和实例化结构体：<https://www.rust-book-cn.com/ch05-01-defining-structs.html>
+> - 4.2 点运算符：<https://doc.rust-lang.net.cn/nomicon/dot-operator.html>
 > - How is it even possible? self type’s is not Self but Pin<&mut Self>：<https://users.rust-lang.org/t/how-is-it-even-possible-self-types-is-not-self-but-pin-mut-self/49683>
-> - The Rust Reference: Associated items: Method：<https://doc.rust-lang.org/stable/reference/items/associated-items.html#methods>
+> - 6.15 The Rust Reference - Associated items - Method：<https://doc.rust-lang.org/stable/reference/items/associated-items.html#methods>
 
 ####    *Trait*
 
@@ -644,12 +679,21 @@ struct Except<'a> {                                         // 结构体生命�
     -   但，若将 **引用传递（移动）至外部作用域，编译器会为引用推断出更大的生命周期**
         -   生命周期实际上是，编译器推断的、**引用所指向值须有效的最小范围**
         -   所以，若引用被传递值外部作用域，则值须保证有效的范围将扩大（大于引用本身作用域）
+    -   生命周期是 **特殊的泛型、是（引用）类型的一部分**
+        -   **类型相同的引用包括生命周期相同**
+        -   只是，在函数内部，**通常无需显式命名（标注）涉及的生命周期**
+            -   编译器拥有函数内部变量、引用的所有信息，可自动推断引用最优（最小范围）生命周期
+        -   若需在函数内标注生命周期，需在函数签名中先标注、声明
     -   关于生命周期的其他说明
+        -   因为存在变量遮蔽，引用的生命周期可能是不连续的（包含空洞）
         -   实际上，每个 `let` 语句创建变量都引入一个作用域，即 “候选生命周期”
-            -   因为存在变量遮蔽，引用的生命周期可能是不连续的（包含空洞）
+        -   但，引用的 **生命周期只有终止位置有意义，起始位置其实无意义**
+            -   引用必须声明后使用，则引用声明前的区域也可认为是其生命周期的一部分
+            -   即，引用的生命周期总是可视为 **起始于代码块开头**
+            -   此结论可从 `&mut (&'a T)` 可变引用对 `&'a T` 不便宜构造案例验证
 
 ```rust
-// ****************** 引用 `y` 生命周期被扩大
+// ****************** 引用 `&x` 生命周期被扩大
 let x = 0;
 let z;
 let y = &x;
@@ -660,30 +704,79 @@ z = y;
     'b: {
         let z: &'b i32;
         'c: {
-            let y: &'b i32 = &'b x;                 // `y` 的生命周期被扩大至 `'b`
+            let y: &'b i32 = &'b x;                 // `&x` 的生命周期被扩大至 `'b`，否则为 `'c`
             z = y;
         }
     }
 }
 ```
 
+> - 15.4 生命周期：<https://doc.rust-lang.org/stable/rust-by-example/zh/scope/lifetime.html>
+
 ####    生命周期标注
 
--   生命周期标注 `'`：描述多个引用（类型变量）的生命周期之间的关系的 **泛型参数**，供 *Borrow Checker* 执行分析
-    -   生命周期不影响引用的实际生命周期（有效作用域）
-        -   对函数体：**函数返回的引用的生命周期应与签名一致**
-        -   对函数调用：**根据生命周期标注，拒绝不满足标注要求的调用**
-            -   只要 **任意作用域** 可以满足生命周期标注，则借用检查通过（即，生命周期是一种泛型参数)
-        -   对结构体定义：**根据生命周期标注，拒绝不满足标注要求的实例创建**
-    -   函数生命周期标注省略规则：编译器在没有显式标注情况下根据以下 3 条件规则推断函数签名中所有引用的生命周期
-        -   每个参数分配单独生命周期参数
-        -   若只有 1 个生命周期参数，改生命周期被分给所有输出作为生命周期参数
-        -   若有 `&self`、`&mut self` 作为参数（即方法），则 `self` 的生命周期参数被分配给所有输出作为生命周期参数
+```rust
+// ********************** 编译失败
+fn lifetime_fail<'a, 'b:'a>() {                 // 函数签名中要求 `'b:'a`
+    let hello: &'a str = "hello";
+    let world = String::from("world");
+    let rw: &'b str = &world;                   // 但此处生命周期标注表明无法满足 `'b:'a`
+}
+```
+
+-   生命周期标注 `'`：描述多个引用的生命周期之间的关系的 **泛型参数**
+    -   生命周期标注可视为 **生命周期 “形参”**
+        -   编译器将选择合适的生命周期（实参）替代生命周期标注
+        -   函数的生命周期标注对引用的实际生命周期没有影响
+    -   函数内部 **仅能使用在函数签名中声明** 的生命周期标注、`'static` 静态生命周期
+        -   此时，引用的生命周期被显式指定、并被编译器检查
+        -   同时，**函数签名中生命周期范围均大于函数内部引用生命周期**（外部传入引用，显然）
+        -   实际上，一般无需在函数体内显式标注生命周期
+    -   跨越函数边界（调用函数时），编译器无法获取外部函数全部信息，需要额外的生命周期标注
+        -   **函数签名中的生命周期标注（之间的关系）是函数对参数、返回值中引用的限制、要求**
+        -   毕竟，生命周期是引用类型的一部分，函数对参数、返回值类型应有限制，并体现、暴露在函数签名中
+            -   对函数自身，返回值中引用的生命周期需满足函数签名要求
+            -   对调用者，参数、返回值中引用也应满足函数签名要求
+        -   同样的，生命周期支持 *Subtyping and Variance* 子类型、变异（类型对直接生命周期总是协变）
+            -   在不考虑被调用函数签名（变异前）情况下
+                -   实参中引用的生命周期 `'a` 只需是函数签名中生命周期 `'b` 的子类型 `'a:'b` 即可，不必完全一致
+                -   可视为，函数签名中 **生命周期形参 `'a` 被置为（泛型单态化）包含 `'a` 的各引用生命周期交集**
+                -   即常见描述的，引用的实际生命周期（变异前）不小于函数签名中生命周期即可
+            -   **当然引用的实际生命周期时变异后生命周期：参数、返回值中引用的生命周期并集**
 
 > - 10.3 使用生命周期验证引用：<https://www.rust-book-cn.com/ch10-03-lifetime-syntax.html>
 > - 2.10 认识生命周期：<https://course.rs/basic/lifetime.html>
+> - 4.1.1 深入生命周期：<https://course.rs/advance/lifetime/advance.html>
 
-#####   高阶 *trait* 约束
+#####   生命周期标注省略
+
+```rust
+impl<'a> Reader for BufReader<'a> {}            // 生命周期 `'a` 未被使用
+impl Reader for BufReader<'_> {}                // 则可被省略为匿名生命周期 `'_`
+
+struct Ref<'a, T:'a> {
+    r: &'a T
+}
+struct Ref<'a, T> {                             // 省略泛型参数的生命周期约束
+    r: &'a T
+}
+```
+
+-   生命周期标注省略规则
+    -   函数签名：编译器在没有显式标注情况下根据以下 3 条件规则推断函数签名中所有引用的生命周期
+        -   每个参数分配单独生命周期参数
+        -   若只有 1 个生命周期参数，改生命周期被分给所有输出作为生命周期参数
+        -   若有 `&self`、`&mut self` 作为参数（即方法），则 `self` 的生命周期参数被分配给所有输出作为生命周期参数
+    -   `impl` 块
+        -   `'_` *Anonymous Lifetime* 匿名生命周期：类型签名中包含生命周期，但是在 `impl` 块中未使用，可用 `'_` 替代
+    -   `struct` 泛型生命周期约束
+        -   `struct` 中泛型的生命周期约束可以被省略
+
+> - 10.3 使用生命周期验证引用：<https://www.rust-book-cn.com/ch10-03-lifetime-syntax.html>
+> - 2.10 认识生命周期：<https://course.rs/basic/lifetime.html>
+> - 4.1.1 深入生命周期：<https://course.rs/advance/lifetime/advance.html>
+
+#####   生命周期约束
 
 ```rust
 struct DoubleRef<'a, 'b:'a, T> {                    // 生命周期比较限制，`'b` 须长于 `'a`，即 `'b>='a`
@@ -712,24 +805,121 @@ fn main() {
 }
 ```
 
--   *Higher-Rank Trait Bounds* 高阶 *trait* 约束
-    -   `'b:'a` 生命周期比较限制：生命周期 `'b` 须大于生命周期 `'a`
-    -   `for<'a>` 对任意生命周期都成立：在生命周期 `'a` 定义前，要求泛型满足对所有生命周期都满足某约束
+-   *Lifetime Bound* 生命周期约束
+    -   `'b:'a` 生周周期子类型：指示不同生命周期范围大小，生命周期 `'b` 须大于生命周期 `'a`
+    -   `T:'a` 泛型生命周期约束：泛型 `T` **中引用的生命周期** 须长于生命周期 `'a`
+    -   *Higher-Ranked Trait Bounds* 高阶 *trait* 约束 `for<'a>`：对任意生命周期都成立
+        -   在生命周期 `'a` 定义前，要求泛型满足对所有生命周期都满足某约束
         -   主要用于泛型参数需满足 `Fn` 约束、且 `Fn` 约束需标注生命周期
 
 > - 3.7 高阶 *trait* 约束：<https://doc.rust-lang.net.cn/nomicon/hrtb.html>
 > - Rust 中高阶 trait 边界（HRTB）中的生命周期：<https://www.cnblogs.com/jzssuanfa/p/19373681>
 
-#####    `'static` 静态生命周期
+#####   特殊生命周期 `'static`、无界
 
--   `'static` 静态生命周期
-    -   作生命周期标识符 `&'static`：指示引用可在整个程序期间存活
-        -   字符串字面量、特征对象拥有 `'static` 生命周期
-    -   作泛型约束 `T: 'static`：泛型 `T` 值需在整个程序期间存活
+-   特殊生命周期
+    -   `'static` 静态生命周期：指示引用可在整个程序期间存活
+        -   静态生命周期超过单个函数，可跨越线程
+            -   字符串字面量、特征对象拥有 `'static` 生命周期
+            -   常用于作泛型约束 `T: 'static`：泛型 `T` 中引用只能为静态生命周期
+        -   静态声明周期似乎是 “确定类型”，不是 “泛型”
+    -   *Unbound Lifetime* 无界生命周期：凭空产生的引用的生命周期
+        -   无界生命周期会根据上下文需要任意扩展，甚至比 `'static` “更泛用”
+        -   无界生命周期来源
+            -   对函数，任何不来源于输入参数的输出生命周期都是无界的
+            -   最常见的来源是对解引用的裸指针取引用 `&*(s: *const)`
 
-> - `&'static` 和 `T: 'static`：<https://course.rs/advance/lifetime/static.html>
+> - 4.1.2 `&'static` 和 `T: 'static`：<https://course.rs/advance/lifetime/static.html>
+> - 4.1.1 深入生命周期：<https://course.rs/advance/lifetime/advance.html>
+> - 3.7 无界生命周期：<https://doc.rust-lang.net.cn/nomicon/unbounded-lifetimes.html>
+> - 3.7 Unbounded Lifetimes：<https://doc.rust-lang.org/nomicon/unbounded-lifetimes.html>
 
-####    生命周期说明、不足
+####    子类型和变异性
+
+```rust
+fn assign<T>(input: &mut T, val: T) {
+    *input = val;
+}
+
+// ************************ 编译失败
+fn main() {
+    let mut hello: &'static str = "hello";          // `&mut hello`: `&mut &'static str`
+    {
+        let world = String::from("world");          // `&world`: `&'world String`，即 `T`
+        assign(&mut hello, &world);                 // 1. `&mut T` 对 `T` 不变，所以不能降级为 `&mut &'world str`
+                                                    //     即无法满足 `assign` 签名中两个 `T` 类型完全一致
+    }                                               // 3. 即使此处无 `{}` 分隔作用域，实际无悬垂，也无法编译
+    println!("{hello}");                            // 2. 否则，可能出现悬垂指针
+}
+
+// ************************ 编译通过
+fn main() {
+    let world = String::from("world");
+    let refh = &mut (&world[..]);
+    {
+        let hello: &'static str = "hello";
+        assign(refh, hello);                        // 4. `&T` 对 `T` 协变，故 `&'static str` 可降级为 `&'world str`
+    }
+    println!("{refh}");
+}
+
+// ************************ 编译通过
+fn main() {
+    let hello = String::from("hello");
+    let mut rref: &str = &hello;
+    let world = String::from("world");
+    assign(&mut rref, &world);                      // 5. `&world` 生命周期实际上与 `rref` 一致，并不更小，否则编译失败
+    println!("{rref}");
+}
+```
+
+-   *Subtyping* 子类型：类型 `Sub` 是 `Super` 的子类型，若 `Super` 的 “要求” 完全可由 `Sub` 满足
+    -   *Rust* 中没有继承机制，子类型仅局限于生命周期的变异性
+        -   对生命周期 `'b:'a`，**生命周期 `'b` 是生命周期 `'a` 的子类型**
+    -   子类型可被 “降级” 为父类型，用于需要父类型的场合
+        -   常见场合即赋值、函数调用
+        -   因，类型 `&'a T` 对 `'a` 协变，若 `'b:'a` 则有 `&'b T: &'a T`
+        -   故，即使函数签名中各引用参数的生命周期标注相同，引用实参可具有不同生命周期
+-   *Variance* 变异性：描述 “组合泛型” `F<Sub>`、`F<Super>` 之间的父子类型关系
+    -   即，描述类型 `F` 与、组成 `F` 的类型的父子类型关系的相关性
+        -   *Covariance* 协变性：若 `F` 是协变的，则 `F<Sub>` 是 `F<Super>` 的子类型 `F<Sub>:F<Super>`
+        -   *Contravariance* 逆变性：若 `F` 是逆变的，则 `F<Super>` 是 `F<Sub>` 的子类型 `F<Super>:F<Sub>`
+        -   *Invariant* 不变：若 `F` 是不变的，则 `F<Sub>`、`F<Super>` 之间不存在父子关系
+    -   内置类型的变异性
+        -   “组合泛型” 对组成其的生命周期总是协变的
+        -   “组合泛型” 对组成其一般泛型 `T` 其实是 **讨论 `T` 本身为引用、或包含引用** 的生命周期
+            -   不可变 `&T`、`*const T`、`Box<T>`、`Vec<T>` 对其中引用泛型 `T` 协变
+            -   **（内部）可变 `&mut T`、`*mut T`、`UnsafeCell<T>` 对其中泛型 `T` 不可变**
+                -   考虑 `T` 对应父子类型 `&'long TT: &'short TT`
+                -   若 `&mut &'long TT` 可被降级为 `&mut &'short TT`
+                -   则在调用外部函数中，可被解引用后修改为 `&'short TT` 类型，而调用者不知情，可能出现悬垂引用
+            -   `fn(T) -> U` 对引用参数 `T` 逆变、对返回值 `U` 协变
+                -   将被传递给函数 `fn` 的参数需要为 `T` 的子类型，则若参数要求放松为 `T` 的父类型依然可行
+    -   对包含（生命周期）泛型 `'a`、`T` 的自定义类型（分别独立考虑）
+        -   若所有成员对 `'a`、`T` 均协变、逆变，则自定义类型对 `'a`、`T` 协变、逆变
+        -   否则，自定义类型对 `'a`、`T` 不变
+
+| “组合泛型” `F`  | `'a` | `T`      | `U`  |
+|-----------------|------|----------|------|
+| `&'a T`         | 协变 | 协变     |      |
+| `&'a mut T`     | 协变 | **不变** |      |
+| `*const T`      |      | 协变     |      |
+| `*mut T`        |      | 不变     |      |
+| `[T]`、`[T; n]` |      | 协变     |      |
+| `fn(T) -> U`    |      | 协变     | 逆变 |
+| `Box<T>`        |      | 协变     |      |
+| `Unsafacell<T>` |      | 不变     |      |
+| `Vec<T>`        |      | 协变     |      |
+| `Cell<T>`       |      | 不变     |      |
+| `RefCell<T>`    |      | 不变     |      |
+
+
+> - 3.8 子类型和协变性：<https://doc.rust-lang.net.cn/nomicon/subtyping.html>
+> - 3.8 Subtyping and Variance：<https://doc.rust-lang.org/nomicon/subtyping.html>
+> - 10.5 子类型和变异性：<https://doc.rust-lang.net.cn/reference/subtyping.html#variance>
+> - 10.5 Subtyping and Variance://doc.rust-lang.org/reference/subtyping.html#variance>
+
+####    函数生命周期说明
 
 ```rust
 // ****************** 引用传参导致
@@ -747,33 +937,41 @@ fn main() {
 fn do_nothing(aref: &mut i32) -> &'static str {         // 返回值类型 `&'static str` 也可编译通过
     "hello, world!"
 }
-fn do_nothing<'a, 'b>(aref: &'a mut i32) -> &'b str {   // 分配不同生命周期也可编译通过
+fn do_nothing<'a, 'b>(aref: &'a mut i32) -> &'b str {   // 分配不同生命周期（无界生命周期）也可编译通过
     "hello, world!"
 }
 ```
 
--   函数内、跨函数的生命周期说明
-    -   在函数内部，通常不允许显示命名（标注）涉及的生命周期
-        -   编译器拥有函数内部变量、引用的所有信息，可自动推断引用最优（最小范围）生命周期
-            -   并，**根据推断的引用的生命周期检查是否遵守引用规则**
-        -   当然，编译器隐式引入的匿名作用域，会被 *Sugar* 糖化消除
-    -   但，跨越函数边界（调用函数时），编译器无法获取外部函数全部信息，需要额外的生命周期标注
-        -   对被调用函数，生命周期标注一般只出现在函数签名中
-            -   **编译器将检查函数体中返回值（引用）生命周期是否满足函数签名**
-        -   对调用函数，编译器根据被调用函数签名中生命周期标注，推断、调整 **返回值和实参** 的生命周期
-            -   对具名引用参数、具名返回值，根据调用函数内部信息推导生命周期
-            -   根据函数签名中生命周期，**扩大** 参数的生命周期
-                -   也即，**实参的 “实际生命周期” 至须不小于生命周期标注，不必完全一致**
-                -   也是，若引用被传递至外部作用域，则值须保证的有效性的范围须扩大
-                -   或者，**与返回值（生命周期）相关的、作为函数参数的引用的生命周期将与返回值保持一致**
-            -   **作为实参的匿名引用生命周期，也根据函数签名中生命周期标注推导**
-                -   其中较易忽略的即，方法中实例自身的（可变）引用
-            -   最终，**具名引用、匿名引用的生命周期均** 被用于引用规则检查
-        -   显然，一般仅在函数返回值涉及（包含、为）引用时，函数签名中需要生命周期标注
+-   在函数内部，通常无需显式命名（标注）涉及的生命周期
+    -   编译器拥有函数内部变量、引用的所有信息，可自动推断引用最优（最小范围）生命周期，并被检查
+        -   函数体自身局部：检查引用是否遵守 2 条引用规则
+            -   比较可变引用的生命周期是否重叠即可
+        -   被调用暴露：检查引用是否满足函数自身签名中生命周期标注
+        -   调用外部函数：检查引用是否满足被调用函数签名 **类型（中生命周期）要求**（生命周期是引用类型的一部分）
+            -   生命周期是特殊的泛型，函数签名中对引用的生命周期限制只能是 **多个引用的生命周期是否一致、是否满足父子类型（范围大小）**
+                -   引用生命周期 **将尝试变异以满足函数签名中要求**
+                -   引用生命周期的变异是 **真正改变引用的生命周期，不是仅为满足函数签名的暂时改变**
+            -   对一致性要求，对若函数签名中引用对生命周期协变、逆变，则总可以找到满足签名的生命周期
+                -   若协变，即各引用的生命周期并集
+                -   即，**各引用的生命周期被调整为初始生命周期的最大者**（生命周期的起始位置无意义）
+                -   故实际上，仅在引用对某生命周期不变、且不匹配时无法满足签名要求
+                -   考虑到引用的变异性，一般 **仅可变引用内的引用的生命周期无法匹配**
+        -   若以上校验不通过，即表示引用规则被违反
+    -   注意，除显式命名引用外，**表达式中的匿名引用** 的生命周期同样被用于检查
+        -   其中较易忽略的即，方法中实例自身的引用（尤其是可变引用）
+        -   匿名引用作用域看似 “仅限于表达式所在语句”
+            -   但，被调用函数（签名）对实参生命周期的要求
+            -   匿名引用的实际生命周期往往被 **变异**、扩大化
     -   但，编译器生命周期的推断依然较为粗粒度
         -   尤其是，函数签名中生命周周期标注省略规则会将函数签名中引用分配相同生命周期
         -   将导致，无关的引用被推断为生命周期相关，进而导致生命周期扩大，违反引用规则
-        -   当然在良好的实践中，函数返回的引用应与某个入参相关，所以良好的生命周期标注能解决问题
+            -   当然在良好的实践中，函数返回的引用应与某个入参引用相关
+            -   即，返回引用依赖参数引用
+            -   则，参数引用理应扩大生命周期确保返回引用有效
+        -   即，合理的生命周期标注应能解决问题
+    -   另外，闭包与函数功能上类似，但闭包与宿主函数关系密切，可能捕获宿主函数中引用
+        -   即，闭包的中引用的生命周期分散在宿主函数体内，难以分析
+        -   故，**编译器难以推断闭包中引用的生命周期**，部分场景下无法替代函数
 
 ```rust
 // ****************** 方法中实例隐式的可变引用导致编译失败
