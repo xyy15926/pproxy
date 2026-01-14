@@ -6,7 +6,7 @@ categories:
 tags:
   - Rust
 date: 2025-12-22 10:38:52
-updated: 2026-01-10 21:50:03
+updated: 2026-01-14 10:46:46
 toc: true
 mathjax: true
 description: 
@@ -165,9 +165,25 @@ fn main() {
 }
 ```
 
+| 起始类型         | 强制转换目标 | 说明                            |
+|------------------|--------------|---------------------------------|
+| `T`              | `U`          | （生命周期）子类型 `T:U`        |
+| `&mut T`         | `&T`         |                                 |
+| `*mut T`         | `*const T`   |                                 |
+| `&T`             | `*const T`   |                                 |
+| `&mut T`         | `*mut T`     |                                 |
+| `&T`、`&mut T`   | `&U`         | `T` 实现有 `Deref<Target=U>`    |
+| `&mut T`         | `&mut U`     | `T` 实现有 `DerefMut<Target=U>` |
+| 函数项           | `fn` 指针    |                                 |
+| 不捕获环境的闭包 | `fn` 指针    |                                 |
+| `!`              | 任何类型     |                                 |
+
 -   *Coercions* （类型）强制转换：在某些上下文中，类型可以被隐式的转换为其他类型
     -   强制转换通常是 **类型弱化**，主要是引用、生命周期的变化
-    -   但，**强制转换应用以满足 *Trait Bound* **
+        -   “类型弱化” 一般仅是简化过多显式类型转换
+        -   强制转换的传递性目前并未完全支持：`T_1` 强制转换为 `T_2`，`T_2` 强制转换为 `T_3`，则 `T_1` 强制转换为 `T_3`
+    -   但，强制转换不会 **被应用以满足 *Trait Bound* **（除方法中 `self` 自动类型转换）
+        -   即，若函数参数类型限制为泛型 `&T`，则 `&mut T` 类型实参不会强制转换为 `&T`
 -   *Cast* （类型）转换 `EXPR as TYPE`
     -   类型转换是强制转换超集，所有强制转换都可以通过转换显式完成
     -   （类型）转换不是 `unsafe` 的（通常不违反内存安全）
@@ -177,13 +193,13 @@ fn main() {
         -   转换原始切片时不会自动调整长度：`*const [u16] as *const [u8]` 得到切片包含一半内存
         -   转换不可传递：`e as U1 as U2` 有效不保证 `e as U2` 有效
 
-
 > - 4.1 强制转换：<https://doc.rust-lang.net.cn/nomicon/coercions.html>
 > - 4.1 Coercions：<https://doc.rust-lang.org/nomicon/coercions.html>
 > - 4.3 转换：<https://doc.rust-lang.net.cn/nomicon/casts.html>
 > - 4.3 Cast：<https://doc.rust-lang.org/nomicon/casts.html>
 > - 10.7 类型转换 - 可强制转换的类型：<https://doc.rust-lang.net.cn/reference/type-coercions.html#coercion-types>
 > - 8.2.4 运算符表达式 - 类型转换表达式：<https://doc.rust-lang.net.cn/reference/expressions/operator-expr.html#type-cast-expressions>
+> - `impl Trait for Type` 和 `impl Trait for &Type` 是什么关系？：<https://rustcc.cn/article?id=d993e943-64df-4252-9467-155b2a43a9d5>
 
 ### 表达式、函数、控制流
 
@@ -275,165 +291,6 @@ fn main() {
 > - 4.2 点运算符：<https://doc.rust-lang.net.cn/nomicon/dot-operator.html>
 > - How is it even possible? self type’s is not Self but Pin<&mut Self>：<https://users.rust-lang.org/t/how-is-it-even-possible-self-types-is-not-self-but-pin-mut-self/49683>
 > - 6.15 The Rust Reference - Associated items - Method：<https://doc.rust-lang.org/stable/reference/items/associated-items.html#methods>
-
-####    *Trait*
-
-```rust
-trait Summary{
-    fn sum_user(&self) -> String;               // 方法签名
-    fn summarize(&self) -> String {             // 带默认实现的方法
-        format!("Read more from {}", self.sum_user())
-    }
-}
-impl Summary for User{                          // 为结构体实现 Trait
-    fn sum_user(&self) -> String {
-        self.username.clone()
-    }
-}
-impl Summary for Message {                      // 为枚举类型实现 Trait
-    fn sum_user(&self) -> String {
-        format!("{:?}", &self)
-    }
-}
-```
-
--   `trait` 特性：将方法签名组合，以定义实现某些目的所需一组的行为
-    -   **`trait` 方法总是公开的**
-        -   调用 `trait` 中方法前，需要将单独将 `trait` 引入作用域（不仅需要引入 `struct`、`enum`）
-    -   孤儿规则：只能在 `trait` 或类型是本地 *Crate* 的情况下可以实现 `trait`
-        -   确保代码不被从外部破坏
-        -   避免同一类型、`trait` 实现多次实现的冲突
-    -   *Mark Trait* 标记特性：仅用于 *Trait Bound*，即用于编译器检查某类型是否满足要求
-        -   标记特性没有类似方法的关联项，**实现本身即开发对类型的保证**
-            -   正确的实现即类型具备标记特性应有的特征
-            -   错误的实现可能导致未定义的行为
-        -   标记特性一般成对、互补：默认派生、反默认 `!`
-            -   `Send`、`!Send`
-            -   `Sync`、`!Sync`
-            -   `Unpin`、`!Unpin`
-
-> - 10.2 Traits：定义共享行为：<https://www.rust-book-cn.com/ch10-02-traits.html>
-> - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
-
-####    泛型、*Trait Bound*、*Super Trait*
-
-```rust
-use std::ops::Add;
-
-fn first<T>(list: &[T]) -> &T {                 // 函数定义中泛型
-    &list.0
-}
-enum Option<T> {                                // 枚举定义中泛型
-    Some(T),
-    None,
-}
-struct Point<T> {                               // 结构体定义中泛型
-    x: T,
-    y: T,
-}
-impl<T> Point<T> {                              // 方法定义中泛型
-    fn x(&self) -> &T {
-        &self.x
-    }
-}
-```
-
--   泛型
-    -   *Rust* 在编译时对泛型代码单态化，保证泛型参数没有额外运行时成本
-        -   单态化：编译时使用具体类型将泛型代码填充为特定类型的代码
-        -   即类似，手动为每个类型复制一套代码
-    -   *Trait Bound*：限制泛型单态化时的类型，必须实现某些 `trait`
-        -   函数返回类型可为泛型参数，但 **函数实际返回的类型必须一致**
-            -   因为，泛型通过编译时单态化实现
-            -   若确实需要返回不同类型，应用动态类型 `Box<dyn ...>`
-    -   *Super Trait*：限制为某类型实现该 `trait` 前，该类型需实现其他 `trait`
-
-```rust
-use std::fmt::Display; 
-
-fn out_sum<T: Summary + Display>(x: &T) {       // Trait Bound，`+` 分隔多个
-    println!("{}", x.summarize());
-}
-fn out_sum(x: &(impl Summary + Display)) {      // 函数 Trait Bound 简写语法糖
-    println!("{}", x.summarize());
-}
-fn out_sum<T>(x: &T) -> ()
-where
-    T: Summary + Display,                       // `where` 子句 Trait Bound
-{
-    println!("{}", x.summarize());
-}
-```
-
-```rust
-impl<T: Display> Point<T> {                     // Trait Bound：限制为特定类型实现方法
-    fn display(&self) {}
-}
-impl<T: Display> Summary for T {}               // Trait Bound：限制为特定类型实现 `trait`
-trait Summary: Display {}                       // Super Trait：实现 `Summary` 前需实现 `Display`
-```
-
-> - 10.1 泛型数据类型：<https://www.rust-book-cn.com/ch10-01-syntax.html>
-> - 10.2 Traits：定义共享行为：<https://www.rust-book-cn.com/ch10-02-traits.html>
-> - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
-
-####    `trait` 对象
-
-```Rust
-pub struct Page{
-    pub components: Vec<Box<dyn Summary>>,      // 保存在向量中的 Trait 对象，其中元素类型可不同
-}
-
-impl Page {
-    pub fn run(&self) {
-        for comp in self.components.iter() {
-            comp.summarize();                   // 运行时根据内部指针调用方法
-        }
-    }
-}
-```
-
--   `dyn` *Trait 对象*：代表编译时无法确定、但均实现某 `trait` 的运行时才能确定的类型
-    -   *Trait 对象* 仅用于对通用行为进行抽象
-    -   *Rust* 对 *Trait 对象* 进行动态分派
-        -   编译器无法预知具体类型、需要调用的方法
-        -   只能在运行时通过 *Trait 对象* 内部指针确定需调用的方法，由运行时成本
-
-> - 18.2 使用允许不同类型值的 Trait 对象：<https://www.rust-book-cn.com/ch18-02-trait-objects.html>
-
-####    `trait` 多态：关联类型、泛型
-
-```rust
-use std::ops::Add;
-
-type Add<Rhs=Self> {                            // 标准库中 `Add trait` 定义，泛型参数有默认类型
-    type Output;                                // 关联类型，实现时需指定具体类型
-    fn add(self, rhs: Rhs) -> Self::Output;
-}
-
-impl<i32> Add for Point<i32> {                  // 需通过实现 `Add trait` 重载运算符
-    type Output = Point<i32>;                   // 指定关联类型为特性类型
-    fn add(self, rhs: Point) -> Point {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
-```
-
--   `trait` 相关的多态
-    -   关联类型：在 `trait` 中定义的类型占位符，`trait` 中方法可在签名中使用
-        -   实现 `trait` 时，需指定类型占位符为具体类型
-        -   相较于带泛型参数的 `trait`
-            -   带关联类型的 `trait` 只能为类型实现一次，无需注解类型
-    -   运算符重载：*Rust* 中只能通过运算符相关 `trait` 重载有定义的运算符
-    -   消除（来自多个 `trait`、`struct`）同名方法之间的歧异
-        -   `INST.METHOD()`：优先调用直接在 `<INST>` 所属的具体类型上实现的方法
-        -   `TRAIT::METHOD(&INST)` 完全限定语法：类似调用 `trait` 关联函数，显式指定调用 `trait` 中方法
-            -   `<STRUCT as TRAIT>::REL_FN()` 关联函数的完全限定语法：显式指定调用 `trait` 关联函数的实现
-
-> - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
 
 ### 枚举、模式匹配
 
@@ -566,6 +423,210 @@ enum Result<T, E> {
 > - 9.2 使用 `Result` 处理可恢复的错误：<https://www.rust-book-cn.com/ch09-02-recoverable-errors-with-result.html>
 > - Rust 错误处理：`Option` 和 `Result` 的使用总结：<https://zhuanlan.zhihu.com/p/668022700>
 
+### *Trait* 特性、公共行为
+
+```rust
+trait Summary{
+    fn sum_user(&self) -> String;               // 方法签名
+    fn summarize(&self) -> String {             // 带默认实现的方法
+        format!("Read more from {}", self.sum_user())
+    }
+}
+impl Summary for User{                          // 为结构体实现 Trait
+    fn sum_user(&self) -> String {
+        self.username.clone()
+    }
+}
+impl Summary for Message {                      // 为枚举类型实现 Trait
+    fn sum_user(&self) -> String {
+        format!("{:?}", &self)
+    }
+}
+
+impl Summary for &User{                         // 为结构体引用类型 `&User` 实现 Trait
+    fn sum_user(&self) -> String {
+        (*self).username.clone()                // 此时，`Self` 为 `&User`、`self` 为 `&&User` 类型
+    }
+}
+```
+
+-   `trait` 特性：将方法签名组合，以定义实现某些目的所需一组的行为
+    -   **`trait` 方法总是公开的**
+        -   调用 `trait` 中方法前，需要将单独将 `trait` 引入作用域（不仅需要引入 `struct`、`enum`）
+    -   孤儿规则：只能在 `trait` 或类型是本地 *Crate* 的情况下可以实现 `trait`
+        -   确保代码不被从外部破坏
+        -   避免同一类型、`trait` 实现多次实现的冲突
+    -   *Mark Trait* 标记特性：仅用于 *Trait Bound*，即用于编译器检查某类型是否满足要求
+        -   标记特性没有类似方法的关联项，**实现本身即开发对类型的保证**
+            -   正确的实现即类型具备标记特性应有的特征
+            -   错误的实现可能导致未定义的行为
+        -   标记特性一般成对、互补：默认派生、反默认 `!`
+            -   `Send`、`!Send`
+            -   `Sync`、`!Sync`
+            -   `Unpin`、`!Unpin`
+
+> - 10.2 Traits：定义共享行为：<https://www.rust-book-cn.com/ch10-02-traits.html>
+> - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
+
+####    *Generic* 泛型
+
+```rust
+use std::ops::Add;
+
+fn first<T>(list: &[T]) -> &T {                 // 函数定义中泛型
+    &list.0
+}
+enum Option<T> {                                // 枚举定义中泛型
+    Some(T),
+    None,
+}
+struct Point<T> {                               // 结构体定义中泛型
+    x: T,
+    y: T,
+}
+impl<T> Point<T> {                              // 方法定义中泛型
+    fn x(&self) -> &T {
+        &self.x
+    }
+}
+pub trait Iterator<T> {                         // `trait` 中定义泛型
+    fn next(&mut self) -> Option<T>;
+}
+```
+
+| 泛型标识 | 说明               | 案例                                |
+|----------|--------------------|-------------------------------------|
+| `T`      | 包括所有类型       | `i32`、`&i32`、`&mut i32`、`& &i32` |
+| `&T`     | 仅包括共享引用类型 | `&i32`、`& &mut i32`、`&&i32`       |
+| `&mut T` | 仅包括可变引用类型 | `&mut i32`、`&mut & i32`            |
+
+
+-   *Generic* 泛型：类型未确定、可代表不同类型的编程模型
+    -   *Rust* 在编译时对泛型代码单态化，保证泛型参数没有额外运行时成本
+        -   单态化：编译时使用具体类型将泛型代码填充为特定类型的代码
+        -   即类似，手动为每个类型复制一套代码
+    -   3 种泛型标识 `T`、`&T`、`&mut T` 含义不同
+        -   泛型标识 `T` 包括所有类型，包括所有权类型、共享引用 `&T`、可变引用 `&mut T`
+        -   不能为同一类型类型重复实现同一方法，对泛型 `T`
+            -   故不能同时为 `T` 与 `&T`、或 `T` 与 `&mut T` 实现同一 `trait`
+            -   但可为 `&T` 与 `&mut T` 实现同一 `trait`
+        -   注意，若 `T` 为具体类型，`T`、`&T`、`&mut T` 是三种不同类型，可以同时实现同一 `trait`
+            -   此时，编译器将优先调用 `self` 形参类型完全相同的方法，再尝试解引用、类型转换
+            -   为 `T`、`&T`、`&mut T` 等分别实现同一 `trait` 主要用于使得，形参带泛型 *Trait Bound* 的函数同时支持所有者、引用作为实参
+                -   因为，强制类型转换不会为满足 *Trait Bound* 而应用
+
+```rust
+trait Trait {}
+impl<T> Trait for T {}
+impl<T> Trait for &T {}                         // 编译失败
+impl<T> Trait for &mut T {}                     // 编译失败
+
+trait Trait {}
+impl<T> Trait for &T {}                         // 成功
+impl<T> Trait for &mut T {}                     // 成功
+```
+
+> - 10.2 Traits：定义共享行为：<https://www.rust-book-cn.com/ch10-02-traits.html>
+> - 常见的 Rust Lifetime 误解：<https://zhuanlan.zhihu.com/p/165976086>
+> - Common Rust Lifetime Misconceptions：<https://github.com/pretzelhammer/rust-blog/blob/master/posts/common-rust-lifetime-misconceptions.md>
+> - `impl Trait for Type` 和 `impl Trait for &Type` 是什么关系？：<https://rustcc.cn/article?id=d993e943-64df-4252-9467-155b2a43a9d5>
+
+####    *Trait Bound*、*Super Trait*
+
+```rust
+use std::fmt::Display; 
+
+// *********************** 函数 Trait Bound
+fn out_sum<T: Summary + Display>(x: &T) {       // Trait Bound，`+` 分隔多个
+    println!("{}", x.summarize());
+}
+fn out_sum(x: &(impl Summary + Display)) {      // Trait Bound 简写语法糖
+    println!("{}", x.summarize());
+}
+fn out_sum<T>(x: &T) -> ()
+where
+    T: Summary + Display,                       // `where` 子句格式的 Trait Bound
+{
+    println!("{}", x.summarize());
+}
+
+// *********************** 
+impl<T: Display> Point<T> {                     // Trait Bound：限制为特定类型实现方法
+    fn display(&self) {}
+}
+impl<T: Display> Summary for T {}               // Trait Bound：限制为特定类型实现 `trait`
+
+// *********************** Super Trait
+trait Summary: Display {}                       // Super Trait：实现 `Summary` 前需实现 `Display`
+```
+
+-   *Trait Bound*：泛型单态化时，要求类型必须实现某些 `trait`
+    -   函数返回类型可为泛型参数，但 **函数实际返回的类型必须一致**
+        -   因为，泛型通过编译时单态化实现
+        -   若确实需要返回不同类型，应用动态类型 `Box<dyn ...>`
+    -   *Super Trait*：限制为某类型实现该 `trait` 前，该类型需实现其他 `trait`
+
+> - 10.1 泛型数据类型：<https://www.rust-book-cn.com/ch10-01-syntax.html>
+> - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
+
+####    `trait` 对象
+
+```Rust
+pub struct Page{
+    pub components: Vec<Box<dyn Summary>>,      // 保存在向量中的 Trait 对象，其中元素类型可不同
+}
+
+impl Page {
+    pub fn run(&self) {
+        for comp in self.components.iter() {
+            comp.summarize();                   // 运行时根据内部指针调用方法
+        }
+    }
+}
+```
+
+-   `dyn` *Trait 对象*：代表编译时无法确定、但均实现某 `trait` 的运行时才能确定的类型
+    -   *Trait 对象* 仅用于对通用行为进行抽象
+    -   *Rust* 对 *Trait 对象* 进行动态分派
+        -   编译器无法预知具体类型、需要调用的方法
+        -   只能在运行时通过 *Trait 对象* 内部指针确定需调用的方法，由运行时成本
+
+> - 18.2 使用允许不同类型值的 Trait 对象：<https://www.rust-book-cn.com/ch18-02-trait-objects.html>
+
+####    `trait` 多态：关联类型、泛型
+
+```rust
+use std::ops::Add;
+
+type Add<Rhs=Self> {                            // 标准库中 `Add trait` 定义，泛型参数有默认类型
+    type Output;                                // 关联类型，实现时需指定具体类型
+    fn add(self, rhs: Rhs) -> Self::Output;
+}
+
+impl<i32> Add for Point<i32> {                  // 需通过实现 `Add trait` 重载运算符
+    type Output = Point<i32>;                   // 指定关联类型为特性类型
+    fn add(self, rhs: Point) -> Point {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+```
+
+-   `trait` 相关的多态
+    -   关联类型：在 `trait` 中定义的类型占位符，`trait` 中方法可在签名中使用
+        -   实现 `trait` 时，需指定类型占位符为具体类型
+        -   相较于带泛型参数的 `trait`
+            -   带关联类型的 `trait` 只能为类型实现一次，无需注解类型
+    -   运算符重载：*Rust* 中只能通过运算符相关 `trait` 重载有定义的运算符
+    -   消除（来自多个 `trait`、`struct`）同名方法之间的歧异
+        -   `INST.METHOD()`：优先调用直接在 `<INST>` 所属的具体类型上实现的方法
+        -   `TRAIT::METHOD(&INST)` 完全限定语法：类似调用 `trait` 关联函数，显式指定调用 `trait` 中方法
+            -   `<STRUCT as TRAIT>::REL_FN()` 关联函数的完全限定语法：显式指定调用 `trait` 关联函数的实现
+
+> - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
+
 ##  所有权、引用、切片、指针
 
 ### 所有权
@@ -615,13 +676,49 @@ enum Result<T, E> {
         -   *Borrow* 借用：创建引用的行为
             -   或许，**特指创建可变引用，此时所有者变量不可用**
         -   引用没有其他特殊功能，也没有额外开销
-    -   切片（类型）`&[S..E]`：引用集合中连续元素序列的引用
-        -   字符串字面量是切片 `&str` 类型：指向二进制文件中特定位置的切片
-        -   数组切片是 `&[i32]` 等类型
-    -   **堆上值不可被移出所有权，只能创建引用**
+    -   切片（类型）`&[T]`、`&mut [T]`：引用集合中连续元素序列的引用
+        -   切片是动态长度的引用类型（数组是固定长度 `[T; N]`）
+            -   字符串字面量是切片 `&str` 类型：指向二进制文件中特定位置的切片
+            -   数组切片是 `&[i32]` 等类型
+    -   说明
+        -   **堆上值不可被移出所有权，只能创建引用**
+        -   结构体字段可以分别独立创建可变引用，不违反引用规则
+            -   但，不可为数组切片、单独元素安全的创建多个可变引用
+
+```rust
+// ************************* 结构体字段可以分别创建可变引用
+struct Foo {
+    a: i32,
+    b: i32,
+    c: i32,
+}
+let mut x = Foo {a: 0, b: 0, c: 0};
+let a = &mut x.a;
+let b = &mut x.b;
+let c = &x.c;                                   // 编译通过
+
+// ************************* 数组不可创建元素、切片的多个可变引用
+let mut x = [1, 2, 3];
+let a = &mut x[0];
+let b = &mut x[1];                              // 数组 `x` 创建多个可变引用，编译失败
+println!("{} {}", a, b);
+
+// ************************* `&mut [..]` 可变的切片类型方法，返回两个可变切片
+pub fn split_at_mut(&mut self, mid: usize) -> (&mut [T], &mut [T]) {
+    let len = self.len();
+    let ptr = self.as_mut_ptr();
+    unsafe {                                    // 只能 `unsafe` 的创建两个可变切片
+        assert!(mid <= len);
+        (from_raw_parts_mut(ptr, mid),
+         from_raw_parts_mut(ptr.add(mid), len - mid))
+    }
+}
+```
 
 > - 4.2 引用与借用：<https://www.rust-book-cn.kcom/ch04-02-references-and-borrowing.html>
 > - 4.3 切片类型：<https://www.rust-book-cn.com/ch04-03-slices.html>
+> - 3.11 拆分借用：<https://doc.rust-lang.net.cn/nomicon/borrow-splitting.html>
+> - 3.11 Splitting Borrows：<https://doc.rust-lang.org/nomicon/borrow-splitting.html>
 
 ####    引用规则、检查
 
@@ -739,10 +836,11 @@ fn lifetime_fail<'a, 'b:'a>() {                 // 函数签名中要求 `'b:'a`
             -   对调用者，参数、返回值中引用也应满足函数签名要求
         -   同样的，生命周期支持 *Subtyping and Variance* 子类型、变异（类型对直接生命周期总是协变）
             -   在不考虑被调用函数签名（变异前）情况下
-                -   实参中引用的生命周期 `'a` 只需是函数签名中生命周期 `'b` 的子类型 `'a:'b` 即可，不必完全一致
+                -   实参中引用的生命周期 `'b` 只需是函数签名中形参的生命周期 `'a` 的子类型 `'b:'a` 即可，不必完全一致
                 -   可视为，函数签名中 **生命周期形参 `'a` 被置为（泛型单态化）包含 `'a` 的各引用生命周期交集**
                 -   即常见描述的，引用的实际生命周期（变异前）不小于函数签名中生命周期即可
             -   **当然引用的实际生命周期时变异后生命周期：参数、返回值中引用的生命周期并集**
+        -   即，函数签名中生命周期实际上应、用于体现 **参数、返回值之间有效性的依赖关系**
 
 > - 10.3 使用生命周期验证引用：<https://www.rust-book-cn.com/ch10-03-lifetime-syntax.html>
 > - 2.10 认识生命周期：<https://course.rs/basic/lifetime.html>
@@ -833,6 +931,8 @@ fn main() {
 > - 4.1.1 深入生命周期：<https://course.rs/advance/lifetime/advance.html>
 > - 3.7 无界生命周期：<https://doc.rust-lang.net.cn/nomicon/unbounded-lifetimes.html>
 > - 3.7 Unbounded Lifetimes：<https://doc.rust-lang.org/nomicon/unbounded-lifetimes.html>
+> - 常见的 Rust Lifetime 误解：<https://zhuanlan.zhihu.com/p/165976086>
+> - Common Rust Lifetime Misconceptions：<https://github.com/pretzelhammer/rust-blog/blob/master/posts/common-rust-lifetime-misconceptions.md>
 
 ####    子类型和变异性
 
@@ -1040,7 +1140,7 @@ fn main() {
     -   某种意义上，`String`、`Vec` 也是智能指针
         -   `String` 类型拥有 `str`（包含指向堆上 `str` 的引用）
 
-> - 15. 智能指针：<https://www.rust-book-cn.com/ch15-00-smart-pointers.html>
+> - 15 智能指针：<https://www.rust-book-cn.com/ch15-00-smart-pointers.html>
 > - 15.1 使用 `Box<T>` 指向堆上的数据：<https://www.rust-book-cn.com/ch15-01-box.html>
 > - 15.4 `Rc<T>`，引用计数智能指针：<https://www.rust-book-cn.com/ch15-01-box.html>
 > - 15.5 `RefCell<T>` 和内部可变性模式：<https://www.rust-book-cn.com/ch15-05-interior-mutability.html>
@@ -1108,6 +1208,9 @@ impl Drop for CustomSmartPointer{
 ```
 
 -   *Destructor* 清理
+    -   *Rust* 中数据清理顺序
+        -   变量按声明顺序逆序清理
+        -   结构体、元组中成员按定义顺序清理（与 *C/C++* 不同）
     -   `Drop Trait`：自定义值离开作用域时需运行的代码
         -   编译器会在自动插入清理代码，避免资源泄露
         -   以下场景，*Rust* 自动调用 `drop` 函数、清理变量拥有的（堆）内存
@@ -1115,8 +1218,63 @@ impl Drop for CustomSmartPointer{
             -   可变变量被重新赋值，原值被丢弃
         -   若需强制提前清理值，应使用 `std::mem::drop` 函数
             -   手动调用 `Drop::drop()` 方法会导致重复释放资源，不被允许
+    -   *Sound Generic Drop* 健全泛型丢弃：（泛型）类型中泛型参数存活时间必须严格超过（包含）（泛型）类型值（否则编译失败）
+        -   即，若泛型参数为引用，引用的生命周期必须严格超过（包含）（泛型）类型
+        -   对存在自引用的类型
+            -   若类型未实现 `Drop Trait`，编译器将严格按顺序清理变量
+                -   对合理的字段顺序，编译器接受泛型参数存活时间严格超过类型值
+                -   类型中字段存在自引用可编译通过
+            -   若类型实现 `Drop Trait`
+                -   编译期器将无法判断 `drop` 方法中成员清理顺序
+                -   类型中字段存在自引用时总是编译失败
+        -   `#[may_dangle] 'a` 标记泛型参数（或生命周期参数 `'a`）：可能出现悬垂引用，但是保证不会访问悬垂引用
+            -   编译器将忽略被标记的泛型参数是否严格超过类型值
+        -   `marker::PhantomData<&'a T>` 标记泛型参数：类型逻辑上类型应包含、处理引用 `&'a T`，但实际上不包含
+            -   `marker::PhantomData<&'a T>` 包装的字段不占用空间
+            -   仅提示编译器检查泛型参数 `&'a T` 是否满足健全泛型丢弃条件
+            -   `markder::PhantomData<U>` 对 `U` 协变，可忽略其对变异性传导的影响
+
+```rust
+// *************************** `#[may_dangle]` 指示可能出现悬垂引用
+#![feature(dropck_eyepatch)]
+
+struct Inspector<'a>(&'a u8, &'static str);
+
+unsafe impl<#[may_dangle] 'a> Drop for Inspector<'a> {      // 跳过对 `'a` 的检查
+    fn drop(&mut self) {
+        println!("Inspector(_, {}) knows when *not* to inspect.", self.1);
+    }
+}
+
+struct World<'a> {
+    days: Box<u8>,
+    inspector: Option<Inspector<'a>>,
+}
+
+fn main() {
+    let mut world = World {
+        inspector: None,
+        days: Box::new(1),
+    };
+    world.inspector = Some(Inspector(&world.days, "gadget"));
+}
+
+// *************************** `marker::PhantomData` 增加检查范围
+use std::marker;
+
+struct Iter<'a, T: 'a> {
+    ptr: *const T,
+    end: *const T,
+    _marker: marker::PhantomData<&'a T>,                    // 增加对 `&'a T` 的检查
+}
+```
 
 > - 15.3 使用 `Drop` 特性在清理时运行代码：<https://www.rust-book-cn.com/ch15-03-drop.html>
+> - 3.9 丢弃检查：<https://doc.rust-lang.net.cn/nomicon/dropck.html>
+> - 3.9 Drop Check：<https://doc.rust-lang.org/nomicon/dropck.html>
+> - 3.10 幻影数据：<https://doc.rust-lang.net.cn/nomicon/phantom-data.html>
+> - 3.10 PhantomData：<https://doc.rust-lang.org/nomicon/phantom-data.html>
+> - Rust: `PhantomData`，`#may_dangle` 和Drop Check 真真假假：<https://zhuanlan.zhihu.com/p/383004091>
 
 ####    裸指针
 
