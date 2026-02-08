@@ -8,7 +8,7 @@ tags:
   - Vi
   - Diff
 date: 2025-09-25 15:21:59
-updated: 2025-11-14 16:17:21
+updated: 2026-01-30 15:51:36
 toc: true
 mathjax: true
 description: 
@@ -1743,20 +1743,27 @@ augroup end
 
 ### 语法高亮
 
-| 命令                                        | 说明                                 |
-|---------------------------------------------|--------------------------------------|
-| `:syntax on`                                | 开始使用语法高亮                     |
-| `:syntax off`                               | 停止使用语法高亮                     |
-| `:syntax keyword {group-name} {keyword} ..` | 添加语法关键字项目                   |
-| `:syntax match {group-name} {pattern} ...`  | 加入语法匹配项目                     |
-| `:syntax region {group-name} {pattern} ...` | 添加语法区域项目                     |
-| `:syntax sync [comment | lines {N} | ...]`  | 设置语法高亮的同步方式               |
-| `:syntax [list]`                            | 列出当前语法项目                     |
-| `:syntax clear`                             | 清除所有语法信息                     |
-| `:highlight clear`                          | 清除所有高亮信息                     |
-| `:highlight {group-name} {key}={arg} ..`    | 为语法组 `{group-name}` 设置高亮     |
-| `:filetype on`                              | 开启文件类型检测，不启用语法高亮     |
-| `:filetype plugin indent on`                | 开启文件类型检测，包括自动缩进及设置 |
+| 命令                                         | 说明                                           |
+|----------------------------------------------|------------------------------------------------|
+| `:syntax on`                                 | 开始使用语法高亮                               |
+| `:syntax off`                                | 停止使用语法高亮                               |
+| `:syntax keyword {group-name} {keyword} ..`  | 设置 `{group-name}` 关键字语法组               |
+| `:syntax match {group-name} {pattern} ...`   | 设置 `{group-name}` 模式匹配语法组             |
+| `:syntax region {group-name} {pattern} ...`  | 设置 `{group-name}` 区域匹配语法组             |
+| `:syntax sync [comment \| lines {N} \| ...]` | 设置语法高亮的同步方式                         |
+| `:syntax [list]`                             | 列出当前语法项目                               |
+| `:syntax clear`                              | 清除所有语法信息                               |
+| `:highlight`                                 | 列出所有高亮信息                               |
+| `:highlight clear`                           | 清除所有高亮信息                               |
+| `:highlight {group-name} {key}={arg} ..`     | 为语法组 `{group-name}` 设置高亮               |
+| `:highlight {new-group} {old-group}`         | 为语法组 `{oldgroup}` 设置别名（共享高亮配置） |
+| `:filetype on`                               | 开启文件类型检测，不启用语法高亮               |
+| `:filetype plugin indent on`                 | 开启文件类型检测，包括自动缩进及设置           |
+
+```vimscript
+highlight StatusLine term=bold,reverse cterm=reverse ctermfg=239 ctermbg=223 gui=reverse guifg=#504945 guibg=#ebdbb2
+highlight link anothergroup StatusLine
+```
 
 ### *GUI* 命令
 
