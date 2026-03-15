@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2025-12-22 10:38:52
-updated: 2026-03-09 11:44:12
+updated: 2026-03-14 22:26:42
 toc: true
 mathjax: true
 description: 
@@ -470,11 +470,13 @@ let x = {
 };
 ```
 
--   内存初始化
+-   内存初始化：将内存设置为合理、有意义的值，并置位初始化标志
     -   *Rust* 中栈内变量在显式赋值前未初始化，且不允许在被初始化前被使用（读取、赋值）
         -   对 `Copy` 标记变量，初始化后不会变为未初始化状态（遮蔽不视作同一变量）
-        -   非 `Copy` 标记（实现 `Drop`）类型变量值被移出后，**变量被反初始化**（逻辑上变成未初始化）
-            -   此时，可变变量可被赋值以重新初始
+        -   非 `Copy` 标记（实现 `Drop`）类型变量值被移出后，**变量被反初始化**
+            -   反初始化：**实质上仅需要复位初始化标志**
+            -   即，仅需要逻辑上变为未初始化，实际值无需调整
+            -   此时，可变变量可被赋值、重新初始化
     -   如上，对实现 `Drop` 类型变量，可能在初始化、未初始化之间变化
         -   而对已初始化变量被丢弃（赋值、离开作用域）时，*Rust* 需调用析构器释放（变量原值）资源
             -   部分情况下，变量的初始化状态可静态确定，但不总是这样
@@ -1427,7 +1429,7 @@ pub fn split_at_mut(&mut self, mid: usize) -> (&mut [T], &mut [T]) {
 
 ####    引用规则、检查
 
--   引用遵守以下 2 条规则（编译器 **通过生命周期检查引用是否遵守规则**）
+-   引用遵守以下 2 条规则：别名规则（编译器 **通过生命周期检查引用是否遵守规则**）
     -   引用的生命周期不可超过其借用对象：确保值有效性
         -   保证引用在其生命周期内指向的特定类型值有效
         -   对值所有者，值仅随所有者清理而被释放，无需考虑值被清理而所有者仍存在
@@ -1448,6 +1450,7 @@ pub fn split_at_mut(&mut self, mid: usize) -> (&mut [T], &mut [T]) {
 > - 3.2 别名：<https://doc.rust-lang.net.cn/nomicon/aliasing.html>
 > - 3.1 References：<https://doc.rust-lang.org/nomicon/references.html>
 > - 3.2 Aliasing：<https://doc.rust-lang.org/nomicon/aliasing.html>
+> - `std::ptr` - Pointer to Reference Conversion：<https://doc.rust-lang.org/stable/std/ptr/index.html#pointer-to-reference-conversion>
 
 #####   运行时检查
 
@@ -2076,6 +2079,54 @@ let r3 = r1 as *const u32;                              // 裸指针类型强制
 
 > - 20.1 不安全的 Rust - 解引用裸指针：<https://www.rust-book-cn.com/ch20-01-unsafe-rust.html>
 
+####    *Safety*
+
+-   *Safety* 裸指针的安全性
+    -   *Validity* 裸指针有效性依赖具体访问：操作（读、写）、操作范围（内存字节），且裸指针有效性的精确规则未确定
+        -   若操作范围为 0，所有指针均有效，包括空指针
+        -   空指针永远无效（除操作范围为 0 场景）
+        -   指针可解引用：起始于指针、特性类型内存范围在指针所属的内存分配范围内
+            -   可解引用是指针有效的必要、但不充分条件
+    -   *Alignment* 裸指针对齐：`*const T` 类型需要对齐至 `align_of::<T>()`
+        -   大部分函数要求参数正确对齐，即使操作范围为 0
+    -   *Pointer to Reference Conversion* 裸指针转换为引用
+        -   指针须对齐、非空、可解引用
+        -   指针须指向有效值
+        -   指针解引用须满足引用（别名）规则
+    -   *Allocation* 内存分配：可寻址、支持指针算术运算的内存子集
+        -   每个变量视为单独的内存分配，包括
+            -   堆内存分配
+            -   栈内存分配
+            -   静态量
+            -   常量
+        -   内存分配包括：起始地址、大小、内存地址集合
+            -   0 大小内存分配也需要有起始地址
+            -   不同的内存分配起始地址可以相同
+            -   当前内存分配都是连续的，但不保证之后不改变
+
+> - `std::ptr`：<https://doc.rust-lang.org/stable/std/ptr/index.html>
+
+####    *Provenance*
+
+-   *Provenance* 起源信息：指示裸指针起源的内存分配（即内存访问权限）
+    -   指针不是简单的整形值、地址，语义上应包含
+        -   指向地址：可用 `usize` 表示
+        -   起源信息：对内存的访问权限
+            -   **起源信息可为空，但是此时指针无权访问任何内存**
+    -   起源信息的具体结构未明确，但包含 3 部分
+        -   *Spatial* 空间权限：指针允许访问的内存地址集合
+        -   *Temporal* 时间权限：指针允许访问内存地址的时间段
+        -   *Mutability* 可变性：指针返回内存地址的读、写权限
+    -   内存分配创建时包含有唯一、原初指针，即调用 *Alloc APIs* 返回的指针
+        -   原初指针起源信息即限制
+            -   空间权限：内存分配的内存范围
+            -   时间先去：内存分配的生命周期
+        -   基于原初指针通过偏移、借用、类型转换的衍生指针将继承原初指针的起源信息
+            -   指针的权限无法通过操作扩展
+    -   起源信息影响、判断 *Undefined Behavior*
+
+> - `std::ptr`：<https://doc.rust-lang.org/stable/std/ptr/index.html>
+
 ####    `NonNull`、`Unique`
 
 | 裸指针封装                | 说明                            |
@@ -2562,7 +2613,7 @@ quote = "1.0"
         -   除裸指针外原始类型都 `Send`、`Sync`
         -   如果类型完全由 `Send`、`Sync` 组成，则该类型自动派生 `Send`、`Sync`
         -   特别的，对闭包、函数、`async` 代码块，其中所有项都 `Send` 则 `Send`
-            -   闭包、函数、`async` 代码块将被编译为 `impl Fuuture` 等对应类型实例
+            -   闭包、函数、`async` 代码块将被编译为 `impl Future` 等对应类型实例
             -   其中项应被作为实例中成员，即包含 `!Send` 值，则整体 `!Send`
             -   `thread::spawn`、`tokio::spawn` 等函数涉及将闭包等传递给其他线程（执行），故要求参数整体 `Send`，即闭包中各项均 `Send`
     -   主要的 `!Send`、`!Sync` 例外
@@ -2583,6 +2634,29 @@ quote = "1.0"
 > - 16.2 使用消息在线程间传输数据：<https://www.rust-book-cn.com/ch16-02-message-passing.html>
 > - 如何理解 `Sync` 和 `Send`：<https://hexilee.me/2019/05/05/how-to-understand-sync-and-send-in-rust/>
 > - Function `std::thread::spawn`：<https://rustwiki.org/zh-CN//std/thread/fn.spawn.html>
+
+####    `park()`、`unpark()`
+
+-   *Rust* 标准库使用 *Parking* 模型提供线程自身的阻塞、信号唤醒
+    -   模型设计：线程行为类似自旋锁、`Condvar` 条件量
+        -   每个 *Thread Handle* 线程（句柄）关联一个 *Token* 令牌
+            -   初始状态时，令牌不存在
+        -   `thread::park()` 将阻塞调用此函数线程（即当前线程），直至 *Token* 可用
+            -   `thread::park_timeout(dur)` 类似，但额外指定最大阻塞时间
+            -   线程从阻塞返回后将消耗 *Token*
+            -   线程也可能被虚假唤醒，但不消耗 *Token*
+        -   `thread::Thread::unpark()` 原子地将线程 *Token* 置为可用
+            -   注意：*Token* 可被未 `park()` 阻塞线程持有
+            -   则，`Thread::unpark()` 之后 `park()` 将立刻返回
+    -   `Thread::unpark()` 与 `park()` 调用之间有同步机制
+        -   即，`unpark()` 调用前的所有内存操作对（消耗 *Token* 从 `park()` 返回的）线程是可见的
+        -   即，线程 `park()`、`unpark()` 应成对、有序
+
+> - `std::thread::park`：<https://doc.rust-lang.org/stable/std/thread/fn.park.html>
+> - `std::thread`：<https://doc.rust-lang.org/stable/std/thread/index.html>
+> - Rust 多线程的高效等待术：`park()` 与 `unpark()` 信号通信实战：<https://paxonqiao.com/rust-thread-parking/>
+> - Rust 并发加速器：用 `Condvar` 实现线程间“精确握手”与高效等待：<https://paxonqiao.com/rust-condvar/>
+> - 为什么会有虚假唤醒？：<https://cloud.tencent.com/developer/article/2493152>
 
 ### 协程
 
