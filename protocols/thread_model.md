@@ -9,7 +9,7 @@ tags:
   - Process
   - Thread
 date: 2019-06-03 17:02:43
-updated: 2026-03-15 22:20:10
+updated: 2026-03-17 21:42:35
 toc: true
 mathjax: true
 comments: true
@@ -29,7 +29,6 @@ description: Parallel
             -   单计算核心能力不足，所以需要多核并行运算
 
 ### 进程、线程
-
 
 ####    *Process*
 
@@ -340,7 +339,7 @@ description: Parallel
 
 ##  同步问题
 
-### 数据一致性
+### 数据同步、一致性
 
 -   并发编程中为保证数据（共享变量）一致性，要满足 3 条件、或解决 3 个问题
     -   原子性：操作（一组操作）要么全部执行、且执行过程不被打断，要么不执行
@@ -350,11 +349,14 @@ description: Parallel
             -   则，两线程先、后写回共享变量将导致 **前者计算结果被覆盖、计算动作被无效**
         -   原子性保证依赖内核、*CPU* 提供原子类型、原子操作保证
             -   利用原子类型构建包含共享变量、原子类型的锁（互斥锁为例）
-            -   线程执行数据更新前检查锁状态（原子类型值）
-                -   若已上锁，等待（`while` 循环内检查）
-                -   若未上锁，加锁（原子操作修改原子类型值）、防止其他线程访问数据
-                -   更新完毕后解锁（原子操作修改原子类型值）
-            -   加锁、解锁为原子操作、不会被打断
+                -   原子类型值表示锁状态
+                -   加锁、解锁即对原子类型值原子地 *Compare And Swap* 比较并交换（整体原子操作）
+            -   线程访问共享变量流程
+                -   *CAS* 操作检查锁状态、尝试加锁
+                -   若加锁失败，等待（`while` 内循环执行 *CAS* 检查锁状态、尝试加锁）
+                -   直至加锁成功，其他线程未获取锁、无法访问数据
+                -   更新完毕后解锁
+            -   （包括状态检查）加锁、解锁为原子操作、不会被打断
                 -   则，不存在线程加锁、解锁被无效
                 -   即，不存在多个线程同时 “加锁成功”，同时开始修改共享变量
             -   当然对简单数据，可直接利用对应原子类型、原子操作确保原子性
@@ -376,9 +378,9 @@ description: Parallel
             -   但多线程场景下，共享变量之间数据依赖跨线程
                 -   指令重排序仅能保证单线程场景的执行结果不变
                 -   但，某线程中指令重排序可能带来其他线程 **依赖逻辑错误、执行结果异常**
-        -   指令重排序在锁、`volatile` 机制下不会影响多线程执行结果
+        -   指令重排序在锁内原子变量的内存顺序约束、`volatile` 机制下不会影响多线程执行结果
             -   锁状态检查：避免共享变量被多线程同时修改
-            -   **加锁插入内存屏障**：多个线程临界区整体有序执行
+            -   锁内原子变量内存顺序约束：多个线程临界区整体有序执行
                 -   线程临界区内共享变量可能不满足其他线程临界区的逻辑依赖
                 -   但加锁确保，临界区内多个共享变量整体更新后，其他线程临界区才能开始执行
             -   `volatile` 标记值内存屏障：易变、共享变量值修改对所有线程可见
@@ -386,6 +388,57 @@ description: Parallel
 > - Java 并发编程：`volatile` 关键字解析：<https://www.cnblogs.com/dolphin0520/p/3920373.html>
 > - 彻底搞懂内存屏障，让程序运行更有序：<https://zhuanlan.zhihu.com/p/1947046219965768745>
 > - 内存屏障与锁的实现：<https://zhuanlan.zhihu.com/p/11966809061>
+> - `sys::sync::mutex::futex.rs` 源码：<https://doc.rust-lang.org/stable/src/std/sys/sync/mutex/futex.rs.html>
+
+####    *Memory Order*
+
+-   内存顺序：原子操作相关的内存访问（指令执行）顺序
+    -   `Relaxed` 无顺序约束：指令执行顺序可被任意优化
+    -   `Acquire` 约束：确保 `Load` 原子变量（获取锁）前，知悉 **相关线程（`Store` 同一原子变量）** 对所有变量修改
+        -   当前线程内，所有（`Load` 操作后）读、写操作不可重排序至当前 `Load` 操作前
+        -   涉及对同一原子变量 `Release` 的其他线程中所有写操作，对当前的线程可见
+        -   说明
+            -   `Acquire` 约束仅对原子类型的 `Load` 载入操作生效，对 `Store` 存储操作等同于 `Relaxed` 约束
+    -   `Release` 约束：确保 `Store` 原子变量前（释放锁）所有变量修改 **对相关线程（`Load` 同一原子变量）** 可见
+        -   当前线程内，所有（`Store` 操作前的）读、写操作不可重排序至当前 `Store` 操作后
+        -   当前线程中的所有写操作，对涉及对同一原子变量 `Load` 的其他线程可见
+        -   说明
+            -   `Release` 约束仅对原子类型的 `Store` 载入操作生效，对 `Load` 存储操作等同于 `Relaxed` 约束
+    -   `AcqRel` 约束：知悉其他线程对所有变量修改、自身所有变量修改对其他线程可见
+        -   `AcqRel` 约束结合对 `Acquire`、`Release` 约束，一般用于 `Read-modify-write` 操作
+            -   `Load` 时要求 `Acquire` 约束
+            -   `Store` 时要求 `Release` 约束
+        -   `AcqRel` 约束对 `Load` 操作等价于 `Acquire`、对 `Store` 操作等价于 `Release`
+    -   `SeqCst` *Sequentialy-Consistent* 约束：在 `AcqRel` 约束基础上要求，所有线程看到的所有 `SeqCst` 约束操作顺序一致
+        -   `Acquire`、`Release` 仅 **成对地约束对同一原子变量** 读、写相关的线程顺序
+            -   但，对不同原子变量的读、写相关线程整体操作顺序无限制
+        -   `SeqCst` 要求所有 `SeqCst` 约束的操作（即使不同原子变量）对不同线程的顺序一致
+
+```rust
+let x = AtomicBool::new(false);
+let y = AtomicBool::new(false);
+let z = AtomicI32::new(0);
+let write_x = thread::spawn(|| x.store(true, Ordering::SeqCst));
+let write_y = thread::spawn(|| y.store(true, Ordering::SeqCst));
+let write_x_then_y = thread::spawn(|| {                                 // 若实际 `x`、`y` 先后更新，此处 `z+1`
+    while !x.load(Ordering::SeqCst) {}
+    if y.load(Ordering::SeqCst) { z.fetch_add(1, Ordering::Relaxed); }
+})
+let write_y_then_x = thread::spawn(|| {                                 // 若实际 `y`、`x` 先后更新，此处 `z+1`
+    while !y.load(Ordering::SeqCst) {}
+    if x.load(Ordering::SeqCst) { z.fetch_add(1, Ordering::Relaxed); }
+})
+write_x.join();
+write_y.join();
+write_x_then_y.join();
+write_y_then_x.join();
+assert_eq(z.load(Relaxed), 1);                                        // 但若无 `SeqCst` 保证，`z` 可能为 0、2
+```
+
+> - `std::memory_order`：<https://en.cppreference.com/w/cpp/atomic/memory_order.html#Release-Acquire_ordering>
+> - `std::sync::atomic::Ordering`：<https://doc.rust-lang.org/stable/std/sync/atomic/enum.Ordering.html>
+> - C++ 什么场景下一定要使用 `seq_cst` 内存序：<https://www.zhihu.com/question/8811713845/answer/75716283973?utm_psn=1874990550719004672>
+> - How do `memory_order_seq_cst` and `memory_order_acq_rel` differ?：<https://stackoverflow.com/questions/12340773/how-do-memory-order-seq-cst-and-memory-order-acq-rel-differ>
 
 ### 函数通信
 

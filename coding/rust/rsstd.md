@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2026-01-25 16:18:02
-updated: 2026-03-15 22:20:30
+updated: 2026-03-17 16:24:49
 toc: true
 mathjax: true
 description: 
@@ -2141,12 +2141,18 @@ pub struct BufWriter<W: ?Sized + Write> {
         -   若加锁失败，则进入循环
             -   通知操作系统挂起、等待系统通知内部 `Fetux` 状态改变
             -   自旋 100 次尝试加锁
+    -   一些说明
+        -   `Mutex<T>` 实现 `Send`、`Sync`
+        -   多线程共享 `Mutex<T>`：通过 `Arc<Mutex<T>>` 创建多个副本 `move` 进各线程
 -   `sync::MutexGuard<'a, T>` 按 *RAII* 实现的作用域互斥锁：离开作用域时锁被释放
     -   `MutexGuard<'a, T>` 实现有 `DerefMut`，`&T`、`&mut T` 的方法可直接应用在 `MutexGuard` 上
 
 ```rust
 pub type LockResult<T> = Result<T, PoisonError<T>>;
 pub type TryLockResult<Gaurd> = Result<Gaurd, TryLockError<Guard>>;
+
+let lock = Arc::new(Mutex::new(0_u32));
+let lock2 = Arc::clone(&lock);                  // 多个线程间共享副本
 ```
 
 > - `std::sync::Mutex`：<https://doc.rust-lang.org/stable/std/sync/struct.Mutex.html>
@@ -2270,7 +2276,65 @@ pub type TryLockResult<Gaurd> = Result<Gaurd, TryLockError<Guard>>;
 | `iter()`                | `Iter<'_, T>`                 | 迭代返回数据         | 通道断开时结束迭代     |
 | `try_iter()`            | `TryIter<'_, T>`              | 不阻塞的迭代返回数据 | 通道断开、空时结束迭代 |
 
-> - `sync::mpsc`：<https://doc.rust-lang.org/stable/std/sync/mpsc/index.html>
+> - `std::sync::mpsc`：<https://doc.rust-lang.org/stable/std/sync/mpsc/index.html>
 
+####    `sync::atomic` 原子类型
+
+```rust
+pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
+```
+
+-   原子类型包含一系列用于线程间共享内存通信的基本类型，用作其他并发类型的底座
+    -   原子类型包括一系列 `AutomicBool`、`AotomicIsize`、`AutomicU16` 等，以及 `Atomic<T>` 别名
+        -   不同原子类型方法类似
+        -   但因系统架构原因，部分原子类型、原子操作方法可能不可用
+    -   原子类型实现 `Sync` 可在多线程间安全共享
+        -   考虑到仅 `Atomic::get_mut()` 需可变借用，包括 `store`、`swap` 在内的方法均只需共享借用
+        -   `move Arc<Atomic<>>`、或直接借用均可在多线程间同步、通信
+
+#####   `sync::AtomicIsize`
+
+| `AtomicIsize` 方法                 | 返回值               | 描述                     | 其他               |
+|------------------------------------|----------------------|--------------------------|--------------------|
+| `AtomicIsize::new(v)`              | `AtomicIsize`        | 创建                     |                    |
+| `AtomicIsize::from_ptr(ptr)`       | `&'a AtomicIsize`    | 从 `*mut isize` 创建     |                    |
+| `AtomicIsize::from_mut(v)`         | `&mut AtomicIsize`   | 创建原子访问             | *Exp*              |
+| `AtomicIsize::get_mut_slice(this)` | `&mut [isize]`       | 创建切片元素的非原子访问 | *Exp*              |
+| `AtomicIsize::from_mut_slice(v)`   | `&mut [AtomicIsize]` | 创建切片元素的原子访问   | *Exp*              |
+| `into_inner(self)`                 | `isize`              | 转换为 `isize`           |                    |
+| `get_mut()`                        | `&mut isize`         | 创建底层值可变引用       | 仅此方法需可变借用 |
+| `as_ptr()`                         | `*mut isize`         | 创建可变裸指针           |                    |
+
+-   `AtomicIsize` 方法说明
+    -   `AtomicIsize` 方法往往需要指定内存顺序约束
+        -   `load` 方法只读，不允许 `Release`、`AcqRel` 约束
+        -   `store` 方法只写，不允许 `Acquire`、`AcqRel` 约束
+        -   `fetch_`、`swap` 方法同时包含读写，不同内存顺序约束有不同同步结果
+        -   `compare_exchange` 是 *Compare-And-Swap* 操作，需要指定不同情况的内存顺序约束
+            -   事实上，方法内部会直接根据 `success`、`failure` 综合确定整体的约束
+            -   毕竟，比较成功与否总在读取之后，`success`、`failure` 约束均会描述读约束
+            -   同样的，`failure` 不允许 `Release`、`AcqRel` 约束
+            -   `compare_exchange_weak` 可能有虚假失败，即原值与 `current` 一致也不更新，以提升效率
+        -   `fetch_update` 类似 `compare_exchange` 区分更新成功 `set_order`、失败 `fetch_order`
+
+| `AtomicIsize` 原子操作                                  | 返回值                 | 描述                                          | 其他                     |
+|---------------------------------------------------------|------------------------|-----------------------------------------------|--------------------------|
+| `load(order)`                                           | `isize`                | 按 `Ordering` 约束载入                        |                          |
+| `store(val, order)`                                     | `isize`                | 按 `Ordering` 约束存储                        |                          |
+| `swap(val, order)`                                      | `isize`                | 按 `Ordering` 约束交换（读取、存储）          |                          |
+| `fetch_add(val, order)`                                 | `isize`                | 加、返回原值                                  |                          |
+| `fetch_sub(val, order)`                                 | `isize`                | 减、返回原值                                  |                          |
+| `fetch_add(val, order)`                                 | `isize`                | 按位与、返回原值                              |                          |
+| `fetch_nand(val, order)`                                | `isize`                | 按位与否、返回原值                            |                          |
+| `fetch_or(val, order)`                                  | `isize`                | 按位和、返回原值                              |                          |
+| `fetch_xor(val, order)`                                 | `isize`                | 按位异或                                      |                          |
+| `fetch_max(val, order)`                                 | `isize`                | 较大者                                        |                          |
+| `fetch_max(val, order)`                                 | `isize`                | 较小者                                        |                          |
+| `fetch_update(set_order, fetch_order, f)`               | `Result<isize, isize>` | 按 `FnMut(isize) -> Option<isize>` 更新       | 可能执行多次但只生效一次 |
+| `compare_exchange(current, new, success, failure)`      | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 |                          |
+| `compare_exchange_weak(current, new, success, failure)` | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 | 相同也可能不更新值       |
+
+> - `std::sync::atomic`：<https://doc.rust-lang.org/stable/std/sync/atomic/index.html>
+> - `std::sync::atomic::AutomicIsize`：<https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicIsize.html#method.store>
 
 
