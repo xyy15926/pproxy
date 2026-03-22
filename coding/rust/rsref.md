@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2025-12-22 10:38:52
-updated: 2026-03-14 22:26:42
+updated: 2026-03-22 15:45:27
 toc: true
 mathjax: true
 description: 
@@ -377,129 +377,6 @@ fn main() {
 > - How is it even possible? self type’s is not Self but Pin<&mut Self>：<https://users.rust-lang.org/t/how-is-it-even-possible-self-types-is-not-self-but-pin-mut-self/49683>
 > - 6.15 The Rust Reference - Associated items - Method：<https://doc.rust-lang.org/stable/reference/items/associated-items.html#methods>
 
-####    内存布局
-
-```rust
-struct A {
-    a: i16,
-    _pad1: [u8,2];                      // 可能布局：填充以对齐至 4B
-    b: u64,
-}
-struct B {                              // 不保证 `A`、`B` 类型值内存中字段顺序一致
-    a: i16,
-    _pad1: [u8,2];
-    b: u64,
-}
-
-enum Foo{
-    A(u32),
-    B,
-}
-struct FooRepr{                         // 1. `Foo` 枚举的可能布局，也可能
-    data: u32,
-    tag: u8,                            // 2. 根据 `tag` 字段确定 `data` 字段含义
-}
-```
-
--   内存布局
-    -   *Alignment* 对齐：若某类型对齐为 `n`，则存储其值的有效地址必须为 `n` 的整数倍
-        -   类型大小必须是对齐的整数倍
-            -   确保该类型数组总可通过偏移类型大小的整数倍来索引
-        -   基本类型通常与其大小对齐
-            -   但与平台相关，*X86* 平台上 `u64`、`f64` 通常对齐到 4B
-        -   复合结构类型内各字段需对齐，且按字段中对齐最大者对齐
-            -   为此，*Rust* 会在必要时 *padding* 以将字段对齐
-    -   除数组外，*Rust* 不保证字段顺序、完整性
-        -   仅，保证同一类型的不同值中各字段顺序一致
-        -   对结构体类型，内存中字段顺序实际可能与定义顺序不一致，可避免空间浪费
-        -   对枚举类型，*Rust* 可能会执行 *空指针优化*，删除标志字段
-
-> - 2.1 `repr(Rust)` 内存布局：<https://doc.rust-lang.net.cn/nomicon/repr-rust.html>
-
-####    类型大小
-
-```rust
-struct Nothing;                         // ZST
-struct LotsOfNothing {                  // ZST
-    foo: Nothing,
-    qux: (),
-    baz: [u8; 0],
-}
-```
-
--   特殊大小类型
-    -   *Dynamic Sized Type* 动态大小类型 `!Sized`：没有静态已知大小、对齐方式的类型
-        -   *DST* 只能存储在指针后，且指向 *DST* 指针为包含两个 `usize` 字段的 “宽指针”
-            -   值地址：指向对象值
-            -   *Metadata* 元数据：值的补充信息
-                -   对切片，为切片长度
-                -   对 *Trait* 对象，为类型的 *vtable* 虚表地址
-        -   两种主要的 *DST*
-            -   *Trait* 对象 `dyn TRAIT`
-            -   切片 `[T]`、`str`
-            -   结构体可在最后字段存储单个 *DST* 并成为 *DST*
-    -   *Zero Size Type* 零大小类型：不占用空间的类型
-        -   *Rust* 会针对 *ZST* 做优化，对产生、存储 *ZST* 的操作会可简化为无操作
-        -   主要的 *ZST*
-            -   单元元组
-            -   单元结构体
-    -   空类型：无法实例化的类型
-        -   空类型只能讨论类型，无法讨论值，主要用于体现类型值的 “不可达性”
-            -   指向空类型的裸指针有效，但是解引用是未定义行为
-        -   *Rust* 同样会对空类型做优化
-
-> - 2.2 特殊大小类型：<https://doc.rust-lang.net.cn/nomicon/exotic-sizes.html>
-> - *Rust* 虚表布局规则介绍：<https://zhuanlan.zhihu.com/p/680849759>
-
-####    内存初始化
-
-```rust
-use std::mem::{self, MaybeUninit};
-
-const SIZE: usize = 10;
-
-let x = {
-    let mut x: [MaybeUninit<Box<u32>>; SIZE] = unsafe {
-        MaybeUninit::uninit().assume_init()                 // 获取内存，但不初始化
-    };
-    for i in 0..SIZE {
-        x[i] = MaybeUninit::new(Box::new(i as u32));        // 动态赋值初始化
-        // x[i].write(i);                                   // 或直接 `.write` 按位写入
-    }
-    unsafe { mem::transmute::<_, [Box<u32>; SIZE]>(x) }     // 重解释类型
-};
-```
-
--   内存初始化：将内存设置为合理、有意义的值，并置位初始化标志
-    -   *Rust* 中栈内变量在显式赋值前未初始化，且不允许在被初始化前被使用（读取、赋值）
-        -   对 `Copy` 标记变量，初始化后不会变为未初始化状态（遮蔽不视作同一变量）
-        -   非 `Copy` 标记（实现 `Drop`）类型变量值被移出后，**变量被反初始化**
-            -   反初始化：**实质上仅需要复位初始化标志**
-            -   即，仅需要逻辑上变为未初始化，实际值无需调整
-            -   此时，可变变量可被赋值、重新初始化
-    -   如上，对实现 `Drop` 类型变量，可能在初始化、未初始化之间变化
-        -   而对已初始化变量被丢弃（赋值、离开作用域）时，*Rust* 需调用析构器释放（变量原值）资源
-            -   部分情况下，变量的初始化状态可静态确定，但不总是这样
-        -   故，*Rust* 会在运行时维护 *Drop Flag* 销毁标志确定变量是否初始化、是否需要析构
-            -   在变量被初始化、反初始化时，销毁标志被切换
-            -   但注意，**通过解引用赋值时，引用值总是无条件被析构**
-                -   因为一般的，引用总是需要原值已初始化才可被创建
-                -   但，某些情况下引用可在未初始化的情况下被创建，此时通过解引用赋值将导致 `panic`
-    -   但，在需要动态初始化数组时，可通过 `unsafe` 的 `mem::MaybeUninit` 延迟初始化，避免原生初始化的额外开销
-        -   `MaybeUninit<T>` 值被丢弃时不触发 `Drop` 析构
-            -   `MaybeUninit<T>` 可在内存未初始化的情况下被重赋值
-                -   否则，未初始化析构将导致 `panic`
-            -   但注意，此时通过 `MaybeUninit<T>.as_mut_ptr()` 创建 `T` 的可变引用，借此重新赋值将丢弃未初始化值、导致 `panic`
-        -   `MaybeUninit<T>` 与 `T` 在内存布局中完全一致
-            -   `MaybeUninit<T>` 被初始化后可通过 `mem::transmute` 直接重解释、转换为 `T` 类型供后续使用
-            -   但注意，`CONTAINER<MaybeUninit<T>>` 与 `CONTAINER<T>` 不一定一致
-
-> - 5.1 受检查的未初始化内存：<https://doc.rust-lang.net.cn/nomicon/checked-uninit.html>
-> - 5.1 Checked：<https://doc.rust-lang.org/nomicon/checked-uninit.html>
-> - 5.3 未经检查的未初始化内存：<https://doc.rust-lang.net.cn/nomicon/unchecked-uninit.html>
-> - 5.3 Unchecked：<https://doc.rust-lang.org/nomicon/unchecked-uninit.html>
-> - Rust：`MaybeUninit`（避免初始化带来的性能损失）：<https://zhuanlan.zhihu.com/p/1889248158661473931>
-
 ### 枚举、模式匹配
 
 ####    枚举类型
@@ -657,7 +534,31 @@ enum Result<T, E> {
 > - 9.2 使用 `Result` 处理可恢复的错误：<https://www.rust-book-cn.com/ch09-02-recoverable-errors-with-result.html>
 > - Rust 错误处理：`Option` 和 `Result` 的使用总结：<https://zhuanlan.zhihu.com/p/668022700>
 
-###    `const fn` 编译期优化
+### `const` 编译期求值
+
+
+```rust
+if false {
+    const { panic!(); }                         // 编译时可能不执行
+}
+fn foo<T>() -> usize {
+    const { std::mem::size_of::<T>() + 1 }      // 支持使用作用域内泛型参数
+}
+```
+
+-   `const` 块：在编译时计算的块
+    -   `const` 块计算结果时常量值
+        -   即，可在不定义新 `const` 常量的情况下定义常量值，故也被称为内联常量
+        -   若，运行时会执行 `const` 块表达式，则编译时被计算
+        -   但若运行时必然不执行，则编译时可能不执行
+    -   `const` 块相较于 `const` 常量
+        -   `const` 块支持类型推断，无需类似 `const` 常量显式标注类型
+        -   `const` 块内可使用作用域内的泛型参数
+
+> - Rust 编译期计算：<https://geekdaxue.co/read/u27016943@ofwyi6/tw80bg>
+> - 8.2.3 Expressions - Block Expressions：<https://doc.rust-lang.net.cn/reference/expressions/block-expr.html#r-expr.block.const>
+
+####    `const fn` 编译期优化
 
 ```rust
 // ******************************* 常量函数
@@ -739,14 +640,17 @@ impl Summary for &User {                        // 为结构体引用类型 `&Us
             -   相较于 `trait` 中泛型参数编译时多态，**关联类型只能指定一次**、无需注解类型
         -   常量 `const`：关联常量
     -   为类型实现特性时，特性中无默认值函数、常量需要具体实现
-    -   `trait` 中方法调用前，需要将单独将 `trait` 引入作用域（不仅需要引入实现其的 `struct`、`enum`）
-        -   `trait` 中关联项总是公开的（`trait` 就是对外暴露的接口）
-        -   即，`trait` 与具体类型是松耦合的，**类型可根据需要仅 “拥有” 部分特性**
-            -   此即 `trait` 与继承的差异（继承中子类型的无法根据需要舍弃父类行）
     -   完全限定语法：消除（来自多个 `trait`、`struct`）同名方法之间的歧异
         -   `INST.METHOD()`：优先调用直接在 `<INST>` 所属的具体类型上实现的方法
         -   `TRAIT::METHOD(&INST)` 完全限定语法：类似调用 `trait` 关联函数，显式指定调用 `trait` 中方法
         -   `<STRUCT as TRAIT>::REL_FN()` 关联函数的完全限定语法：显式指定调用 `trait` 关联函数的实现
+-   `trait` 中方法调用前，需要将单独将 `trait` 引入作用域（不仅需要引入实现其的 `struct`、`enum`）
+    -   `trait` 中关联项总是公开的（`trait` 就是对外暴露的接口）
+    -   即，`trait` 与具体类型是松耦合的，**类型可根据需要仅 “拥有” 部分特性**
+        -   此即 `trait` 与继承的差异（继承中子类型的无法根据需要舍弃父类行）
+    -   另外，继承层次中各父类行可能分别获取、初始化资源，析构时需逐层析构
+        -   而，`trait` 无法、不应独立拥有资源
+        -   即按 *RAII* 规范，类型的资源获取、初始化、析构只有单个入口
 
 > - 10.2 Traits：定义共享行为：<https://www.rust-book-cn.com/ch10-02-traits.html>
 > - 20.2 高级特性：<https://www.rust-book-cn.com/ch20-02-advanced-traits.html>
@@ -1199,6 +1103,387 @@ where
 > - `futures_task::waker`：<https://docs.rs/futures-task/latest/src/futures_task/waker.rs.html>
 > - `futures_task::arc_wake`：<https://docs.rs/futures-task/latest/src/futures_task/arc_wake.rs.html>
 
+##  内存管理
+
+### 堆、栈
+
+-   *Stack* 栈内存：操作系统管理、*FILO*、默认内存分配的内存空间
+    -   *Stack Frame* 栈帧：每个函数、代码块（作用域）对应的栈上独立内存区域
+        -   栈帧中存储函数所需的局部变量
+        -   函数调用即将被调用函数栈帧压入栈顶
+        -   函数返回后，栈帧整体释放
+    -   故，栈上适合存储局部、大小已知的数据
+        -   且，因数据大小已知、内存分配只在栈顶，栈内存管理效率更高
+        -   变量值默认值即存储在栈内存上
+    -   注意：编译器会进行 `inline` 内联、尾调用优化等栈帧优化
+        -   不保证每个函数、代码块对应单独栈帧
+        -   栈内存可能未被实际释放，仅在逻辑上无法访问栈上变量
+-   *Heap* 堆内存：用户管理、手动申请、手动释放的内存空间
+    -   堆上适合存储运行时变长、需在不同函数间传递的数据
+        -   用户可在运行时动态申请堆内存
+        -   堆上数据不因栈帧自动释放而丢弃
+    -   堆上内存需要在运行时手动申请、手动释放，内存管理效率较低、可能导致内存泄露
+
+> - 5.1 栈和堆：<https://www.bookstack.cn/read/rust-book-chinese/content-The%20Stack%20and%20the%20Heap%20%E6%A0%88%E5%92%8C%E5%A0%86.md>
+> - 5.1 堆空间和栈空间：<https://rust-book.junmajinlong.com/ch5/01_heap_stack.html>
+> - Rust中的栈和堆：<https://zhuanlan.zhihu.com/p/717142228>
+
+### 内存表示
+
+####    内存布局
+
+```rust
+struct A {
+    a: i16,
+    _pad1: [u8,2];                      // 可能布局：填充以对齐至 4B
+    b: u64,
+}
+struct B {                              // 不保证 `A`、`B` 类型值内存中字段顺序一致
+    a: i16,
+    _pad1: [u8,2];
+    b: u64,
+}
+
+enum Foo{
+    A(u32),
+    B,
+}
+struct FooRepr{                         // 1. `Foo` 枚举的可能布局，也可能
+    data: u32,
+    tag: u8,                            // 2. 根据 `tag` 字段确定 `data` 字段含义
+}
+```
+
+-   内存布局
+    -   *Alignment* 对齐：若某类型对齐为 `n`，则存储其值的有效地址必须为 `n` 的整数倍
+        -   类型大小必须是对齐的整数倍
+            -   确保该类型数组总可通过偏移类型大小的整数倍来索引
+        -   基本类型通常与其大小对齐
+            -   但与平台相关，*X86* 平台上 `u64`、`f64` 通常对齐到 4B
+        -   复合结构类型内各字段需对齐，且按字段中对齐最大者对齐
+            -   为此，*Rust* 会在必要时 *padding* 以将字段对齐
+    -   除数组外，*Rust* 不保证字段顺序、完整性
+        -   仅，保证同一类型的不同值中各字段顺序一致
+        -   对结构体类型，内存中字段顺序实际可能与定义顺序不一致，可避免空间浪费
+        -   对枚举类型，*Rust* 可能会执行 *空指针优化*，删除标志字段
+
+> - 2.1 `repr(Rust)` 内存布局：<https://doc.rust-lang.net.cn/nomicon/repr-rust.html>
+
+####    类型大小
+
+```rust
+struct Nothing;                         // ZST
+struct LotsOfNothing {                  // ZST
+    foo: Nothing,
+    qux: (),
+    baz: [u8; 0],
+}
+```
+
+-   特殊大小类型
+    -   *Dynamic Sized Type* 动态大小类型 `!Sized`：没有静态已知大小、对齐方式的类型
+        -   *DST* 只能存储在指针后，且指向 *DST* 指针为包含两个 `usize` 字段的 “宽指针”
+            -   值地址：指向对象值
+            -   *Metadata* 元数据：值的补充信息
+                -   对切片，为切片长度
+                -   对 *Trait* 对象，为类型的 *vtable* 虚表地址
+        -   两种主要的 *DST*
+            -   *Trait* 对象 `dyn TRAIT`
+            -   切片 `[T]`、`str`
+            -   结构体可在最后字段存储单个 *DST* 并成为 *DST*
+    -   *Zero Size Type* 零大小类型：不占用空间的类型
+        -   *Rust* 会针对 *ZST* 做优化，对产生、存储 *ZST* 的操作会可简化为无操作
+        -   主要的 *ZST*
+            -   单元元组
+            -   单元结构体
+    -   空类型：无法实例化的类型
+        -   空类型只能讨论类型，无法讨论值，主要用于体现类型值的 “不可达性”
+            -   指向空类型的裸指针有效，但是解引用是未定义行为
+        -   *Rust* 同样会对空类型做优化
+
+> - 2.2 特殊大小类型：<https://doc.rust-lang.net.cn/nomicon/exotic-sizes.html>
+> - *Rust* 虚表布局规则介绍：<https://zhuanlan.zhihu.com/p/680849759>
+
+### *RAII*
+
+-   *Resource Acquisition is Initialization* 资源获取即初始化
+    -   资源：堆内存（主要）、文件、网络连接等
+    -   将操作系统资源（物理实体）映射为代码中变量、对象（逻辑概念）
+        -   资源调度的生命周期对应对象生命周期
+        -   资源申请对应对象构造：`new`、`alloc` 内存等资源申请放在构造函数中
+        -   资源释放对应对象析构：`delete`、`dealloc` 内存等资源释放在析构函数中
+    -   *Rust* 已经将 *RAII* 作为语言实现的一部分
+        -   变量（栈上内存）初始化时，获取、初始化资源
+        -   （已初始化）变量被销毁时（离开作用域、覆盖），析构函数（*Drop Glue* 递归）执行、释放资源
+    -   注意：栈上内存对应独立的逻辑主体变量，可不被视为资源，而是作为需要、拥有资源的主体
+        -   同时，**栈上内存无法显式释放，析构过程与变量自身栈上内存无关**
+            -   一般的，变量自身栈上内存在栈帧整体弹出时整体释放
+            -   但具体，是否、何时释放取决于编译器行为
+        -   但，逻辑上变量析构之后不应、无法访问
+
+> - 在C, Cpp, Rust 中的 RAII 设计模式：<https://rustcc.cn/article?id=ce702c44-52e3-4dd5-84d9-3982035a3c38>
+
+### *Constructor* 构造
+
+-   *Rust* 没有自带构造函数，只能通过初始化所有字段的方式实例化具体类型
+    -   常见的 `::new()` 方法只是命名习惯，没有任何特殊含义
+
+> - 6.1 构造函数：<https://doc.rust-lang.net.cn/nomicon/constructors.html>
+
+####    内存初始化
+
+-   内存初始化：将内存设置为合理、有意义的值
+    -   *Rust* 中栈内变量在显式赋值前未初始化，且不允许在被初始化前被使用（读取、赋值）
+        -   对 `Copy` 标记类型，初始化后不会变为未初始化状态（遮蔽不视作同一变量）
+        -   非 `Copy` 标记类型变量值被 *Move* 移出后，**变量被反初始化**
+            -   反初始化表示逻辑上变量无法、不应被访问，变量栈内存具体情况无保证
+            -   此时，可变变量可被赋值、并重新初始化
+    -   如上，对实现 `Drop`（必然非 `Copy`）类型变量，可能在初始化、未初始化之间变化
+        -   对已初始化变量被销毁（离开作用域、覆盖赋值）时，*Rust* 需调用析构器释放资源
+            -   部分情况下，变量的初始化状态可静态确定，但不总是这样
+        -   故，*Rust* 会在运行时维护 *Drop Flag* 销毁标志确定变量是否初始化、是否需要析构
+            -   在变量被初始化、反初始化时，销毁标志被切换
+            -   但注意：**通过解引用赋值时，引用值总是无条件被析构**
+                -   因为一般的，引用总是需要原值已初始化才可被创建
+                -   但，某些情况下引用可在未初始化的情况下被创建，此时通过解引用赋值将导致 `panic`
+
+> - 5.1 受检查的未初始化内存：<https://doc.rust-lang.net.cn/nomicon/checked-uninit.html>
+> - 5.1 Checked：<https://doc.rust-lang.org/nomicon/checked-uninit.html>
+> - 5.2 销毁标志：<https://doc.rust-lang.net.cn/nomicon/drop-flags.html>
+> - 5.1 Drop Flags：<https://doc.rust-lang.org/nomicon/drop-flags.html>
+
+####    `mem::MaybeUninit`
+
+```rust
+pub union MaybeUninit<T> {
+    uninit:: (),
+    value: ManuallyDrop<T>,
+}
+
+const SIZE: usize = 10;
+let x = {
+    let mut x: [MaybeUninit<Box<u32>>; SIZE] = unsafe {
+        MaybeUninit::uninit().assume_init()                 // 获取内存，但不初始化
+    };
+    for i in 0..SIZE {
+        x[i] = MaybeUninit::new(Box::new(i as u32));        // 动态赋值初始化
+        // x[i].write(i);                                   // 或直接 `.write` 按位写入
+    }
+    unsafe { mem::transmute::<_, [Box<u32>; SIZE]>(x) }     // 重解释类型
+};
+```
+
+-   `mem::MaybeUninit` 延迟初始化，避免原生初始化的额外开销
+    -   `MaybeUninit<T>` 内部封装 `ManuallyDrop<T>` 
+        -   故，销毁其实例时不触发 `Drop` 析构
+            -   则，`MaybeUninit<T>` 可在内存未初始化的情况下被重赋值
+            -   否则，未初始化析构将导致 `panic`
+        -   但注意，可通过 `MaybeUninit<T>.as_mut_ptr()` 创建 `*mut T`
+            -   若通过 `*mut T` 解引用赋值，必然触发析构、导致 `panic`
+    -   `MaybeUninit<T>` 与 `T` 在内存布局中完全一致
+        -   `MaybeUninit<T>` 被初始化后可通过 `mem::transmute` 直接重解释、转换为 `T` 类型供后续使用
+        -   但注意，`CONTAINER<MaybeUninit<T>>` 与 `CONTAINER<T>` 不一定一致
+
+> - 5.3 未经检查的未初始化内存：<https://doc.rust-lang.net.cn/nomicon/unchecked-uninit.html>
+> - 5.3 Unchecked：<https://doc.rust-lang.org/nomicon/unchecked-uninit.html>
+> - Rust：`MaybeUninit`（避免初始化带来的性能损失）：<https://zhuanlan.zhihu.com/p/1889248158661473931>
+> - `std::mem::MaybeUninit`：<https://doc.rust-lang.org/stable/std/mem/union.MaybeUninit.html>
+
+### *Destructor* 析构
+
+| *Destructor* 析构                                              | 描述                   |
+|----------------------------------------------------------------|------------------------|
+| `fn core::mem::drop<T>(_x:T)`                                  | 析构所有权变量         |
+| `fn unsafe const core::ptr::drop_in_place<T>(to_drop: *mut T)` | （在位）析构指针指向值 |
+| `fn core::ops::Drop::drop(&mut self)`                          | 释放类型自身申请资源   |
+| `struct core::mem::ManuallyDrop<T>`                            | 手动析构包装器         |
+| `fn const core::mem::forget<T>(t: T)`                          | 手动析构快捷函数       |
+
+-   *Destructor* 析构（器）
+    -   析构对应构造，指 **释放所拥有资源**
+        -   构造、初始化：指对获取的资源进行预处理、使之满足后续使用要求
+        -   资源：堆内存（主要）、文件、网络连接等
+        -   拥有：栈上内存一般不被视为资源，而是作为需要、拥有资源的主体
+            -   栈上内存无法显式释放，仅在栈帧整体弹出时共同释放
+            -   即，**变量自身栈上内存与析构无关**
+    -   已初始化变量、临时变量被销毁（离开作用域 *Drop Scope*、覆盖赋值）时，编译器自动执行析构
+        -   变量、临时变量按声明顺序逆序销毁
+        -   若仅部分初始化，则仅初始化部分字段被销毁
+    -   类型 `T` 值的析构过程包括
+        -   若 `T: Drop`，调用 `<T as core::ops::Drop>::drop`（清理堆内存）
+            -   故，不允许手动显式调用 `Drop::drop` 方法，否则可能导致 *Double Free*
+        -   *Drop Glue*：递归的对类型 `T` 包含字段析构
+            -   结构体、元组、枚举变体、数组：字段按声明顺序丢弃（与 *C/C++* 相反）
+            -   闭包捕获的变量丢弃顺序不固定
+            -   *Trait 对象* 执行底层类型析构
+            -   其他类型不执行额外操作
+
+> - Destructors：<https://doc.rust-lang.org/stable/reference/destructors.html>
+> - `std::ops::Drop`：<https://doc.rust-lang.org/std/ops/trait.Drop.html>
+
+####    `Drop`
+
+```rust
+use std::ops::Drop;
+
+struct CustomSmartPointer{
+    data: String,
+}
+
+impl Drop for CustomSmartPointer{
+    fn drop(&mut self) {
+    }
+}
+```
+
+-   `ops::Drop`：自定义类型变量析构时、**释放自身（不考虑内部成员）** 获取资源需运行的代码
+    -   `Drop::drop` 方法仅应释放类型自身获取的资源，主要即堆上内存
+        -   *Drop Glue* 将递归的对其成员项执行析构、释放其获取资源
+        -   变量自身栈上内存（即各成员项所在的内存）与析构过程无关，将随栈帧弹出释放
+    -   故，一般仅在类型包含需分配内存裸指针、与外部资源交互时需 `impl Drop`
+        -   即，`Drop::drop` 只需 `dealloc` 自身在 `::new()`（构造函数）内 `alloc` 的内存
+        -   对外部资源，调用外部资源提供的 *API* 释放内存
+    -   *Rust* 严格按 *RAII* 规范，在变量被销毁时自动析构
+        -   析构过程将调用变量 `Drop::drop()` 方法（若有）
+        -   故，`Drop::drop()` 方法永远不应该手动调用，否则将二次释放资源 `panic`
+    -   `Drop` 与 `Copy` 标记特性不兼容
+        -   `impl Drop` 将自动移除 `Copy` 标记特性
+
+> - `std::ops::Drop`：<https://doc.rust-lang.org/std/ops/trait.Drop.html>
+> - 15.3 使用 `Drop` 特性在清理时运行代码：<https://www.rust-book-cn.com/ch15-03-drop.html>
+> - Rust 在什么情况下，必须手写Drop，释放资源？：<https://www.zhihu.com/question/653741156/answer/3475999527>
+
+#####   *Sound Generic Drop*
+
+```rust
+// *************************** `#[may_dangle]` 指示可能出现悬垂引用
+#![feature(dropck_eyepatch)]
+
+struct Inspector<'a>(&'a u8, &'static str);
+
+unsafe impl<#[may_dangle] 'a> Drop for Inspector<'a> {      // 跳过对 `'a` 的检查
+    fn drop(&mut self) {
+        println!("Inspector(_, {}) knows when *not* to inspect.", self.1);
+    }
+}
+
+struct World<'a> {
+    days: Box<u8>,
+    inspector: Option<Inspector<'a>>,
+}
+
+fn main() {
+    let mut world = World {
+        inspector: None,
+        days: Box::new(1),
+    };
+    world.inspector = Some(Inspector(&world.days, "gadget"));
+}
+```
+
+-   *Sound Generic Drop* 健全泛型丢弃：（泛型）类型中泛型参数存活时间必须 **严格超过（包含）** （泛型）类型值（否则编译失败）
+    -   即，若类型包含的泛型参数为引用，引用（泛型参数）的生命周期必须严格超过（包含）该（泛型）类型
+    -   对无自引用类型
+        -   考虑到编译器严格按声明顺序清理变量，则泛型类型、引用（泛型参数）的生命周期不严格相等
+        -   即，满足一般的生命周期约束即可
+    -   对存在自引用的类型
+        -   若类型未实现 `Drop Trait`，编译器将严格按顺序清理变量
+            -   对合理的字段顺序，编译器接受泛型参数存活时间严格超过类型值
+            -   类型中字段存在自引用可编译通过
+        -   若类型实现 `Drop Trait`
+            -   编译期器将无法判断 `drop` 方法中成员清理顺序
+            -   类型中字段存在自引用时总是编译失败
+    -   `#[may_dangle] 'a` 标记泛型参数（或生命周期参数 `'a`）：可能出现悬垂引用，但是保证不会访问悬垂引用
+        -   编译器将忽略被标记的泛型参数是否严格超过类型值
+
+> - 3.9 丢弃检查：<https://doc.rust-lang.net.cn/nomicon/dropck.html>
+> - 3.9 Drop Check：<https://doc.rust-lang.org/nomicon/dropck.html>
+> - Rust: `PhantomData`，`#may_dangle` 和Drop Check 真真假假：<https://zhuanlan.zhihu.com/p/383004091>
+
+####    `drop`、`drop_in_place`
+
+```rust
+// ************************** `core::mem::drop`
+pub const fn drop<T>(_x: T)
+where T: [const] Destruct,
+{                                               // 只是获取了实参所有权、但不做任何事
+}                                               // 实参离开 `drop` 作用域时被析构、丢弃
+
+pub const unsafe fn drop_in_place<T: PointeeSized>(to_drop: *mut T)
+where
+    T: [const] Destruct,
+{                                               // 函数体不重要，将被编译器替换为真正的 drop glue
+    usafe { drop_in_place(to_drop) }
+}
+```
+
+-   `mem::drop`、`ptr::drop_in_place` 均为手动析构某个值
+    -   `mem::drop(_x: T)` 通过获取变量所有权、结束作用域，利用 *Rust* 机制销毁变量
+        -   即，通过正常销毁变量进行析构、销毁之后无法访问（所有权变量栈内存应已释放）
+        -   故，`mem::drop(_x)` 是安全的
+    -   `ptr::drop_in_place(to_drop: *mut T)` 则是直接析构指针指向的值
+        -   但，**指针指向内存（堆或栈）未被释放**，只是释放值已获取资源
+        -   故若，指针指向值所有权变量未被销毁、依然存在，导致
+            -   所有权变量逻辑上不完整、不可用，但是可能后续被访问
+            -   所有权变量离开作用域时被自动析构、二次释放资源而 `panic`
+        -   故，`unsafe drop_in_place` 一般只用于无所有者、手动 `alloc` 分配内存、裸指针指向的值
+            -   且注意：**析构之后需要 `dealloc` 释放指针指向的值内存**
+            -   特别的，`!Size` 类型无法读取至栈内存作为所有权变量，只能利用 `drop_in_place` 析构
+
+```rust
+use std::alloc::{alloc, dealloc, Layout};
+use std::ptr;
+
+unsafe {
+    let layout = Layout::new::<String>();
+    let p = alloc(layout) as *mut String;       // 手动分配堆内存
+    ptr::write(p, String::from("hello"));       // 堆内存，写入值
+    ptr::drop_in_place(p);                      // 析构值，实际仅通过 `String::drop()` 释放其资源
+    dealloc(p as *mut u8, layout);              // 必须再手动释放 `p` 指向内存
+}
+```
+
+> - `core::mem::drop`：<https://doc.rust-lang.org/core/mem/fn.drop.html>
+> - `core::ptr::drop_in_place`：<https://doc.rust-lang.org/stable/core/ptr/fn.drop_in_place.html>
+> - `core::ptr::drop_in_place` 中文：<https://rustwiki.org/zh-CN/core/ptr/fn.drop_in_place.html>
+> - `core::ptr::drop_in_place` 源码：<https://doc.rust-lang.org/stable/src/core/ptr/mod.rs.htm>
+
+####    `ManuallyDrop`、`forget`
+
+```rust 
+use std::mem:{ManuallyDrop, forget};
+
+// ************************** `core::mem::ManuallyDrop`
+#[lang = "manually_drop"]                       // 禁止编译器插入 drop_glue 避免自动析构
+pub struct ManuallyDrop<T: ?Sized>{
+    value: MaybeDangling<T>,
+}
+pub struct MaybeDangling<P: ?Sized>(P);         // 零开销
+impl<T:?Sized> ManuallyDrop<T> {
+    pub const unsafe fn drop(slot: &mut ManuallyDrop<T>)
+    where T: [const] Destruct,                  // 必须手动析构
+    {
+        unsafe { ptr::drop_in_place(&mut slot.value) }
+    }
+}
+
+// ************************** `core::mem::forget`
+pub const fn forget<T>(t: T) {
+    let _ = ManuallyDrop::new(t);               // 获取实参所有权、`ManuallyDrop` 封装禁止自动析构
+}
+```
+
+-   `ManuallyDrop<T>` 禁止编译器自动析构的、零成本包装器
+    -   `ManuallyDrop<T>` 类型内存布局、布局优化与 `T` 一致，
+    -   `#[lang = "manually_drop"]` 指示禁止编译器为类型值销毁时自动析构
+        -   被包装值需要调用 `ManuallyDrop::drop()` 手动执行析构
+        -   等价于直接在内部 `*mut T` 调用 `ptr::drop_in_place()`
+    -   
+
+> - `core::mem::ManuallyDrop`：<https://doc.rust-lang.org/stable/core/mem/struct.ManuallyDrop.html>
+> - `core::mem::forget`：<https://doc.rust-lang.org/stable/core/mem/fn.forget.html>
+> - How `std::mem::MannuallyDrop` work?：<https://users.rust-lang.org/t/how-std-manuallydrop-work/69939>
+
 ##  所有权、指针（引用）、生命周期
 
 ### 所有权、`Copy`、`Clone`
@@ -1211,6 +1496,7 @@ where
     -   “赋值” 时，对 `impl Copy` 类型，*Rust* 执行复制，否则 **执行移动**
         -   *Move* 移动：所有权转移，将原变量绑定值移动给（赋值给）新变量
             -   即，浅拷贝的同时，无效原变量（变量从逻辑上变成未初始化）
+            -   即，新变量获取原值的同时，原变量被无效
             -   移动可能发生在赋值、函数传参时
         -   *Copy* 复制：原变量对值的所有权保留，并逐位复制绑定给新变量
 
@@ -1723,26 +2009,31 @@ fn main() {
     -   对包含（生命周期）泛型 `'a`、`T` 的自定义类型（分别独立考虑）
         -   若所有成员对 `'a`、`T` 均协变、逆变，则自定义类型对 `'a`、`T` 协变、逆变
         -   否则，自定义类型对 `'a`、`T` 不变
+    -   型变与 *Type Coercion* 类型强制转换
+        -   类型强制转换关注运行时具体的类型变化，发生在赋值、初始化等多种场合
+        -   型变关注生命周期，是编译期的类型检查，仅检查函数实参的生命周期
+            -   可视为特殊的类型强制转换
 
-| “组合泛型” `F`  | `'a` | `T`      | `U`  |
-|-----------------|------|----------|------|
-| `&'a T`         | 协变 | 协变     |      |
-| `&'a mut T`     | 协变 | **不变** |      |
-| `*const T`      |      | 协变     |      |
-| `*mut T`        |      | **不变** |      |
-| `[T]`、`[T; n]` |      | 协变     |      |
-| `fn(T) -> U`    |      | 协变     | 逆变 |
-| `Box<T>`        |      | 协变     |      |
-| `UnsafaCell<T>` |      | 不变     |      |
-| `Vec<T>`        |      | 协变     |      |
-| `Cell<T>`       |      | 不变     |      |
-| `RefCell<T>`    |      | 不变     |      |
-
+| “组合泛型” `F`      | `'a` | `T`      | `U`  |
+|---------------------|------|----------|------|
+| `&'a T`             | 协变 | 协变     |      |
+| `&'a mut T`         | 协变 | **不变** |      |
+| `*const T`          |      | 协变     |      |
+| `*mut T`            |      | **不变** |      |
+| `[T]`、`[T; n]`     |      | 协变     |      |
+| `fn(T) -> U`        |      | 逆变     | 协变 |
+| `UnsafeCell<T>`     |      | 不变     |      |
+| `PhantomData<T>`    |      | 不变     |      |
+| `dyn Trait<T> + 'a` | 协变 | 不变     |      |
+| `Box<T>`            |      | 协变     |      |
+| `Vec<T>`            |      | 协变     |      |
+| `Cell<T>`           |      | 不变     |      |
+| `RefCell<T>`        |      | 不变     |      |
 
 > - 3.8 子类型和协变性：<https://doc.rust-lang.net.cn/nomicon/subtyping.html>
 > - 3.8 Subtyping and Variance：<https://doc.rust-lang.org/nomicon/subtyping.html>
 > - 10.5 子类型和变异性：<https://doc.rust-lang.net.cn/reference/subtyping.html#variance>
-> - 10.5 Subtyping and Variance://doc.rust-lang.org/reference/subtyping.html#variance>
+> - 10.5 Subtyping and Variance：<https://doc.rust-lang.org/reference/subtyping.html#variance>
 > - Rust：深入理解 `PhantomData`：<https://zhuanlan.zhihu.com/p/533695108>
 
 ####    函数生命周期说明
@@ -2157,173 +2448,6 @@ pub struct Box<T:?Sized, A:Allocator=Global>(Unqiue<T>, A);
 > - `ptr::Unique`（无文档）：<https://doc.rust-lang.org/src/core/ptr/unique.rs.html>
 > - `alloc::boxed`：<<https://doc.rust-lang.org/src/alloc/boxed.rs.html>
 > - Rust 中 `Unique`、`NonNull` 的用法：<https://www.duidaima.com/Group/Topic/Rust/14535>
-
-### *Destructor*
-
-| *Destructor* 析构、内存清理                                    | 描述                |
-|----------------------------------------------------------------|---------------------|
-| `fn core::mem::drop<T>(_x:T)`                                  | 丢弃 **变量所有值** |
-| `fn unsafe const core::ptr::drop_in_place<T>(to_drop: *mut T)` | 丢弃 **指针指向值** |
-| `fn core::ops::Drop::drop(&mut self)`                          | 释放申请的堆内存    |
-| `struct core::mem::ManuallyDrop<T>`                            | 手动丢弃封装        |
-| `fn const core::mem::forget<T>(t: T)`                          | 手动丢弃            |
-
--   *Destructor* 析构（器）
-    -   以下场合，**已初始化变量、临时变量** 执行析构：值被丢弃、内存被释放
-        -   已初始化变量、临时变量离开作用域 *Drop Scope*
-            -   **变量、临时变量按声明顺序逆序清理**
-        -   已初始化的左值（即已初始化可变变量被重新赋值时，原值被丢弃）
-            -   若仅部分初始化，则仅初始化部分字段被丢弃
-    -   类型 `T` 值的析构过程包括
-        -   若 `T: Drop`，调用 `<T as core::ops::Drop>::drop`（清理堆内存）
-            -   故，不允许手动显式调用 `Drop::drop` 方法，否则可能导致 *Double Free*
-        -   *Drop Glue*：递归的对类型 `T` 包含字段析构
-            -   结构体、元组、枚举变体、数组：字段按声明顺序丢弃（与 *C/C++* 相反）
-            -   闭包捕获的变量丢弃顺序不固定
-            -   *Trait 对象* 执行底层类型析构
-            -   其他类型不执行额外操作
-
-> - Destructors：<https://doc.rust-lang.org/stable/reference/destructors.html>
-> - `std::ops::Drop`：<https://doc.rust-lang.org/std/ops/trait.Drop.html>
-
-####    `Drop`
-
-```rust
-use std::ops::Drop;
-
-struct CustomSmartPointer{
-    data: String,
-}
-
-impl Drop for CustomSmartPointer{
-    fn drop(&mut self) {
-    }
-}
-```
-
--   `core::ops::Drop`：自定义值离开作用域时需运行的代码
-    -   `Drop::drop` 方法仅应释放 **类型自身申请的堆上内存**
-        -   变量自身（栈上内存）：将在执行析构时、在 `Drop::drop` 之后被自动释放
-        -   变量成员：递归的执行析构时，释放其申请堆上内存、自身栈上内存
-        -   引用成员：不拥有值，无需释放内存、或仅释放存储地址的栈上内存
-    -   故，一般仅在类型包含裸指针、与外部资源交互时需 `impl Drop`
-        -   对裸指针，调用 `core::ptr::drop_in_place<T>` 函数释放指针指向内存
-        -   对外部资源，调用外部资源提供的 *API* 释放内存
-    -   `Drop` 与 `Copy` 标记特性不兼容
-        -   `impl Drop` 将自动移除 `Copy` 标记特性
-
-> - `std::ops::Drop`：<https://doc.rust-lang.org/std/ops/trait.Drop.html>
-> - 15.3 使用 `Drop` 特性在清理时运行代码：<https://www.rust-book-cn.com/ch15-03-drop.html>
-> - Rust 在什么情况下，必须手写Drop，释放资源？：<https://www.zhihu.com/question/653741156/answer/3475999527>
-
-#####   *Sound Generic Drop*
-
-```rust
-// *************************** `#[may_dangle]` 指示可能出现悬垂引用
-#![feature(dropck_eyepatch)]
-
-struct Inspector<'a>(&'a u8, &'static str);
-
-unsafe impl<#[may_dangle] 'a> Drop for Inspector<'a> {      // 跳过对 `'a` 的检查
-    fn drop(&mut self) {
-        println!("Inspector(_, {}) knows when *not* to inspect.", self.1);
-    }
-}
-
-struct World<'a> {
-    days: Box<u8>,
-    inspector: Option<Inspector<'a>>,
-}
-
-fn main() {
-    let mut world = World {
-        inspector: None,
-        days: Box::new(1),
-    };
-    world.inspector = Some(Inspector(&world.days, "gadget"));
-}
-```
-
--   *Sound Generic Drop* 健全泛型丢弃：（泛型）类型中泛型参数存活时间必须 **严格超过（包含）** （泛型）类型值（否则编译失败）
-    -   即，若类型包含的泛型参数为引用，引用（泛型参数）的生命周期必须严格超过（包含）该（泛型）类型
-    -   对无自引用类型
-        -   考虑到编译器严格按声明顺序清理变量，则泛型类型、引用（泛型参数）的生命周期不严格相等
-        -   即，满足一般的生命周期约束即可
-    -   对存在自引用的类型
-        -   若类型未实现 `Drop Trait`，编译器将严格按顺序清理变量
-            -   对合理的字段顺序，编译器接受泛型参数存活时间严格超过类型值
-            -   类型中字段存在自引用可编译通过
-        -   若类型实现 `Drop Trait`
-            -   编译期器将无法判断 `drop` 方法中成员清理顺序
-            -   类型中字段存在自引用时总是编译失败
-    -   `#[may_dangle] 'a` 标记泛型参数（或生命周期参数 `'a`）：可能出现悬垂引用，但是保证不会访问悬垂引用
-        -   编译器将忽略被标记的泛型参数是否严格超过类型值
-
-> - 3.9 丢弃检查：<https://doc.rust-lang.net.cn/nomicon/dropck.html>
-> - 3.9 Drop Check：<https://doc.rust-lang.org/nomicon/dropck.html>
-> - Rust: `PhantomData`，`#may_dangle` 和Drop Check 真真假假：<https://zhuanlan.zhihu.com/p/383004091>
-
-####    `drop`、`drop_in_place`
-
-```rust
-// ************************** `core::mem::drop`
-pub const fn drop<T>(_x: T)
-where T: [const] Destruct,
-{                                               // 只是获取了实参所有权、但不做任何事
-}                                               // 实参离开 `drop` 作用域时被析构、丢弃
-
-pub const unsafe fn drop_in_place<T: PointeeSized>(to_drop: *mut T)
-where
-    T: [const] Destruct,
-{                                               // 函数体不重要，将被编译器替换为真正的 drop glue
-    usafe { drop_in_place(to_drop) }
-}
-```
-
--   `drop`、`drop_in_place` 分别为所有者变量、可变裸指针执行（递归的、完整的）析构
-    -   `drop_in_place` 可用于丢弃 `!Sized` 类型值
-        -   `!Sized` 类型值无法读取至栈上、被获取所有权，即无法被正常 `drop` 丢弃
-        -   `drop_in_place` 实际将由编译器替换为完整的 *Drop Glue* 丢弃流程
-
-> - `core::mem::drop`：<https://doc.rust-lang.org/core/mem/fn.drop.html>
-> - `core::ptr::drop_in_place`：<https://doc.rust-lang.org/stable/core/ptr/fn.drop_in_place.html>
-> - `core::ptr::drop_in_place` 中文：<https://rustwiki.org/zh-CN/core/ptr/fn.drop_in_place.html>
-> - `core::ptr::drop_in_place` 源码：<https://doc.rust-lang.org/stable/src/core/ptr/mod.rs.htm>
-
-####    `ManuallyDrop`、`forget`
-
-```rust 
-use std::mem:{ManuallyDrop, forget};
-
-// ************************** `core::mem::ManuallyDrop`
-#[lang = "manaully_drop"]                       // 指示编译器不自动析构
-pub struct MannuallyDrop<T: ?Sized> {
-    value: T,                                   // 零开销
-}
-impl<T> ManuallyDrop<T> {
-    pub const fn new(value: T) -> MannullyDrop<T> {
-        ManuallyDrop { value }
-    }
-}
-impl<T:?Sized> ManuallyDrop<T> {
-    pub const unsafe fn drop(slot: &mut ManuallyDrop<T>)
-    where T: [const] Destruct,                  // 必须手动析构
-    {
-        unsafe { ptr::drop_in_place(&mut slot.value) }
-    }
-}
-
-// ************************** `core::mem::forget`
-pub const fn forget<T>(t: T) {
-    let _ = ManuallyDrop::new(t);               // 获取实参所有权、`ManuallyDrop` 封装禁止自动析构
-}
-```
-
--   `mem::ManuallyDrop` 封装的变量离开作用域时不会自动析构
-
-> - `core::mem::ManuallyDrop`：<https://doc.rust-lang.org/stable/core/mem/struct.ManuallyDrop.html>
-> - `core::mem::forget`：<https://doc.rust-lang.org/stable/core/mem/fn.forget.html>
-> - How `std::mem::MannuallyDrop` work?：<https://users.rust-lang.org/t/how-std-manuallydrop-work/69939>
 
 ### `unsafe`
 

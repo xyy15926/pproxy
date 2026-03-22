@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2026-01-25 16:18:02
-updated: 2026-03-17 16:24:49
+updated: 2026-03-22 21:24:36
 toc: true
 mathjax: true
 description: 
@@ -740,6 +740,7 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 | `thread::Thread`                     | 线程句柄                   |            |
 | `thread::JoinHandle`                 | 线程阻塞句柄               |            |
 | `thread::Builder`                    | 线程工厂                   |            |
+| `thread::LocalKey<T: 'static>`       | 线程局部变量（静态）       |            |
 | `sync::Arc<T>`                       | 原子（线程安全）引用计数   |            |
 | `sync::Mutex<T>`                     | 互斥锁                     |            |
 | `sync::RwLock`                       | 读写锁                     |            |
@@ -747,6 +748,10 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 | `sync::CondVar`                      | 条件变量                   |            |
 | `sync::mpsc`                         | 多生产者、单消费者消息队列 | 模块       |
 | `sync::mpmc`                         | 多生产者、多消费者消息队列 | *Exp* 模块 |
+| `mem::MaybeUninit<T>`                | 未初始化实例               |            |
+| `mem::ManuallyDrop<T>`               | 避免编译器自动销毁实例     |            |
+| `ptr::NonNull<T>`                    | 非空、协变 `*mut T`        |            |
+| `alloc::Layout`                      | 内存布局                   |            |
 
 > - `std::prelude`：<https://doc.rust-lang.org/stable/std/prelude/index.html>
 > - `std::prelude` 中文：<https://rustwiki.org/zh-CN/std/prelude/index.html>
@@ -961,8 +966,8 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 | `with_addr(addr)`         | `*const T`                   | 按 `usize`、自身起源信息创建              |                                     |
 | `map_addr(f)`             | `*const T`                   | 按 `f(usize) -> usize` 变换自身地址创建   |                                     |
 | `as_ref()`                | `Option<&'a T>`              | 尝试创建引用（值应已初始化）              | `unsafe`、指针为空时返回 `None`     |
-| `as_ref_unchecked()`      | `&'a T`                      | 不检查空、是否初始化地创建引用            | `unsafe`                            |
-| `as_uninit_ref<'a>(self)` | `Option<&'a MaybeUninit<T>>` | 尝试创建引用（值可未初始化）              | `unsafe`                            |
+| `as_ref_unchecked()`      | `&'a T`                      | 不检查空、是否初始化地创建引用            | *Exp*，`unsafe`                     |
+| `as_uninit_ref<'a>(self)` | `Option<&'a MaybeUninit<T>>` | 尝试创建引用（值可未初始化）              | *Exp*，`unsafe`                     |
 | `cast_uninit()`           | `*const MaybeUninit<T>`      | 转换为未初始化                            | *Exp*                               |
 | `cast_init()`             | `*const T`                   | 转换为初始化                              | *Exp*，`*const MaybeUninit<T>` 类型 |
 | `read()`                  | `T`                          | 读取但不移动                              | `unsafe`                            |
@@ -1016,14 +1021,133 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 
 ####    `*mut T`
 
-| `*mut T` 方法             | 返回值 | 描述                                       | 其他     |
-|---------------------------|--------|--------------------------------------------|----------|
-| `write_bytes(val, count)` | `()`   | 将 `count * size_of::<T>()` 字节置为 `val` | `unsafe` |
-| `write(val)`              | `()`   | 覆盖写入 `T`，且不执行 `drop`              | `unsafe` |
-| `write_volatite()`        | `()`   | 易变、可见地覆盖写入，且不执行 `drop`      | `unsafe` |
-| `write_unaligned()`       | `()`   | 覆盖写入，指针可能未对齐                   | `unsafe` |
-| `replace(src)`            | `T`    | 替换并返回旧值，且不执行 `drop`            | `unsafe` |
-| `swap(with)`              | `()`   | 与 `*mut T` 指针交换内容，不执行反初始化   | `unsafe` |
+| `*mut T` 方法             | 返回值              | 描述                                       | 其他                        |
+|---------------------------|---------------------|--------------------------------------------|-----------------------------|
+| `write_bytes(val, count)` | `()`                | 将 `count * size_of::<T>()` 字节置为 `val` | `unsafe`                    |
+| `write(val)`              | `()`                | 覆盖写入 `T`，且原值不执行析构             | `unsafe`                    |
+| `write_volatite(val)`     | `()`                | 易变、可见地覆盖写入，且不执行 `drop`      | `unsafe`                    |
+| `write_unaligned(val)`    | `()`                | 覆盖写入，指针可能未对齐                   | `unsafe`                    |
+| `replace(src)`            | `T`                 | 替换并返回旧值，且不执行 `drop`            | `unsafe`                    |
+| `swap(with)`              | `()`                | 与 `*mut T` 指针交换内容，不执行反初始化   | `unsafe`                    |
+| `as_mut()`                | `Option<&'a mut T>` | 转换为可变引用                             | `unsafe`，空指针返回 `None` |
+
+| `*mut [T]` 方法     | 返回值               | 描述                       | 其他  |
+|---------------------|----------------------|----------------------------|-------|
+| `as_mut_array<N>()` | `Option<*mut [T;N]>` | 转换为数组裸指针           | *Exp* |
+| `as_mut_ptr()`      | `*mut T`             | 转换为指向切片缓冲的裸指针 | *Exp* |
+
+####    `ptr::NonNull<T>`
+
+```rust
+pub struct NonNull<T: PointeeSized> {
+    pointer: *const T,
+}
+```
+
+-   `ptr::NonNull<T>` 非空、协变 `*mut T`
+    -   `NonNull<T>` 在内部封装 `*const T` 实现对 `T` 协变
+        -   但，`*mut T` 其实没必要对 `T` 不变，毕竟解引用获取 `T` 总是 `unsafe` 的
+    -   `NonNull<T>` 实现方法、特性基本同 `*mut T`
+        -   类似的，`NonNull<[T]>` 方法基本同 `*mut [T]`
+    -   `*const T`、`Option<NonNull<T>>`、`*mut T` 类型形参 **代表函数不同承诺**
+        -   `*const T`：函数承诺不修改值、兼容 `Super<T>` 父类型实参
+            -   *Rust* 中父子类型仅与生命周期相关，不修改值显然暗含兼容父类型实参
+        -   `Option<NonNull<T>>`：函数可能修改值、但兼容 `Super<T>` 父类型实参
+        -   `*mut T`：函数可能修改值、且不兼容 `Super<T>` 父类行实参
+
+| `NonNull<T>` 方法             | 返回值               | 描述                       | 其他                    |
+|-------------------------------|----------------------|----------------------------|-------------------------|
+| `NonNull::new(ptr)`           | `Option<NonNull<T>>` | 从 `*mut T` 创建           | 空指针返回 `None`       |
+| `NonNull::new_unchecked(ptr)` | `NonNull<T>`         | 从 `*mut T` 创建           | `unsafe` 需确保非空指针 |
+| `NonNull::from_mut(r)`        | `NonNull<T>`         | 从 `&mut T` 转换           |                         |
+| `NonNull::from_ref(r)`        | `NonNull<T>`         | 从 `&T` 转换               |                         |
+| `as_ref()`                    | `&'a T`              | 创建共享引用               | `unsafe`                |
+| `as_mut()`                    | `&'a mut T`          | 创建可变引用               | `unsafe`                |
+| `as_uninit_ref()`             | `&'a T`              | 创建共享引用，值可未初始化 | *Exp*，`unsafe`         |
+| `as_uninit_mut()`             | `&'a mut T`          | 创建可变引用，值可未初始化 | *Exp*，`unsafe`         |
+| `as_ptr()`                    | `*mut T`             | 获取底层 `*mut T`          |                         |
+
+> - `std::ptr::NonNull`：<https://doc.rust-lang.org/stable/std/ptr/struct.NonNull.html>
+> - Variance and `NonNull` in Rust：<https://zhuanlan.zhihu.com/p/42756635>
+
+### 内存管理
+
+####    `mem::ManuallyDrop<T>`
+
+| `ManuallyDrop<T>` 方法           | 返回值            | 描述                       | 其他                            |
+|----------------------------------|-------------------|----------------------------|---------------------------------|
+| `ManuallyDrop::new(value)`       | `MannallyDrop<T>` | 封装 `T` 值                |                                 |
+| `ManuallyDrop::into_inner(slot)` | `T`               | 解包获取内部值             |                                 |
+| `ManuallyDrop::take(slot)`       | `T`               | 从 `&mut T` 解包获取内部值 | `unsafe` 需确保 `self` 不再使用 |
+| `ManuallyDrop::drop(slot)`       | `()`              | 通过 `&mut T` 丢弃内部值   | `unsafe` 需确保 `self` 不再使用 |
+
+-   `ManuallyDrop<T>` 禁止编译器自动析构的、零成本包装器
+    -   `ManuallyDrop<T>` 实现有 `DerefMut`，故其方法均为关联函数、内部值方法可直接在其上应用
+
+> - `std::mem::ManuallyDrop`：<https://doc.rust-lang.org/stable/std/mem/struct.ManuallyDrop.html>
+> - How `std::mem::ManuallyDrop` work?：<https://users.rust-lang.org/t/how-std-manuallydrop-work/69939>
+
+####    `mem::MaybeUninit<T>`
+
+| `MaybeUninit<T>` 方法                      | 返回值                   | 描述                         | 其他                                      |
+|--------------------------------------------|--------------------------|------------------------------|-------------------------------------------|
+| `MaybeUninit::new(val)`                    | `MaybeUninit<T>`         | 按指定值创建                 |                                           |
+| `MaybeUninit::uninit()`                    | `MaybeUninit<T>`         | 按未初始化状态创建           |                                           |
+| `MabyeUninit::zeroed()`                    | `MaybeUninit<T>`         | 内存填 0 创建                |                                           |
+| `write(val)`                               | `&mut T`                 | 写入值、原值不执行析构       | 同 `*mut T` 裸指针 `write` 方法           |
+| `as_ptr()`                                 | `*const T`               | 获取内部值常量裸指针         |                                           |
+| `as_mut_ptr()`                             | `*const T`               | 获取内部值可变裸指针         |                                           |
+| `assume_init()`                            | `T`                      | 解包获取内部值               | `unsafe` 需确保内部值已初始化             |
+| `assume_init_read()`                       | `T`                      | 读取内部值创建副本           | `unsafe` 需确保内部值已初始化、可创建副本 |
+| `assume_init_drop()`                       | `()`                     | 在位析构内部值               | `unsafe` 需确保内部值已初始化             |
+| `assume_init_ref()`                        | `&T`                     | 获取内部值共享引用           | `unsafe` 需确保内部值已初始化             |
+| `assume_init_mut()`                        | `&mut T`                 | 获取内部值可变引用           | `unsafe` 需确保内部值已初始化             |
+| `MaybeUninit::array_assume_init<N>(array)` | `[T;N]`                  | 解包转换为数组               | *Exp*，`unsafe` 需确保数组元素均已初始化  |
+| `as_bytes()`                               | `&[MaybeUninit<u8>]`     | 创建未初始化字节切片共享引用 | *Exp*                                     |
+| `as_bytes_mut()`                           | `&mut [MaybeUninit<u8>]` | 创建未初始化字节切片可变引用 | *Exp*                                     |
+
+-   `mem::MaybeUninit<T>` 创建、处理未初始化值的包装器
+    -   编译器将不对 `MaybeUninit<T>` 实例做适用于已初始化 `T` 值的假设、优化
+    -   `MaybeUninit<T>` 主要通过 `write(val)` 方法写入数据、再 `assume_`、`mem::transmute` 得到目标类型
+        -   存储函数结果的外层指针：将函数将结果直接写入传入 `MaybeUninit<T>` 实参
+        -   逐元素初始化大数组
+        -   结构体类型逐字段初始化
+    -   `MaybeUninit<T>` 保证大小、对齐、*ABI* 与 `T` 一致
+
+| `MaybeUninit<[T;N]>` 方法 | 返回值               | 描述         | 其他  |
+|---------------------------|----------------------|--------------|-------|
+| `transpose()`             | `[MaybeUninit<T>;N]` | 未初始化内置 | *Exp* |
+
+| `Box<MaybeUninit<T>, A>` 方法 | 返回值      | 描述                   | 其他                          |
+|-------------------------------|-------------|------------------------|-------------------------------|
+| `assume_init()`               | `Box<T, A>` | 解包获取内部值         | `unsafe` 需确保内部值已初始化 |
+| `write(boxed)`                | `Box<T, A>` | 设置值、原值不执行析构 |                               |
+
+> - `std::mem::MaybeUninit`：<https://doc.rust-lang.org/stable/std/mem/union.MaybeUninit.html>
+
+####    `alloc::Layout`
+
+| `Layout` 方法                                    | 返回值                                 | 描述                           | 其他                        |
+|--------------------------------------------------|----------------------------------------|--------------------------------|-----------------------------|
+| `Layout::from_size_align(size, align)`           | `Result<Layout, LayoutError>`          | 按大小、对齐创建               | 不满足布局要求返回 `Err`    |
+| `Layout::from_size_align_unchecked(size, align)` | `Result<Layout, LayoutError>`          | 按大小、对齐创建               | `unsafe` 需确保满足布局要求 |
+| `Layout::new<T>(t)`                              | `Layout`                               | 创建满足类型要求布局           |                             |
+| `Layout::array<T>(n)`                            | `Result<Layout, LayoutError>`          | 创建满足 `[T; n]` 要求布局     |                             |
+| `size()`                                         | `usize`                                | 布局大小所需的内存块最小字节数 |                             |
+| `align()`                                        | `usize`                                | 布局对齐所需的内存块最小字节数 |                             |
+| `align_to(align)`                                | `Result<(Layout, usize), LayoutError>` | 按对齐调整布局                 |                             |
+| `pad_to_align()`                                 | `Layout`                               | 按调整存储大小至对齐整数倍     |                             |
+| `extend(next)`                                   | `Result<Layout, usize>`                | 扩展布局                       | 返回新布局、后个布局偏移    |
+
+-   `alloc::Layout` 描述内存块布局
+    -   布局通过两字段描述
+        -   `align` 对齐：寻址最小单位（即地址起始位置必须为 `align` 整数倍），必须为 2 的幂次
+        -   `size` 存储大小：存储全部数据所需字节数
+            -   因为，类型值在内存中起始地址必须为 `align` 的整数倍
+            -   故，单个类型值在内存真正所需字节数需在真实 `size` 基础上补齐 `pad`
+
+> - `struct::alloc::Layout`：<https://doc.rust-lang.org/stable/std/alloc/struct.Layout.html>
+> - 浅谈 Rust 程序内存布局：<https://rustcc.cn/article?id=98adb067-30c8-4ce9-a4df-bfa5b6122c2e>
 
 ### `Option`、`Result`
 
@@ -2063,7 +2187,7 @@ pub struct BufWriter<W: ?Sized + Write> {
 
 > - `std::thread`：<https://doc.rust-lang.org/stable/std/thread/index.html>
 
-####    `JoinHandle`
+####    `thread::JoinHandle`
 
 | `JoinHandle` 方法 | 返回值      | 描述                     | 其他                          |
 |-------------------|-------------|--------------------------|-------------------------------|
@@ -2079,7 +2203,7 @@ pub struct BufWriter<W: ?Sized + Write> {
 
 > - `std::thread::JoinHandle`：<https://doc.rust-lang.org/stable/std/thread/struct.JoinHandle.html>
 
-####    `Thread`
+####    `thread::Thread`
 
 | `Thread` 方法           | 返回值         | 描述                      | 其他                               |
 |-------------------------|----------------|---------------------------|------------------------------------|
@@ -2096,7 +2220,7 @@ pub struct BufWriter<W: ?Sized + Write> {
 > - `std::thread::park`：<https://doc.rust-lang.org/stable/std/thread/fn.park.html>
 > - Rust 多线程的高效等待术：`park()` 与 `unpark()` 信号通信实战：<https://paxonqiao.com/rust-thread-parking/>
 
-####    `Builder`
+####    `thread::Builder`
 
 | `Builder` 方法     | 返回值                  | 描述                                             | 其他                                          |
 |--------------------|-------------------------|--------------------------------------------------|-----------------------------------------------|
@@ -2109,6 +2233,55 @@ pub struct BufWriter<W: ?Sized + Write> {
 -   `thread::Builder` 即线程工厂，用于配置新创建线程属性
 
 > - `std::thread::Builder`：<https://doc.rust-lang.org/stable/std/thread/struct.Builder.html>
+
+####    `thread::LocalKey`
+
+| `LocalKey<T>` 方法 | 返回值                   | 描述                                 | 其他                         |
+|--------------------|--------------------------|--------------------------------------|------------------------------|
+| `with(f)`          | `R`                      | 按 `f(&T) -> R` 处理并返回           | 基础方法                     |
+| `try_with(f)`      | `Result<R, AccessError>` | 按 `f(&T) -> R` 处理线程局部值并返回 | 若已销毁则返回 `AccessError` |
+
+| `LocalKey<Cell<T>>` 方法 | 返回值 | 描述                                               | 其他                            |
+|--------------------------|--------|----------------------------------------------------|---------------------------------|
+| `set(value)`             | `()`   | 设置 `Cell<T>` 内部值                              | 不执行 `thread_local!` 内初始化 |
+| `get()`                  | `T`    | Copy、返回 `Cell<T>` 内部值                        | `T: Copy`                       |
+| `take()`                 | `T`    | 移出 `Cell<T>` 内部值，替换为 `Default::default()` | `T: Default`                    |
+| `replace(value)`         | `T`    | 替换 `Cell<T>` 内部值                              |                                 |
+| `update(f)`              | `T`    | 按 `f(T) -> T` 更新 `Cell<T>` 内部值               | `T: Copy`                       |
+
+| `LocalKey<RefCell<T>>` 方法 | 返回值 | 描述                                                  | 其他                            |
+|-----------------------------|--------|-------------------------------------------------------|---------------------------------|
+| `with_borrow(f)`            | `R`    | 按 `f(&T) -> R` 处理并返回                            |                                 |
+| `with_borrow_mut(f)`        | `R`    | 按 `f(&mut T) -> R` 处理并返回                        |                                 |
+| `set(value)`                | `()`   | 设置 `RefCell<T>` 内部值                              | 不执行 `thread_local!` 内初始化 |
+| `take()`                    | `T`    | 移出 `RefCell<T>` 内部值，替换为 `Default::default()` | `T: Default`                    |
+| `replace(value)`            | `T`    | 替换 `RefCell<T>` 内部值                              |                                 |
+
+-   `thread::LocalKey<T: 'static>`：拥有内部所有权的、静态生命周期的 *Thread Local Storage* 
+    -   `LocalKey<T>` 代表各线程独立拥有的 **静态变量**
+        -   即，在需要静态变量、且静态变量为各线程拥有独立副本的场合
+            -   如：线程全局信息需多函数访问等
+            -   否则，直接在线程内创建局部变量即可
+        -   `LocalKey<T>` 有静态生命周期，在线程结束时才被销毁
+            -   在 `<T as Drop>::drop` 中访问其他 *TLS* 可能 `panic`（*TLS* 销毁顺序不确定）
+        -   `LocalKey<T>` 仅能获取 `&T` 内部数据的共享引用，故一般配合 `Cell`s 类型实现可变访问
+            -   且，`LocalKey<RefCell<T>>` 实现有专门的方法穿透至 `Cell` 底层值
+    -   `LocalKey<T>` 一般通过 `thread_local!` 创建
+        -   `LocalKey<T>` 延迟初始化，仅在首次需要初始化值 `with(f)` 时才执行初始化
+            -   可用 `const {}` 块作为初始化值避免延迟初始化，提升执行效率
+            -   或，`LocalKey::set(value)` 跳过 `thread_local!` 中默认初始化
+
+```rust
+thread_local! {
+    pub static FOO: Cell<u32> = const { Cell::new(1) };                 // 不延迟初始化
+    static BAR: RefCell<Vec<f32>> = RefCell::new(vec![1.0, 2.0]);
+    static NO_PANIC: RefCell<Vec<i32>> = panic!("!");                   // 初始化被后续 `set` 跳过
+}
+NO_PANIC.set(vec![1, 2, 3]);
+```
+
+> - `std::thread::LocalKey`：<https://doc.rust-lang.org/stable/std/thread/struct.LocalKey.html>
+> - `std::thread_local`：<https://doc.rust-lang.org/stable/std/macro.thread_local.html>
 
 ### 线程共享、同步、锁
 
@@ -2336,5 +2509,53 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
 
 > - `std::sync::atomic`：<https://doc.rust-lang.org/stable/std/sync/atomic/index.html>
 > - `std::sync::atomic::AutomicIsize`：<https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicIsize.html#method.store>
+
+##  函数、宏
+
+### `std` 宏
+
+| `std` 编译、断言宏                          | 返回值             | 描述                         | 其他                       |
+|---------------------------------------------|--------------------|------------------------------|----------------------------|
+| `assert!(cond[, fmt, ...])`                 | `()`               | 断言                         |                            |
+| `assert_eq!(left, right[, fmt, ...])`       | `()`               | 断言相等                     |                            |
+| `assert_ne!(left, right[, fmt, ...])`       | `()`               | 断言不等                     |                            |
+| `panic!(fmt[, ...])`                        | `()`               | 运行时 `panic`               |                            |
+| `debug!(expr)`                              | `Any`              | 返回值并打印内容至标准错误   |                            |
+| `debug_assert!(cond[, msg, fmt])`           | `()`               | 断言                         | 仅限非优化构建             |
+| `debug_assert_eq!(left, right[, msg, fmt])` | `()`               | 断言相等                     | 仅限非优化构建             |
+| `debug_assert_ne!(left, right[, msg, fmt])` | `()`               | 断言不等                     | 仅限非优化构建             |
+| `line!()`                                   | `u32`              | 宏所在行数                   |                            |
+| `columns!()`                                | `u32`              | 此宏所在列数                 |                            |
+| `file!()`                                   | `&'static str`     | 宏所在文件名                 |                            |
+| `module_path()`                             | `&'static str`     | 宏所在模块名                 |                            |
+| `todo!([&str])`                             | `!`                | 指示未完成函数               | 函数返回类型总能编译通过   |
+| `implemented!([&str])`                      | `!`                | 指示不应使用函数             | 调用时 `panic`             |
+| `unreachable!([&str])`                      | `!`                | 指示不应触发代码             | 触发时 `panic`             |
+| `compile_error(&str)`                       | `()`               | 触发编译错误                 |                            |
+| `env!(env_name)`                            | `&'static str`     | 扩展为编译期环境变量         | 运行时使用 `std::env::var` |
+| `option_env!(env_name)`                     | `Option<Any>`      | 尝试获取环境变量值           |                            |
+| `cfg!(cfg_flag)`                            | `bool`             | 编译属性是否置位             |                            |
+| `include!(file)`                            | `Any`              | 引入其他文件作为可执行、编译 |                            |
+| `include_bytes!(file)`                      | `&'static [u8, N]` | 引入其他文件作为字节数组     |                            |
+| `include_str!(file)`                        | `&'static str`     | 引入其他文件作为字符串切片   |                            |
+| `is_x86_feature_detected(feature)`          | `bool`             | 是否支持特性                 |                            |
+
+| `std` 格式化、快捷宏       | 返回值                | 描述                               | 其他             |
+|----------------------------|-----------------------|------------------------------------|------------------|
+| `vec![...]`                | `Vec<T>`              | 创建向量                           |                  |
+| `thread_local!{...}`       | `()`                  | 创建 *TLS* 实例                    |                  |
+| `matches!(val, ptn)`       | `bool`                | 值满足模式匹配                     |                  |
+| `stringify!(expr)`         | `&'static str`        | 转换字符串切片                     |                  |
+| `concat!(...)`             | `&'static str`        | 拼接为字符串                       |                  |
+| `format_args!(fmt[, ...])` | `std::fmt::Arguments` | 创建格式化字符串参数               | 其他格式化宏中介 |
+| `print!(fmt[, ...])`       | `()`                  | 标准输出（不换行）                 |                  |
+| `println!(fmt[, ...])`     | `()`                  | 标准输出（换行）                   |                  |
+| `format!(fmt[, ...])`      | `String`              | 格式化字符串                       |                  |
+| `eprint!(fmt[, ...])`      | `()`                  | 标准错误输出（不换行）             |                  |
+| `eprintln!(fmt[, ...])`    | `()`                  | 标准错误输出（换行）               |                  |
+| `write(buf, fmt[, ...])`   | `()`                  | 向缓冲区写入格式化字符串（不换行） |                  |
+| `writeln(buf, fmt[, ...])` | `()`                  | 向缓冲区写入格式化字符串（换行）   |                  |
+
+> - `std::macro`：<https://doc.rust-lang.org/stable/std/index.html#macros>
 
 
