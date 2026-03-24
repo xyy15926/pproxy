@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2026-01-25 16:18:02
-updated: 2026-03-22 21:24:36
+updated: 2026-03-24 22:11:01
 toc: true
 mathjax: true
 description: 
@@ -124,6 +124,53 @@ description:
 | `ub_checks`      | 不安全函数前提检查        |                |                    | *Exp* |
 | `unsafe_binder`  | 不安全绑定                |                |                    | *Exp* |
 | `backtrace`      |                           |                | 捕获系统线程堆栈迹 |       |
+
+### `std` 宏
+
+| `std` 编译、断言宏                          | 返回值             | 描述                         | 其他                       |
+|---------------------------------------------|--------------------|------------------------------|----------------------------|
+| `assert!(cond[, fmt, ...])`                 | `()`               | 断言                         |                            |
+| `assert_eq!(left, right[, fmt, ...])`       | `()`               | 断言相等                     |                            |
+| `assert_ne!(left, right[, fmt, ...])`       | `()`               | 断言不等                     |                            |
+| `panic!(fmt[, ...])`                        | `()`               | 运行时 `panic`               |                            |
+| `debug!(expr)`                              | `Any`              | 返回值并打印内容至标准错误   |                            |
+| `debug_assert!(cond[, msg, fmt])`           | `()`               | 断言                         | 仅限非优化构建             |
+| `debug_assert_eq!(left, right[, msg, fmt])` | `()`               | 断言相等                     | 仅限非优化构建             |
+| `debug_assert_ne!(left, right[, msg, fmt])` | `()`               | 断言不等                     | 仅限非优化构建             |
+| `line!()`                                   | `u32`              | 宏所在行数                   |                            |
+| `columns!()`                                | `u32`              | 此宏所在列数                 |                            |
+| `file!()`                                   | `&'static str`     | 宏所在文件名                 |                            |
+| `module_path()`                             | `&'static str`     | 宏所在模块名                 |                            |
+| `todo!([&str])`                             | `!`                | 指示未完成函数               | 函数返回类型总能编译通过   |
+| `implemented!([&str])`                      | `!`                | 指示不应使用函数             | 调用时 `panic`             |
+| `unreachable!([&str])`                      | `!`                | 指示不应触发代码             | 触发时 `panic`             |
+| `compile_error(&str)`                       | `()`               | 触发编译错误                 |                            |
+| `env!(env_name)`                            | `&'static str`     | 扩展为编译期环境变量         | 运行时使用 `std::env::var` |
+| `option_env!(env_name)`                     | `Option<Any>`      | 尝试获取环境变量值           |                            |
+| `cfg!(cfg_flag)`                            | `bool`             | 编译属性是否置位             |                            |
+| `include!(file)`                            | `Any`              | 引入其他文件作为可执行、编译 |                            |
+| `include_bytes!(file)`                      | `&'static [u8, N]` | 引入其他文件作为字节数组     |                            |
+| `include_str!(file)`                        | `&'static str`     | 引入其他文件作为字符串切片   |                            |
+| `is_x86_feature_detected(feature)`          | `bool`             | 是否支持特性                 |                            |
+
+| `std` 格式化、快捷宏       | 返回值                | 描述                               | 其他             |
+|----------------------------|-----------------------|------------------------------------|------------------|
+| `vec![...]`                | `Vec<T>`              | 创建向量                           |                  |
+| `thread_local!{...}`       | `()`                  | 创建 *TLS* 实例                    |                  |
+| `matches!(val, ptn)`       | `bool`                | 值满足模式匹配                     |                  |
+| `stringify!(expr)`         | `&'static str`        | 转换字符串切片                     |                  |
+| `concat!(...)`             | `&'static str`        | 拼接为字符串                       |                  |
+| `format_args!(fmt[, ...])` | `std::fmt::Arguments` | 创建格式化字符串参数               | 其他格式化宏中介 |
+| `print!(fmt[, ...])`       | `()`                  | 标准输出（不换行）                 |                  |
+| `println!(fmt[, ...])`     | `()`                  | 标准输出（换行）                   |                  |
+| `format!(fmt[, ...])`      | `String`              | 格式化字符串                       |                  |
+| `eprint!(fmt[, ...])`      | `()`                  | 标准错误输出（不换行）             |                  |
+| `eprintln!(fmt[, ...])`    | `()`                  | 标准错误输出（换行）               |                  |
+| `write(buf, fmt[, ...])`   | `()`                  | 向缓冲区写入格式化字符串（不换行） |                  |
+| `writeln(buf, fmt[, ...])` | `()`                  | 向缓冲区写入格式化字符串（换行）   |                  |
+
+> - `std::macro`：<https://doc.rust-lang.org/stable/std/index.html#macros>
+
 
 ##  常用 *Traits*
 
@@ -1070,6 +1117,46 @@ pub struct NonNull<T: PointeeSized> {
 > - `std::ptr::NonNull`：<https://doc.rust-lang.org/stable/std/ptr/struct.NonNull.html>
 > - Variance and `NonNull` in Rust：<https://zhuanlan.zhihu.com/p/42756635>
 
+####    `std::ptr` 函数
+
+| `std::ptr` 指针操作                      | 返回值       | 描述                                    | 其他                                  |
+|------------------------------------------|--------------|-----------------------------------------|---------------------------------------|
+| `addr_eq<T, U>(p, q)`                    | `bool`       | 裸指针地址相等                          | 忽略指针元信息，对同类型瘦指针同 `eq` |
+| `eq<T>(a, b)`                            | `bool`       | 同类裸指针相等                          |                                       |
+| `fn_addr_eq<T, U>(f, g)`                 | `bool`       | 函数指针地址相等                        |                                       |
+| `from_mut<T>(r)`                         | `*mut T`     | 将可变引用转换为可变裸指针              |                                       |
+| `from_ref<T>(r)`                         | `*const T`   | 将共享引用转换位共享裸指针              |                                       |
+| `dangling<T>()`                          | `*const T`   | 创建悬垂、非空共享裸指针                |                                       |
+| `dangling_mut<T>()`                      | `*mut T`     | 创建悬垂、非空可变裸指针                |                                       |
+| `null<T>()`                              | `*const T`   | 创建空共享裸指针                        |                                       |
+| `null_mut<T>()`                          | `*mut T`     | 创建空共享裸指针                        |                                       |
+| `slice_from_raw_parts<T>(data, len)`     | `*const [T]` | 从裸指针创建切片裸指针                  | 创建安全但使用不安全                  |
+| `slice_from_raw_parts_mut<T>(data, len)` | `*mut [T]`   | 从裸指针创建切片裸指针                  | 创建安全但使用不安全                  |
+| `with_exposed_provenance<T>(addr)`       | `*const T`   | 将 `usize` 地址结合溯源信息转换为裸指针 |                                       |
+| `with_exposed_provenance_mut<T>(addr)`   | `*mut T`     | 将 `usize` 地址结合溯源信息转换为裸指针 |                                       |
+| `without_provenance<T>(addr)`            | `*const T`   | 将 `usize` 地址转换为裸指针             | 等价于 `ptr::null().with_addr()`      |
+| `without_provenance_mut<T>(addr)`        | `*mut T`     | 将 `usize` 地址转换为裸指针             |                                       |
+
+| `std::ptr` 指针指向值操作                 | 返回值 | 描述                               | 其他                                          |
+|-------------------------------------------|--------|------------------------------------|-----------------------------------------------|
+| `read<T>(src)`                            | `T`    | 读取、原值不受影响                 | `unsafe` 需确保指针已初始化、已对齐、适合读取 |
+| `read_unaligned<T>(src)`                  | `T`    | 读取、原值不受影响                 | `unsafe` 需确保指针已初始化、适合读取         |
+| `read_volatile<T>(src)`                   | `T`    | 易变读取                           | `unsafe` 需确保指针已初始化、已对齐、适合读取 |
+| `write<T>(dest, src)`                     | `()`   | 覆盖写入、不析构原值               | `unsafe` 需确保指针已对齐、适合写入           |
+| `write_unaligned<T>(dest, src)`           | `()`   | 覆盖写入、不析构原值               | `unsafe` 需确保指针适合写入                   |
+| `write_bytes<T>(dst, val, count)`         | `()`   | 覆盖写入 `count` 个 `val`          | `unsafe` 需确保指针已对齐、适合写入           |
+| `write_volatile<T>(dst, src)`             | `()`   | 易变写入、不知析构原值             | `unsafe`                                      |
+| `replace<T>(dest, src)`                   | `T`    | 替换裸指针指向值、返回原值         | `unsafe` 需确保指针已初始化、已对齐、适合读写 |
+| `swap<T>(x, y)`                           | `()`   | 交换裸指针指向值                   | `unsafe` 需确保指针已初始化、已对齐、适合读写 |
+| `swap_nooverlapping<T>(x, y)`             | `()`   | 交换裸指针指向值、值不可重叠       | `unsafe` 需确保指针已初始化、已对齐、适合读写 |
+| `copy<T>(src, dst, count)`                | `bool` | 复制 `size_of<T>() * count` 字节数 | `unsafe` 需确保读、写、对齐有效               |
+| `copy_nonoverlapping<T>(src, dst, count)` | `bool` | 复制，但不允许有重叠               | `unsafe` 需确保读、写、对齐有效               |
+| `drop_in_place<T>(to_drop)`               | `()`   | 析构指针指向的值                   | `unsafe` 需确保值有效、对齐                   |
+| `hash<T, S>(hashee, into)`                | `()`   | 将裸指针写入 `impl Hasher`         |                                               |
+
+> - `std::ptr` 函数：<https://doc.rust-lang.org/stable/std/ptr/index.html#functions>
+
+
 ### 内存管理
 
 ####    `mem::ManuallyDrop<T>`
@@ -1148,6 +1235,29 @@ pub struct NonNull<T: PointeeSized> {
 
 > - `struct::alloc::Layout`：<https://doc.rust-lang.org/stable/std/alloc/struct.Layout.html>
 > - 浅谈 Rust 程序内存布局：<https://rustcc.cn/article?id=98adb067-30c8-4ce9-a4df-bfa5b6122c2e>
+
+####    `std::mem` 函数
+
+| `std::mem` 函数                  | 返回值            | 描述                                | 其他                       |
+|----------------------------------|-------------------|-------------------------------------|----------------------------|
+| `align_of<T>()`                  | `usize`           | *ABI* 所需的最小对齐                | 可能比推荐对齐小           |
+| `align_of_val<T>(val)`           | `usize`           | *ABI* 所需的最小对齐                |                            |
+| `size_of<T>()`                   | `usize`           | 类型大小                            |                            |
+| `size_of_val<T>(val)`            | `usize`           | 类型大小                            | 支持 `!Sized` 类型         |
+| `discriminant<T>(v)`             | `Discriminant<T>` | 枚举变体的唯一标识                  |                            |
+| `drop<T>(_x)`                    | `()`              | 销毁                                |                            |
+| `copy<T>(x)`                     | `T`               | 按位复制                            | *Exp*                      |
+| `forget<T>(t)`                   | `()`              | 置位手动析构                        |                            |
+| `forget_usized<T>(t)`            | `()`              | 直接 `!Sized` 的手动析构            | *Exp*                      |
+| `needs_drop<T>()`                | `bool`            | 是否有必要销毁                      | 仅是优化提示               |
+| `replace(dest, src)`             | `T`               | 替换、返回原值                      |                            |
+| `swap(x, y)`                     | `()`              | 交换两值                            |                            |
+| `take(dest)`                     | `T`               | 替换为 `Default::default`、返回原值 | `T: Default`               |
+| `transmute<Src, Dst>(src)`       | `Dst`             | 位重解释                            | `unsafe` 需确保重解释合法  |
+| `transmute_copy<Src, Dest>(src)` | `Dst`             | 位重解释后复制                      | `unsafe` 需确保重解释合法  |
+| `zerod<T>()`                     | `T`               | 位全置 0                            | `unsafe` 需确保全 0 值合法 |
+
+> - `std::mem` 函数：<https://doc.rust-lang.org/stable/std/mem/index.html#functions>
 
 ### `Option`、`Result`
 
@@ -2220,6 +2330,40 @@ pub struct BufWriter<W: ?Sized + Write> {
 > - `std::thread::park`：<https://doc.rust-lang.org/stable/std/thread/fn.park.html>
 > - Rust 多线程的高效等待术：`park()` 与 `unpark()` 信号通信实战：<https://paxonqiao.com/rust-thread-parking/>
 
+####    `thread::Scope`、`thread::ScopedJoined
+
+| `Scope` 方法 | 返回值                  | 描述           | 其他 |
+|--------------|-------------------------|----------------|------|
+| `spawn(f)`   | `ScopedJoinHandle<'scope, T>` | 创建新局域线程 |      |
+
+-   `thread::Scope` 创建局域线程的线程作用域
+    -   `thread::Scope` 通过 `thread::scope(f)` 函数创建
+        -   线程作用域内，通过 `Scope::spawn(f)` 创建 `thread::ScopedJoinedHandle<'scope, T>` 局域线程句柄
+        -   `thread::ScopedJoinedHandle<'scope, T>` 局域线程句柄方法同 `thread::JinedHandle<T>`
+    -   在创建 `Scope` 实例的 `thread::scope(f)` 函数返回前，未手动 `join` 的线程将被自动 `join`
+        -   即，`Scope` 中创建局域线程保证在线程作用域结束前 `join`
+        -   故，`Scope` 中局域线程可借用非 `'static` 数据
+            -   只要，局域线程借用的数据的生命周期长于局域线程生命周期 `'env: 'scope`
+
+```rust
+pub fn scope<'env, F, T>(f: F) -> T
+where
+    f: for<'scope> FnOnce(&'scope Scope<'scope, 'env>) -> T {}      // HRTB，对所有生命周期 `'scope`
+
+let mut a vec![1, 2, 3];
+let mut x = 0;
+let scope_ret = thread::scope(|s| {
+    s.spawn(|| { println("Scoped thread 1"); });
+    s.spawn(|| { println("Scoped thread 2"); x += a[0] + a[2]; });
+    println!("Thread scope");
+    1
+});
+a.push(4);                                                          // Scope 结束后可访问借用变量
+```
+
+> - `std::thread::Scope`：<https://doc.rust-lang.org/stable/std/thread/struct.Scope.html>
+> - `std::thread::scope`：<https://doc.rust-lang.org/stable/std/thread/fn.scope.html>
+
 ####    `thread::Builder`
 
 | `Builder` 方法     | 返回值                  | 描述                                             | 其他                                          |
@@ -2282,6 +2426,34 @@ NO_PANIC.set(vec![1, 2, 3]);
 
 > - `std::thread::LocalKey`：<https://doc.rust-lang.org/stable/std/thread/struct.LocalKey.html>
 > - `std::thread_local`：<https://doc.rust-lang.org/stable/std/macro.thread_local.html>
+
+####    `std::thread` 函数
+
+| `std::thread` 函数        | 返回值                   | 描述                                 | 其他                     |
+|---------------------------|--------------------------|--------------------------------------|--------------------------|
+| `available_parallelism()` | `Result<NonZero<usize>>` | 估计的并行数量                       |                          |
+| `current()`               | `Thread`                 | 获取当前线程句柄                     |                          |
+| `panicking()`             | `bool`                   | 当前线程是否因 `panic` 展开          | 常用用于 `Drop::drop` 中 |
+| `park()`                  | `bool`                   | 阻塞直至当前线程获取 *Token*         |                          |
+| `park_timeout(dur)`       | `bool`                   | 阻塞直至当前线程获取 *Token*、或超时 |                          |
+| `sleep(dur)`              | `()`                     | 睡眠至少 `dur` 时长                  |                          |
+| `yield_now()`             | `()`                     | 主动挂起自身                         | 协作式放弃剩余时间片     |
+| `spawn(f)`                | `JoinHandle<T>`          | 创建新线程                           |                          |
+| `scope(f)`                | `T`                      | 创建线程作用域                       |                          |
+
+-   `std::thread` 函数
+    -   `thread::yield_now()` 将主动挂起自身，由内核调度其他线程使用剩余时间片
+        -   但，此时可能没有其他 *Ready* 线程，导致时间片被浪费
+        -   故，应尽量使用 `mpsc::channel`、`Condvar`、`Mutex` 同步机制
+    -   `thread::park()`、`Thread::unpark()` 配合作为线程底层阻塞机制
+        -   `thread::park()` 阻塞线程也可能被虚假唤醒，注意检查条件
+        -   `Thread::unpark()` 调用将同步至 `thread::park()`
+            -   即，`unpark()` 之前的内存操作对消耗 *Token*、从 `park()` 返回的线程可见
+            -   从原子操作内存顺序角度，即 `unpark()` 执行 *Release* 操作、`park()` 执行 *Acquire* 操作
+
+> - `std::thread` 函数：<https://doc.rust-lang.org/stable/std/thread/index.html#functions>
+> - `std::thread::park`：<https://doc.rust-lang.org/stable/std/thread/fn.park.html>
+> - Rust 多线程的高效等待术：`park()` 与 `unpark()` 信号通信实战：<https://paxonqiao.com/rust-thread-parking/>
 
 ### 线程共享、同步、锁
 
@@ -2509,53 +2681,3 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
 
 > - `std::sync::atomic`：<https://doc.rust-lang.org/stable/std/sync/atomic/index.html>
 > - `std::sync::atomic::AutomicIsize`：<https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicIsize.html#method.store>
-
-##  函数、宏
-
-### `std` 宏
-
-| `std` 编译、断言宏                          | 返回值             | 描述                         | 其他                       |
-|---------------------------------------------|--------------------|------------------------------|----------------------------|
-| `assert!(cond[, fmt, ...])`                 | `()`               | 断言                         |                            |
-| `assert_eq!(left, right[, fmt, ...])`       | `()`               | 断言相等                     |                            |
-| `assert_ne!(left, right[, fmt, ...])`       | `()`               | 断言不等                     |                            |
-| `panic!(fmt[, ...])`                        | `()`               | 运行时 `panic`               |                            |
-| `debug!(expr)`                              | `Any`              | 返回值并打印内容至标准错误   |                            |
-| `debug_assert!(cond[, msg, fmt])`           | `()`               | 断言                         | 仅限非优化构建             |
-| `debug_assert_eq!(left, right[, msg, fmt])` | `()`               | 断言相等                     | 仅限非优化构建             |
-| `debug_assert_ne!(left, right[, msg, fmt])` | `()`               | 断言不等                     | 仅限非优化构建             |
-| `line!()`                                   | `u32`              | 宏所在行数                   |                            |
-| `columns!()`                                | `u32`              | 此宏所在列数                 |                            |
-| `file!()`                                   | `&'static str`     | 宏所在文件名                 |                            |
-| `module_path()`                             | `&'static str`     | 宏所在模块名                 |                            |
-| `todo!([&str])`                             | `!`                | 指示未完成函数               | 函数返回类型总能编译通过   |
-| `implemented!([&str])`                      | `!`                | 指示不应使用函数             | 调用时 `panic`             |
-| `unreachable!([&str])`                      | `!`                | 指示不应触发代码             | 触发时 `panic`             |
-| `compile_error(&str)`                       | `()`               | 触发编译错误                 |                            |
-| `env!(env_name)`                            | `&'static str`     | 扩展为编译期环境变量         | 运行时使用 `std::env::var` |
-| `option_env!(env_name)`                     | `Option<Any>`      | 尝试获取环境变量值           |                            |
-| `cfg!(cfg_flag)`                            | `bool`             | 编译属性是否置位             |                            |
-| `include!(file)`                            | `Any`              | 引入其他文件作为可执行、编译 |                            |
-| `include_bytes!(file)`                      | `&'static [u8, N]` | 引入其他文件作为字节数组     |                            |
-| `include_str!(file)`                        | `&'static str`     | 引入其他文件作为字符串切片   |                            |
-| `is_x86_feature_detected(feature)`          | `bool`             | 是否支持特性                 |                            |
-
-| `std` 格式化、快捷宏       | 返回值                | 描述                               | 其他             |
-|----------------------------|-----------------------|------------------------------------|------------------|
-| `vec![...]`                | `Vec<T>`              | 创建向量                           |                  |
-| `thread_local!{...}`       | `()`                  | 创建 *TLS* 实例                    |                  |
-| `matches!(val, ptn)`       | `bool`                | 值满足模式匹配                     |                  |
-| `stringify!(expr)`         | `&'static str`        | 转换字符串切片                     |                  |
-| `concat!(...)`             | `&'static str`        | 拼接为字符串                       |                  |
-| `format_args!(fmt[, ...])` | `std::fmt::Arguments` | 创建格式化字符串参数               | 其他格式化宏中介 |
-| `print!(fmt[, ...])`       | `()`                  | 标准输出（不换行）                 |                  |
-| `println!(fmt[, ...])`     | `()`                  | 标准输出（换行）                   |                  |
-| `format!(fmt[, ...])`      | `String`              | 格式化字符串                       |                  |
-| `eprint!(fmt[, ...])`      | `()`                  | 标准错误输出（不换行）             |                  |
-| `eprintln!(fmt[, ...])`    | `()`                  | 标准错误输出（换行）               |                  |
-| `write(buf, fmt[, ...])`   | `()`                  | 向缓冲区写入格式化字符串（不换行） |                  |
-| `writeln(buf, fmt[, ...])` | `()`                  | 向缓冲区写入格式化字符串（换行）   |                  |
-
-> - `std::macro`：<https://doc.rust-lang.org/stable/std/index.html#macros>
-
-
