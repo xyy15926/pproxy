@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2025-12-22 10:38:52
-updated: 2026-03-22 15:45:27
+updated: 2026-03-30 21:40:53
 toc: true
 mathjax: true
 description: 
@@ -908,19 +908,25 @@ impl Page {
 }
 ```
 
--   `dyn TRAIT` *Trait 对象*：代表编译时无法确定、但均实现某 `trait` 的运行时才能确定的类型
-    -   *Trait 对象* 仅用于对通用行为进行抽象
-    -   原始类型被擦除，编译器无法预知具体类型、需要调用的方法，只能在运行时动态分派
-        -   内存中存储指向 *Trait* 对象值、该类型 *vtable* 虚表的宽指针
-        -   在运行时通过内部指针确定需调用的方法，有运行时成本
+-   `dyn TRAIT` *Trait Object*：代表编译时无法确定、但均实现某 `trait` 的运行时才能确定的类型
+    -   *Trait 对象* 实现（单个）基础 `trait`、自动 `trait`、基础 `trait` 的任何 `Super trait`
+        -   不允许多个非自动 `trait`、多个生命周期
+    -   *Trait 对象* 是编译时类型未知的 *DST*，只能通过某种类型指针 `&dyn`、`Box<dyn>` 使用
+        -   指向 *Trait 对象* 的宽指针包括两个字段
+            -   指向 *Trait* 对象值的指针
+            -   指向该类型 *vtable* 虚表的指针
+        -   *Trait 对象* 原始类型被擦除，编译器无法预知具体类型、需要调用的方法
+            -   在 *Trait 对象* 上调用方法时，从虚表中加载函数指针并间接调用
+            -   即运行时动态分派，不同类型对应不同虚表、不同函数指针
 
 > - 18.2 使用允许不同类型值的 Trait 对象：<https://www.rust-book-cn.com/ch18-02-trait-objects.html>
 > - 2.2 特殊大小类型：<https://doc.rust-lang.net.cn/nomicon/exotic-sizes.html>
 > - *Rust* 虚表布局规则介绍：<https://zhuanlan.zhihu.com/p/680849759>
+> - 10.1.15 Trait 对象：<https://doc.rust-lang.net.cn/stable/reference/types/trait-object.html>
 
 ####    *vtable* 虚表
 
-```
+```rust
 pub trait Grand {
     fn grand_fun1(&self);
     fn grand_fun2(&self);
@@ -1017,91 +1023,49 @@ pub trait Trait : Left + Right {
 > - *Rust* 虚表布局规则介绍：<https://zhuanlan.zhihu.com/p/680849759>
 > - Vtable format to support dyn upcasting coercion：<https://rust-lang.github.io/dyn-upcasting-coercion-initiative/design-discussions/vtable-layout.html>
 
-####    泛型实现 *Trait* 对象
+####    泛型实现虚表、*Trait Object* 示例
 
 ```rust
-// ******************************* core::task::wake
-pub struct RawWaker {                           // 代表 *Trait* 对象的宽指针
-    data: *const (),                            // 值指针，单元裸指针 `*const ()` 擦除具体类型
-    vtable: &'static RawWakerVTable,            // 虚表指针，对不同类型指向不同虚表结构体
+// ***************************** 同一 trait 对应相同类型宽指针、虚表
+trait SomeTrait {
+    fn do_something(&self) -> i32;
 }
-impl RawWaker {
-    pub const fn new(                           // 常量函数，仅编译时执行一次
-        data: *const (),
-        vtable: &'static RawWakerVTable,
-    ) -> RawWaker {
-        RawWaker{ data, vtable }
-    }
+pub struct SomeTraitDynPointer {                            // 不同 trait 对应不同类型宽指针
+    data: *const (),
+    vtable: &'static SomeTraitVTable,                       // 不同 trait 对应不同虚表
 }
-pub struct RawWakerVTable {                     // 虚表结构体，包含 4 个函数指针（省略 `::new` 方法）
-    clone: unsafe fn(*const ()) -> RawWaker,
-    wake: unsafe fn(*const ()),
-    wake_by_ref: unsafe fn(*const ()),
-    drop: unsafe fn(*const ()),
-}
-impl RawWakerTable {
-    pub const fn new (                          // 常量函数，被 `waker_vtable` 调用仅在编译时（为各类型）执行一次
-        clone::unsafe fn(*const ()) -> RawWaker,
-        wake: unsafe fn(*const ()),
-        wake_by_ref: unsafe fn(*const ()),
-        drop: unsafe fn(*const ())
-    ) -> Self {
-        Self { clone, wake, wake_by_ref, drop }
-    }
-}
-pub struct Waker {
-    waker: RawWaker,
-}
-impl Unpin for Waker {}
-unsafe impl Send for Waker {}                   // 要求实现者保证标记特性
-unsafe impl Sync for Waker {}
-impl Waker {
-    pub fn wake(self) {
-        let this = ManuallyDrop::New(self);     // `self` 将在 `RawWakerTable.wake` 中被释放
-        unsafe { (this.waker.vtable.wake)(this.waker.data) };
-    }
-    pub fn wake_by_ref(&self) {
-        unsafe { (this.waker.vtable.wake_by_ref)(self.waker.data) };
-    }
+pub struct SomeTraitVTable {                                // 虚表中函数指针对应 trait、super trait 中方法
+    do_something: fn(*const ()) -> i32,                     // `*const ()` 对应指向值的 `data`
 }
 
-// ****************************** futures_task::arc_wake
-pub trait ArcWake: Send + Sync {                // 实现 `ArcWake` 的类型将根据类型动态分派方法
-    fn wake(self: Arc<Self>) {                  // 方法与虚表类 `RawWakerVTable` 同名，类型的具体实现将被调用（即动态分派）
-        Self::wake_by_ref(&self)
-    }
-    fn wake_by_ref(arc_self: &Arc<Self>);
-}
-
-// ****************************** futures_task::waker
-pub(super) fn waker_vtable<W: ArcWake + 'static>() -> &'static RawWakerTable {
-    &RawWakerVTable::new(                       // 编译时创建虚表，各 `W` 单态化类型所有实例共用一个虚表
-        clone_arc_raw::<W>,
-        wake_arc_raw::<W>,                      // 下仅列出 `wake`、`wake_by_ref` 函数实现
-        wake_by_ref_arc_raw::<W>,
-        drop_arc_raw::<W>,
-    )
-}
-unsafe fn wake_arc_raw<T: ArcWake + 'static>(data: *const ()) {
-    let arc: Arc<T> = unsafe { Arc::from_raw(data.cast::<T>()) };   // 将单元类型转换为具体类型
-    ArcWake::wake(arc);                         // 封装 `trait ArcWake` 的关联函数 `ArcWake::wake`
-}
-unsafe fn wake_by_ref_arc_raw<T: ArcWake + 'static>(data: *const ()) {
-    let arc = mem::ManuallyDrop::new(unsafe { Arc::<T>::from_raw(data.cast::<T>()) });
-    ArcWake::wake_by_ref(arc);                  // 封装 `trait ArcWake` 的关联函数 `ArcWake::wake_by_ref`
-}
-pub fn waker<W>(wake: Arc<W>) -> Waker
+// ****************************** 不同类型对应、单态化为不同包装函数
+unsafe fn vtable_do_something<T>(data: *const ())           // `data` 显然需要用户保证可转换为 `T` 类型，故 `unsafe`
 where
-    W: ArcWake + 'static,
+    T: SomeTrait + 'static
 {
-    let ptr = Arc::into_raw(wake).cast::<()>();
-    unsafe { Waker::from_raw(RawWaker::new(ptr, waker_vtable::<W>())) }
+    unsafe { SomeTrait::do_something(& *data.cast::<T>()) } // 核心即此处借助泛型的类型转换
+}
+
+// ****************************** 不同类型对应、单态化为不同虚表创建函数
+fn some_trait_vtable<T>() -> &'static SomeTraitVTable       // 或直接创建 `static` 静态虚表
+where
+    T: SomeTrait + 'static
+{
+    &SomeTraitVTable {
+        do_something: vtable_do_something::<T>,
+    }
 }
 ```
 
-> - `core::task::wake`：<https://doc.rust-lang.org/src/core/task/wake.rs.html>
-> - `futures_task::waker`：<https://docs.rs/futures-task/latest/src/futures_task/waker.rs.html>
-> - `futures_task::arc_wake`：<https://docs.rs/futures-task/latest/src/futures_task/arc_wake.rs.html>
+-   关于泛型实现虚表、*Trait 对象* 的说明
+    -   *Trait 对象* 使用类似 `&dyn` 宽指针的结构体表示
+        -   *Trait 对象* 可、仅可调用 `trait`、`super trait` 的方法
+            -   故，每种 *Trait 对象* 对应不同的虚表
+            -   故，每个 `trait` 对应不同类型的结构体、存储不同的虚表（指针）
+        -   *Trait 对象* 使用 `*const ()` 指向值，以兼容 `impl Trait` 的不同类型
+    -   带泛型的、`unsafe` 虚表函数：包装具体类型方法、单态化为对应类型虚表函数、创建虚表
+        -   虚表函数总需要以 `data: *const ()` （值指针）作为形参
+        -   故，`unsafe` 总需要用户确保实参指针为合法的、指向具体类型值的裸指针
 
 ##  内存管理
 
@@ -2484,8 +2448,8 @@ unsafe trait Foo{}                              // 不安全 `trait`
 unsafe impl Foo for Bar {}
 ```
 
--   `unsafe` 块
-    -   `unsafe` 块的原因、用途
+-   `unsafe` 块：不强制要求、执行内存安全保证的块
+    -   `unsafe` 块即显式指明：块内操作可能有内存安全问题，但用户保证满足要求、无内存安全问题
         -   编译器的静态分析本质上是保守的
             -   即使代码没有问题，编译器没有足够信息确信时，依然会拒绝代码
         -   硬件本质上 “不安全”，存在需要不安全操作完成的任务
@@ -2493,21 +2457,27 @@ unsafe impl Foo for Bar {}
         -   解引用 `*const`、`*mut` 裸指针
             -   创建裸指针是安全的
             -   但，访问裸指针指向的值可能不安全
-        -   调用 `unsafe fn` 不安全函数、方法
-            -   `unsafe fn` 不安全函数：表示函数有需要遵守的要求，但是编译器无法确保已经满足
-                -   仅，**函数调用需要满足要求，且此要求需要调用者自行保证时**，添加 `unsafe` 标记提示编译器
-                    -   不是包含 `unsafe` 块的函数就需要标记为 `unsafe fn`
-                    -   若函数已经完成安全抽象，则无需 `unsafe` 标记
-                -   `unsafe fn` 定义的不安全函数中执行不安全操作依然需要使用 `unsafe` 块
-            -   `unsafe extern` 外部函数接口：外部函数未执行 *Rust* 保证
-                -   `unsafe extern` 块中项隐式均为 `unsafe`，需要在 `unsafe` 块中使用
-                -   但，可以显示标记为 `safe`，由用户确保、向编译器保证安全
         -   访问、修改可变的静态变量
-        -   实现不安全 `trait`
-            -   存在不安全的方法时 `trait` 即为不安全的
         -   访问 `union` 实例字段
             -   *Rust* 无法保证存储在 `union` 实例中的数据类型
             -   主要用于与 *C* 中的 `union` 类型进行交互
+        -   调用 `unsafe fn` 不安全函数、方法
+        -   实现不安全 `trait`
+            -   存在不安全的方法时 `trait` 即为不安全的
+-   `unsafe fn` 不安全函数：表示函数有编译器无法检查、需要调用者保证、遵守的要求
+    -   仅，**函数调用需要满足要求，且此要求需要调用者自行保证时**，添加 `unsafe` 标记提示编译器
+        -   `unsafe fn` 定义的不安全函数中，执行不安全操作依然需要使用 `unsafe` 块
+        -   但，包含 `unsafe` 块的函数不一定需要标记为 `unsafe fn`
+        -   若，函数已经完成安全抽象、对调用者无额外要求，则无需 `unsafe` 标记
+    -   典型的需标记未  `unsafe` 的函数
+        -   `unsafe extern` 外部函数接口：外部函数未执行 *Rust* 保证
+            -   `unsafe extern` 块中项隐式均为 `unsafe`，需要在 `unsafe` 块中使用
+            -   但，可以显示标记为 `safe`，由用户确保、向编译器保证安全
+        -   参数包含 `*const`、`*mut` 裸指针的函数常需标记为 `unsafe`
+            -   裸指针无法保证指向位置为合法、对齐的值
+            -   若需通过裸指针访问值，则需要调用者保证传入的裸指针合法
+
+> - 20.1 非安全 Rust：<https://doc.rust-lang.net.cn/book/ch20-01-unsafe-rust.html>
 
 ##  语言特性
 
@@ -2898,14 +2868,35 @@ fn main() {
 > - 25.1 协程 - 基础简介：<https://uxiew.github.io/rust_study/%E7%AC%AC%2025%20%E7%AB%A0%20%E5%8D%8F%E7%A8%8B/25.1%20%E5%9F%BA%E7%A1%80%E7%AE%80%E4%BB%8B.html>
 > - *Rustc HIR* 源码 - `CoroutineSource`、`CoroutineKind`：<https://gitcode.com/GitHub_Trending/ru/rust/blob/master/compiler/rustc_hir/src/hir.rs>
 
-### 异步任务
+### 异步计算、任务
 
-####    `Future` 异步任务
+-   Rust 中标准库只定义异步计算、运行时规范，未提供具体异步计算实现、异步运行时实现
+    -   两个核心的异步模块
+        -   `std::future`：核心是 `future::Future` 异步计算、任务规范
+        -   `std::task`：核心是 `task::Context`、`task::Waker` 异步调度、运行时环境规范
+    -   模块之间关系
+        -   `Future::poll` 方法以 `&Context` 运行时上下文为作为参数
+        -   `Context::waker()` 可获取 `&Waker` 供 `impl Future` 通知异步运行时计算完成、准备就绪
+        -   异步运行时则需遵守、实现 `RawWakerVTable` 规范，以配合 `Context`、`Waker` 使用
+-   注意：异步运行时以 *Task* 为单位调度，而不是 `F: Future`
+    -   对应的，异步运行时负责调度的、最外层的 `F: Future` 才是 *Task*
+        -   *Task* 按 `<F: Future>.await`（`Future::poll()`） 与内部 `F: Future` 形成 “类似” 函数调用的关系
+        -   若嵌套的 `Future::poll()` 均返回 `task::Ready(T)`，则类似同步函数调用直接返回结果
+        -   仅某 `Future::poll()` 返回 `task::Pending`、并 **`spawn` 其他任务** 才产生真正意义上的协程，即并行、异步地完成任务
+    -   `std::task` 中 `task::Waker`、`task::Context` 对应 *Task* 任务，而不是单个 `F: Future`
+        -   *Task* 内的多个 `F: Future` 共享相同 `task::Context`、`task::Waker`
+        -   `<F: Future>.await` 将挂起整个 *Task*
+        -   `task::Waker` 同样的用于唤醒整个 *Task*
+    -   某种意义上，`F: Future` 对应函数、*Task* 对应线程
+        -   标准库中缺少异步运行时实现、缺少 *Task* 概念，但将 `std::Future`、`std::Task` 模块拆分
+        -   `tokio::task::spawn()` 即从 `F: Future` 创建 *Task* 任务
+
+####    `Future` 异步计算
 
 ```rust
 use std::pin::Pin;
 use std::future::Future;
-use std::task::{Context, Pool};
+use std::task::{Context, Poll};
 
 enum Poll<T> {                                  // 异步操作结果，`Future.poll` 返回类型
     Ready(T),                                   // 异步操作已完成，返回结果为 `T`
@@ -2921,28 +2912,30 @@ pub trait Future {                              // `future::Future` 标准库实
 }
 ```
 
--   `future::Future` 异步任务：实现 `await` 机制（可挂起、等待依赖完成）、无 `yield` 值（或 `yield ()`）的协程
+-   `future::Future` 异步计算、任务：实现 `await` 机制（可挂起、等待依赖完成）、无 `yield` 值（或 `yield ()`）的协程
     -   `impl Future` 语义上指：现在可能还没准备好，但未来将准备好的值 *Future*、*Task*、*Promise*
-        -   `async {}` 用于创建异步代码块，并由编译器负责转换为匿名 `Future` 对象
-            -   但对复杂逻辑，可能仍需手动实现 `impl Future`
-            -   `impl Future` 被调度时可能线程之间移动，故需要 `Send + !Unpin + 'static`
-                -   `Future` 默认 `Unpin`，需显式 `Pin`
-        -   `<impl Future>.await` 表示（外部 `impl Future`）等待当前 `impl Future` 完成
-            -   `impl Future` 是延迟执行执行的，仅在 `.await` 处开始执行
-                -   或 `futures::join!`、`futures::try_join!` 等封装 `.await` 的类似宏
-            -   `<impl Future>.await` 将被编译为 `loop` 循环两个动作
-                -   先 `<impl Future>.poll()` 尝试获取结果
-                -   **随后 `yield` 转移控制权**
-            -   即，`.await` 指明 **异步任务之间的依赖** 关系，逻辑上可视为 “调用-被调用”
-                -   对线性、顺序的任务依赖，`.await` 等待异步任务与普通函数调用无差别，总是顺序阻塞、执行
-                -   对网状、可并行的任务依赖，`.await` 转移控制权给异步运行时，由运行时调度并行执行、减少无效等待
-    -   `impl Future` 仅利用协程的状态保存（挂起、恢复）能力，可视为状态机
-        -   状态（枚举变体）即对应异步代码块 **初始、终止、`await` 阻塞** 等不同执行阶段
-            -   状态（机)（枚举变体）需维护代码块状态，以允许重入、恢复执行
-        -   `Future::poll()` 即匹配状态、执行对应分支、返回任务状态 `Poll`
--   `future::Poll` 为 `Future::poll` 返回的异步任务执行状态
-    -   `Poll::Ready<T>` 对应 `CouroutineState::Complete<T>`，任务完成、返回 `T` 类型值
-    -   `Poll::Pending` 对应 `CouroutineState::Yielded<()>`，任务未完成（无 `yield` 值）、阻塞等待调度
+        -   `impl Future` 被调度时可能线程之间移动，故需要 `Send + !Unpin + 'static`
+        -   `impl Future` 仅利用协程的状态保存（挂起、恢复）能力，可视为状态机
+            -   状态（枚举变体）即对应异步代码块 **初始、终止、`await` 阻塞** 等不同执行阶段
+                -   状态（机)（枚举变体）需维护代码块状态，以允许重入、恢复执行
+            -   `Future::poll()` 即匹配状态、执行对应分支、返回任务状态 `task::Poll`
+        -   `task::Poll` 为 `Future::poll` 返回的异步任务执行状态
+            -   `Poll::Ready<T>` 对应 `CouroutineState::Complete<T>`，任务完成、返回 `T` 类型值
+            -   `Poll::Pending` 对应 `CouroutineState::Yielded<()>`，任务未完成（无 `yield` 值）、阻塞等待调度
+    -   `impl Future` 有两种实现、创建方式
+        -   自定义类型并实现 `impl Future`
+            -   适合需要 `task::Context`、执行具体异步计算、注册监听事件、通知异步运行时任务就绪的场合
+            -   常见的具体异步任务（也即监听事件）即 *IO*（网络、文件）、计时等
+        -   `async {}` 创建异步代码块，并由编译器负责转换为匿名 `impl Future` 对象
+            -   适合包装多个异步计算为完成某个目标、无需 `task::Context` 的场合
+            -   即，`async {}` 块内代码不会立刻执行，需要 `.await` 推动
+    -   `<impl Future>.await` 表示（外部 `impl Future`）等待当前 `impl Future` 完成
+        -   `<impl Future>.await` 将被编译为 `loop` 循环两个动作
+            -   先 `<impl Future>.poll()` 尝试获取结果
+            -   **随后 `yield` 转移控制权**
+        -   即，`.await` 指明 **异步任务之间的依赖** 关系，逻辑上可视为 “调用-被调用”
+            -   对线性、顺序的任务依赖，`.await` 等待异步任务与普通函数调用无差别，总是顺序阻塞、执行
+            -   对网状、可并行的任务依赖，`.await` 转移控制权给异步运行时，由运行时调度并行执行、减少无效等待
 
 > - 17.1 Futures 和 Async 语法：<https://www.rust-book-cn.com/ch17-01-futures-and-syntax.html>
 > - 17.5 深入探讨一步特性：<https://www.rust-book-cn.com/ch17-05-traits-for-async.html>
@@ -2956,15 +2949,18 @@ pub trait Future {                              // `future::Future` 标准库实
         -   异步运行时在 `.await`（`yield`）处获取控制权
         -   异步运行时维护 *事件循环*（任务队列），并不断轮询
             -   即，调用 `Future::poll()` 直至 `Ready<T>`、返回 `T`
-            -   事实上，`Pending` 异步任务不会自动进入队列
-                -   需要任务自身负责 `Future::poll()` 中配置、通过 `Context.Waker` 唤醒
-                -   即，仅在自身准备完成、可继续执行后才进入队列，避免无效轮询空转
-        -   异步项目中至少设置一个运行时用于调度 `impl Future`
-            -   *Rust* 未自带运行时，标准库外有很多不同异步运行时实现，如 *Tokio*
-            -   不同运行时根据设计目标有不同侧重
-    -   为此，异步框架核心是：异步实现的 *IO*、网络通讯之类底层任务（`Future` 对象）
-        -   维护事件循环是简单的
-        -   但，底层异步任务需要实现后台执行任务、唤醒注册等机制
+            -   运行时应、会控制仅任务准备完成、可继续执行后才进入队列，避免无效轮询空转
+        -   异步运行时须有配套的事件注册、事件监听机制
+            -   `Pending` 的异步任务需注册至指定的事件
+            -   即，任务在 `Future::poll()` 中配置、将 `Context.Waker()` 注册至事件
+            -   运行时监听事件，事件发生时唤醒对应任务（加入事件循环）
+    -   为此，异步框架核心是异步运行时、事件监听、及与之配套的一系列 `impl Future` 任务
+        -   `impl Future` 任务常为异步实现的计时、*IO*（网络、文件）之类底层任务
+        -   异步框架需要为此类任务实现对应的事件监听机制
+        -   并，由异步运行时在事件发生时唤醒对应任务
+    -   异步项目中至少设置一个运行时用于调度 `impl Future`
+        -   *Rust* 未自带运行时，标准库外有很多不同异步运行时实现，如 *Tokio*
+        -   不同运行时根据设计目标有不同侧重
 
 > - 25.5 协程-异步编程：<https://uxiew.github.io/rust_study/%E7%AC%AC%2025%20%E7%AB%A0%20%E5%8D%8F%E7%A8%8B/25.5%20%E5%BC%82%E6%AD%A5.html>
 > - 深入异步：<https://tokio.rust-lang.net.cn/tokio/tutorial/async>
@@ -2972,19 +2968,70 @@ pub trait Future {                              // `future::Future` 标准库实
 ####    `task::Context`、`task::Waker`
 
 ```rust
-pub struct RawWaker {                           // 唤醒
-    data: *const (),
-    vtable: &'static RawWakerVTable,
+// ******************************* core::task::wake 中唤醒器
+pub struct RawWaker {                           // 代表 *Trait* 对象的宽指针
+    data: *const (),                            // 异步执行器唤醒任务所需数据，单元裸指针 `*const ()` 擦除具体类型
+    vtable: &'static RawWakerVTable,            // 虚表指针，对不同类型指向不同虚表
 }
-pub struct Waker {
-    waker: RawWaker,
-}
-pub struct RawWakerVTable {
-    clone: unsafe fn(*const ()) -> RawWaker,
-    wake: unsafe fn(*const ()),
+pub struct RawWakerVTable {                     // 虚表，包含 4 个函数指针
+    clone: unsafe fn(*const ()) -> RawWaker,    // Clone 注册至异步运行时、由运行时 `wake()` 唤醒
+    wake: unsafe fn(*const ()),                 // 核心方法，具体行为依赖异步运行时：加入准备队列、`unpark` 线程等
     wake_by_ref: unsafe fn(*const ()),
     drop: unsafe fn(*const ()),
 }
+
+pub struct Waker {                              // `Waker` 是 `RawWaker` 的零开销封装
+    waker: RawWaker,
+}
+impl Unpin for Waker {}
+unsafe impl Send for Waker {}                   // `Waker` 需为线程安全
+unsafe impl Sync for Waker {}
+
+pub trait Wake {
+    fn wake(self: Arc<Self>);                   // 仅必须实现此方法
+    fn wake_by_ref(self: &Arc<Self>) {}
+}
+impl<W> From<Arc<W>> for Waker                  // `Wake` 特性用于快速创建 `Waker`
+where
+    W: Wake + Send + Sync + 'static
+```
+
+-   `std::task` 异步任务模块
+    -   `task::RawWakerVTable` 指示 `RawWaker` 行为的虚函数指针表
+        -   `RawWakerVTable` 中函数均只应以、以 `RawWaker` 中 `data` 指针作为参数
+        -   若所属的 `RawWaker` 用于创建 `Waker`，则其中函数必须线程安全
+        -   若`RawWaker` 用于创建 `LocalWaker`，其中函数不必线程安全
+    -   `task::RawWaker` 包含数据裸指针、虚表指针的 “宽指针”
+    -   `task::Waker`：通过提醒（异步）执行器当前任务已就绪，来唤醒任务的句柄
+        -   `Waker` 中封装有定义了与特定执行器相关的 `RawWaker` 实例
+        -   `Waker` 通常由执行器创建、封装进 `Context`、并传递至 `Future::poll()`
+            -   若，`impl Future` 未执行完成、将返回 `Poll::Pending`
+            -   则，Clone `Waker` 并注册至事件源（内核、时间轮、*Epoll* 等）
+            -   事件完成后调用 `Waker.wake()` 唤醒所属的 *Task* 任务：修改任务状态、加入就绪任务队列
+            -   异步运行时轮询就绪任务队列调用 `Future::poll()` 尝试获取结果
+        -   `Waker` 实现 `Clone`、`Sync`、`Send`，使得自身线程安全、可在任意线程中被启动
+    -   `task::Context` 异步任务上下文：作为实参传递给 `Future::poll()` 供与异步环境的交互
+        -   当前，`Context` 只用于访问 `&Waker`、唤醒任务
+
+| 类型、特性             | 描述                                    |
+|------------------------|-----------------------------------------|
+| `task::RawWakerVTable` | 虚函数指针表                            |
+| `task::RawWaker`       | 包含数据裸指针、虚表指针的 “宽指针”     |
+| `task::Waker`          | 任务唤醒器                              |
+| `task::Context`        | 异步任务上下文，当前只用于访问 `&Waker` |
+| `task::Wake`           | `Arc<impl Wake>` 用于高效创建 `Waker`   |
+
+-   关于 `task::Waker` 零开销封装 `task::RawWaker` 的说明
+    -   `task::RawWaker` 中使用 `data: *const ()` 裸指针指向数据（常为 `impl Future` 自身）
+        -   则，若直接在 `RawWaker` 上定义方法访问数据值 `data`
+        -   则，所有方法均应 `unsafe` 要求调用者保证 `data` 指向合法数据
+    -   故，使用 `task::Waker` 封装
+        -   并，使用 `unsafe Waker::from_raw()` 作为唯一入口、从 `RawWaker` 创建
+        -   即，在创建 `Waker` 时要求保证 `RawWaker.data` 合法，隔离 `unsafe`
+        -   则，在 `Waker` 上可定义 `safe` 方法对外暴露
+    -   另外，保持 `RawWaker` 轻量化、不实现 `Drop` 等特性，使得其可以适用于嵌入式环境
+
+```rust
 pub struct Context<'a> {
     waker: &'a Waker,
     local_waker: &'a LocalWaker,
@@ -2995,12 +3042,10 @@ pub struct Context<'a> {
 ```
 
 > - 深入异步：<https://tokio.rust-lang.net.cn/tokio/tutorial/async>
-> - *Std Core* 源码 - `core::task::wake`：<https://doc.rust-lang.org/src/core/task/wake.rs.html>
-> - *Futures* 源码 - `futures_task::waker`：<https://docs.rs/futures-task/0.3.31/src/futures_task/waker.rs.html>
-> - *Futures* 源码 - `futures_task::arc_wake::ArcWake`：<https://docs.rs/futures/latest/futures/task/trait.ArcWake.html>
-> - *Futures* 和 *Tokio* 项目的前世今生：<https://rustcc.cn/article?id=8af74de6-1e3d-4596-94ca-c3da45509f58>
+> - `std::task`：<https://doc.rust-lang.org/stable/std/task/index.html>
+> - `std::task::Wake`：<https://doc.rust-lang.org/stable/std/task/trait.Wake.html>
 
-####    `async`、`await`
+####    `await` 说明
 
 ```rust
 // *********************** `lower_expr_await` 将 `<expr>.await` 去糖化为如下
@@ -3016,54 +3061,84 @@ match ::std::future::IntoFuture::into_future(<expr>) {
         task_context = yield ();                                // 3. 并在运行时调用 `.resume()` 恢复执行时，接受上下文
     }
 }
+```
 
-// *********************** `make_async_expr`
+-   `lower_expr_await`：将 `<impl Future>.await` **去糖化** 为循环 `poll` 检查任务状态
+    -   `yield` 点在 `loop` 循环中
+        -   则，从语义上允许异步运行时重复轮询、检查任务状态
+        -   即，该 `yield` 点对应状态机状态可以保持不变（转移至自身）
+        -   也即，异步任务未完成时将阻塞宿主执行
+    -   `yield` 前已执行 `Future::poll` 检查依赖任务执行状态
+        -   即，若任务已执行完成，`.await` 将直接返回依赖任务结果 `result`
+        -   且，当前任务继续执行，而不会转移控制权
+    -   运行时在 `.resume()` 恢复 `loop` 循环时，将上下文 `task::Context` （包装）传递给 `impl Future`
+        -   `Context` 被传给 `<impl Future>.poll()`，尝试获取结果
+        -   若任务完成，`Poll()` 返回 `Ready(result)`、并被直接解包返回 `result`
+        -   若任务未完成，`Poll()` 中应
+            -   获取 `Context::waker() -> &Waker` 设置唤醒器、在任务完成后通知异步运行时
+            -   再返回 `Pending`
+
+> - **Lowering async in rust**：<https://wiki.cont.run/lowering-async-await-in-rust/>
+> - *Rustc* 源码 - `lower_expr_await`：<https://github.com/rust-lang/rust/blob/3ee016ae4d4c6ee4a34faa2eb7fdae2ffa7c9b46/compiler/rustc%5Fast%5Flowering/src/expr.rs#L609-L800>
+
+####    `async` 说明
+
+```rust
+// *********************** `make_async_expr` 将 `async` 转换为生成器，并进一步包装、`impl Future`
 std::future::from_generator(static move? |_task_context| -> <ret_ty> {
     <body>
 }
 ```
 
--   `async`、`await` 扩展发生在源码转换为 *High-Level Intermidiate Representation* 时
-    -   `lower_expr_await`：将 `<impl Future>.await` **去糖化** 为循环 `poll` 检查任务状态
-        -   `yield` 点在 `loop` 循环中
-            -   则，从语义上允许异步运行时重复轮询、检查任务状态
-            -   即，该 `yield` 点对应状态机状态可以保持不变（转移至自身）
-            -   也即，异步任务未完成时将阻塞宿主执行
-        -   `yield` 前已执行 `Future::poll` 检查依赖任务执行状态
-            -   即，若任务已执行完成，`.await` 将直接返回依赖任务结果 `result`
-                -   且，当前任务继续执行，而不会转移控制权
-        -   运行时在 `.resume()` 恢复循环时，将上下文 `task::Context` （包装）传递给 `impl Future`
-            -   `Context.waker` 唤醒器将被传给 `<impl Future>.poll` 用于通知异步运行时任务准备完成
-    -   `make_async_expr`：将 `async {}`（`async fn`）转换为生成器、随后被封装为匿名 `impl Future`
-        -   `async fn` 异步函数：将被编译为返回 `impl Future` （或异步代码块）的（同步）函数
-            -   `Future::Output` 即为异步函数、异步代码块的返回类型
-        -   `async {}` 异步块将被编译器包装为 `impl Coroutine` 的匿名协程状态机
-            -   块内代码成为 `resume` 方法主体
-            -   块内 `await` 点成为 `yield` 点（仅挂起，无输出、输入）
-        -   匿名协程状态机被编译器进一步封装进 `impl Future` 的匿名适配器
-            -   匿名适配器仅为 `impl Future`
-    -   其他说明
-        -   以下为 `.await` 去糖化结果，对任何异步运行时均如此
-            -   对已完成任务，异步任务结果 `Ready(result)` 直接直接解包返回 `result` 
-            -   异步任务获取运行时上下文 `Context`，传给 `Future::poll` 用于后续唤醒任务（加入事件循环）
-        -   `Future` 通过 `await`、`async` 在编译器层面依赖 `Coroutine`
-            -   得以分离需要保持长期稳定 `Future` 逻辑设计、与可能变化 `Couroutine` 具体实现
-            -   `Future` 侧重异步场景下的设计逻辑、具体值
-            -   `Coroutine` 侧重可挂起、恢复重入的具体实现
-            -   `await`、`async` 是语法层面的连接、设计
+-   `make_async_expr`：将 `async {}`（`async fn`）转换为生成器、随后被封装为匿名 `impl Future`
+    -   `async fn` 异步函数：将被编译为返回 `impl Coroutine` （或、即异步块）的（同步）函数
+    -   `async {}` 异步块：将被编译器包装为 `impl Coroutine` 的匿名协程状态机
+        -   块内代码成为 `resume` 方法主体
+        -   块内 `await` 点成为 `yield` 点（仅挂起，无输出、输入）
+    -   `impl Coroutine` 的匿名协程状态机被编译器进一步封装进 `impl Future` 的匿名适配器
+        -   匿名适配器仅用于 `impl Future`、满足协议、可被异步运行时调度
+        -   `Future::Output` 即为异步函数、异步代码块的返回类型
 
 > - **Lowering async in rust**：<https://wiki.cont.run/lowering-async-await-in-rust/>
 > - *Rustc* 源码 - `make_async_expr`：<https://github.com/rust-lang/rust/blob/3ee016ae4d4c6ee4a34faa2eb7fdae2ffa7c9b46/compiler/rustc%5Fast%5Flowering/src/expr.rs#L518-L607>
-> - *Rustc* 源码 - `lower_expr_await`：<https://github.com/rust-lang/rust/blob/3ee016ae4d4c6ee4a34faa2eb7fdae2ffa7c9b46/compiler/rustc%5Fast%5Flowering/src/expr.rs#L609-L800>
-> - *Rustc HIR* 源码 - `CoroutineSource`、`CoroutineKind`：<https://gitcode.com/GitHub_Trending/ru/rust/blob/master/compiler/rustc_hir/src/hir.rs>
-> - Rust中的 `async`、`await` 语法糖：展开原理深度解析：<https://cloud.tencent.com.cn/developer/article/2584247>
-> - 25.5 协程-异步编程：<https://uxiew.github.io/rust_study/%E7%AC%AC%2025%20%E7%AB%A0%20%E5%8D%8F%E7%A8%8B/25.5%20%E5%BC%82%E6%AD%A5.html>
-> - 25.6 协程-`Coroutine` 与 `Future`：<https://uxiew.github.io/rust_study/%E7%AC%AC%2025%20%E7%AB%A0%20%E5%8D%8F%E7%A8%8B/25.6%20Coroutine%20%E4%B8%8E%20Future.html>
-> - Future Explained(0)：<https://hsqstephenzhang.github.io/2021/11/24/rust/futures/future-explained0/>
-> - *Futures* 源码 - `futures_utils::join!`：<https://docs.rs/futures-util/0.3.31/src/futures_util/async_await/join_mod.rs.html>
-> - *Futures* 源码 - `futures_macro::join_internal!` 源码：<https://docs.rs/futures-macro/latest/src/futures_macro/join.rs.html>
 
-#####   `async` 逻辑
+#####   `impl Coroutine` 封装进 `impl Future`
+
+```rust
+// ****************** 匿名协程状态机被封装
+struct AsyncFnFuture<C: Coroutine> {
+    coroutine: C,
+}
+
+impl<C> Future for AsyncFnFuture<C>
+where
+    C: Coroutine<(), Yield=(), Return=Self::Output>,
+{
+    type Output = C::Return;
+    fn poll(
+        self: Pin<&mut Self>,
+        cs: &mut Context<'_>
+    ) -> Poll<Self::Output> {
+        let coroutine = unsafe {
+            self.map_unchecked_mut(|s| &mut s.coroutine)    // 获取协程可变引用
+        };
+        // register_waker(cx.waker())                       // 协程恢复前注册 `waker`
+        match coroutine.resume(()) {
+            CoroutineState::Yielded(()) => {
+                Poll::Pending
+            }
+            CoroutineState::Complete(result) => {
+                Poll::Ready(result)
+            }
+        }
+    }
+}
+```
+
+> - `async` 关键字：<https://doc.rust-lang.org/stable/std/keyword.async.html>
+> - Rust中的 `async`、`await` 语法糖：展开原理深度解析：<https://cloud.tencent.com.cn/developer/article/2584247>
+
+#####   `async` 近似逻辑
 
 ```rust
 // ************************* `async fn` 异步函数将被编译为返回异步代码块
@@ -3114,40 +3189,31 @@ impl Future for OuterFuture {
 
 > - 深入异步：<https://tokio.rust-lang.net.cn/tokio/tutorial/async>
 
-#####   `Coroutine` 封装为 `Future`
+####    `async`、`await`
 
-```rust
-// ****************** 匿名协程状态机被封装
-struct AsyncFnFuture<C: Coroutine> {
-    coroutine: C,
-}
+-   `async`、`await` 扩展发生在源码转换为 *High-Level Intermidiate Representation* 时
+    -   `Future` 通过 `await`、`async` 在编译器层面依赖 `Coroutine`
+        -   得以分离需要保持长期稳定 `Future` 逻辑设计、与可能变化 `Couroutine` 具体实现
+        -   `Future` 侧重异步场景下的设计逻辑、具体值
+        -   `Coroutine` 侧重可挂起、恢复重入的具体实现
+        -   `await`、`async` 是语法层面的连接、设计
+    -   事实上，`async {}` 块中无法获取 `task::Context`
+        -   故，`async` 无法获取 `&task::Waker`、注册监听事件、与运行时交互
+        -   即，`async` 适合用于创建实现目标的异步任务、而非执行具体异步计算（需通知运行时任务完成）
+            -   执行具体计算、注册唤醒事件、与运行时交互则需直接实现 `impl Future`
+        -   `async {}` 中可顺序、`await` 多个异步计算，并被 `spawn` 为 *Task*
+            -   则，*Task* 被相应的被注册至不同的事件上
+            -   *Task* 整体随事件发生被运行时唤醒、继续执行
+    -   另外注意， `async {}` 块是通过 `Couroutine` 状态机实现 `Future::poll` 重入
+        -   但，**自定义类型、`impl Future` 与 `Couroutine` 无关**
+        -   自定义类型本身就可以维护自身状态、支持 `Future::poll` 重入
 
-impl<C> Future for AsyncFnFuture<C>
-where
-    C: Coroutine<(), Yield=(), Return=Self::Output>,
-{
-    type Output = C::Return;
-    fn poll(
-        self: Pin<&mut Self>,
-        cs: &mut Context<'_>
-    ) -> Poll<Self::Output> {
-        let coroutine = unsafe {
-            self.map_unchecked_mut(|s| &mut s.coroutine)    // 获取协程可变引用
-        };
-        // register_waker(cx.waker())                       // 协程恢复前注册 `waker`
-        match coroutine.resume(()) {
-            CoroutineState::Yielded(()) => {
-                Poll::Pending
-            }
-            CoroutineState::Complete(result) => {
-                Poll::Ready(result)
-            }
-        }
-    }
-}
-```
-
+> - **Lowering async in rust**：<https://wiki.cont.run/lowering-async-await-in-rust/>
+> - *Rustc HIR* 源码 - `CoroutineSource`、`CoroutineKind`：<https://gitcode.com/GitHub_Trending/ru/rust/blob/master/compiler/rustc_hir/src/hir.rs>
 > - Rust中的 `async`、`await` 语法糖：展开原理深度解析：<https://cloud.tencent.com.cn/developer/article/2584247>
+> - 25.5 协程-异步编程：<https://uxiew.github.io/rust_study/%E7%AC%AC%2025%20%E7%AB%A0%20%E5%8D%8F%E7%A8%8B/25.5%20%E5%BC%82%E6%AD%A5.html>
+> - 25.6 协程-`Coroutine` 与 `Future`：<https://uxiew.github.io/rust_study/%E7%AC%AC%2025%20%E7%AB%A0%20%E5%8D%8F%E7%A8%8B/25.6%20Coroutine%20%E4%B8%8E%20Future.html>
+> - Future Explained(0)：<https://hsqstephenzhang.github.io/2021/11/24/rust/futures/future-explained0/>
 
 ### 模块系统
 
@@ -3241,205 +3307,3 @@ mod tests{
 > - 11.1 如何编写测试：<https://www.rust-book-cn.com/ch11-01-writing-tests.html>
 > - 11.2 控制测试的运行方式：<https://www.rust-book-cn.com/ch11-02-running-tests.html>
 > - 11.3 测试组织：<https://www.rust-book-cn.com/ch11-03-test-organization.html>
-
-### 简单实现
-
-####    简单线程库实现
-
-```rust
-use std::{
-    sync::{mpsc, Arc, Mutex},
-    thread,
-};
-
-pub struct ThreadPool {
-    workers: Vec<thread::JoinHandle<()>>,
-    sender: Option<mpsc::Sender<Job>>,
-}
-type Job = Box<dyn FnOnce() + Send + 'static>;
-
-// 简单的线程池实现
-impl ThreadPool {
-    pub fn new(size: usize) -> ThreadPool {
-        assert!(size > 0);
-        let mut workers = Vec::with_capacity(size);
-        // 创建通道、并准备复制消费者
-        // `mpsc::channel::<Job>` 无法推断泛型参数，需手动指明
-        let (sender, receiver) = mpsc::channel::<Job>();
-        let receiver = Arc::new(Mutex::new(receiver));
-
-        for id in 0..size {
-            // 复制消费者
-            let receiver = receiver.clone();
-            workers.push(thread::spawn(move || {
-                loop{
-                    match receiver.lock().unwrap().recv() {
-                        Ok(job) => { job(); },
-                        Err(_) => {
-                            println!("Worker {id} shut down.");
-                            // 若此处无 `break`，编译器能知道闭包永远不会返回
-                            // 此时，`JobHandle<>` 中为任意类型均可编译通过
-                            break;
-                        },
-                    }
-                };
-            }));
-        }
-
-        ThreadPool {
-            workers,
-            sender: Some(sender),
-        }
-    }
-
-    pub fn execucte<F>(&self, f: F)
-    where
-        F: FnOnce() + Send + 'static,
-    {
-        let job = Box::new(f);
-        self.sender.as_ref().unwrap().send(job).unwrap();
-    }
-}
-
-impl Drop for ThreadPool{
-    fn drop(&mut self) {
-        drop(self.sender.take());
-
-        for worker in self.workers.drain(..) {
-            worker.join().unwrap();
-        }
-    }
-}
-```
-
-> - 16.1 使用线程同时运行代码：<https://www.rust-book-cn.com/ch16-01-threads.html>
-> - 16.2 使用消息在线程间传输数据：<https://www.rust-book-cn.com/ch16-02-message-passing.html>
-> - 21.2 将单线程服务器转换为多线程服务器：<https://www.rust-book-cn.com/ch21-02-multithreaded.html>
-
-####    `impl future::Future` 实现
-
-```rust
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use std::time::{Duration, Instant};
-
-struct Delay {
-    when: Instant,
-}
-impl Future for Delay {                             // 手动实现 `Future`
-    type Output = &'static str;
-    fn poll(
-        self: Pin<&mut self>,
-        cx: &mut Context<'_>
-    ) -> Poll<&'static str>
-    {
-        if Instant::now() >= self.when {
-            println!("hello world");
-            Poll::Ready("done")
-        } else {
-            cx.waker().wake_by_ref();               // 唤醒调度器，要求进入待执行队列
-            Poll::Pending
-        }
-    }
-}
-
-// **************************** 引入异步运行时调度、执行异步代码块
-fn main() {
-    let mut rt = tokio::runtime::Runtime::new().unwarp();
-    rt.block_on(async {                             // 调度、执行异步代码块
-        let when = Instant::new() + Duration::from_millis(10);
-        let future = Delay { when };                // 初始化 `Delay: Future`
-        let out = future.await;                     // 并阻塞 `await`
-        assert_eq!(out, "done");
-    })
-}
-```
-
-```rust
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use std::time::{Duration, Instant};
-
-// ************************** 上述 `main` 中 `async` 块将被近似编译如下状态机
-enum MainFuture {                                   // 上述 `main` 中异步代码块对应状态机
-    State0,                                         // 初始状态
-    State1(Delay),                                  // `await` **阻塞导致、对应的中间状态**
-    Terminated,                                     // 终止状态
-}
-
-impl Future for MainFuture {
-    type Output = ();
-    fn poll(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>
-    ) -> Poll<()>
-    {
-        use MainFuture::*;
-
-        loop {
-            match *self {
-                State0 => {                                     // 初始状态应执行代码
-                    let when = Instant::new()
-                        + Duration::from millis(10);
-                    let future = Delay { when };
-                    *self = State1(future);                     // 更新状态
-                }
-                State1(ref mut my_future) => {
-                    match Pin::new(my_future).poll(cx) {        // Pin 住 `future`，`poll` 检查状态
-                        Poll::Ready(out) => {
-                            assert_eq!(out, "done");
-                            *self = Terminated;
-                            return Poll::Ready(());
-                        }
-                        Poll::Pending => {
-                            reutrn Poll::Pending;
-                        }
-                    }
-                }
-                Terminated => {
-                    panic!("future polled after completion")
-                }
-            }
-        }
-    }
-}
-```
-
-> - 深入异步：<https://tokio.rust-lang.net.cn/tokio/tutorial/async>
-
-####    简单异步超时
-
-```rust
-extern crate tokio;
-extern crate futures;
-
-use std::{future::Future, time::Duration};
-use futures::{future::Either, future::self};
-
-async fn timeout<F: Future>(
-    future_to_try: F,
-    max_time: Duration,
-) -> Result<F::Output, Duration> {
-    match future::select(future_to_try, tokio::time::sleep(max_time)).await {
-        Either::Left(output) => Ok(output),
-        Either::Right(fut) => Err(max_time),
-    }
-}
-
-fn main(){
-    // 创建运行时执行异步块
-    tokio::run(async {
-        match timeout(
-            tokio::time::sleep(Duration::from_millis(100)),
-            Duration::from_millis(90)
-        ).await {
-            Ok(msg) => println!("Succeed with {msg}"),
-            Err(duration) => println!("Failed after {}", duration.as_secs()),
-        }
-    })
-}
-```
-
-> - 17.3 处理任意数量的 Futures：<https://www.rust-book-cn.com/ch17-03-more-futures.html>

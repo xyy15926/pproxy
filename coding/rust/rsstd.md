@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2026-01-25 16:18:02
-updated: 2026-03-24 22:11:01
+updated: 2026-03-30 19:57:11
 toc: true
 mathjax: true
 description: 
@@ -127,6 +127,10 @@ description:
 
 ### `std` 宏
 
+> - `std::macro`：<https://doc.rust-lang.org/stable/std/index.html#macros>
+
+####    编译、断言宏
+
 | `std` 编译、断言宏                          | 返回值             | 描述                         | 其他                       |
 |---------------------------------------------|--------------------|------------------------------|----------------------------|
 | `assert!(cond[, fmt, ...])`                 | `()`               | 断言                         |                            |
@@ -153,6 +157,8 @@ description:
 | `include_str!(file)`                        | `&'static str`     | 引入其他文件作为字符串切片   |                            |
 | `is_x86_feature_detected(feature)`          | `bool`             | 是否支持特性                 |                            |
 
+####    格式化
+
 | `std` 格式化、快捷宏       | 返回值                | 描述                               | 其他             |
 |----------------------------|-----------------------|------------------------------------|------------------|
 | `vec![...]`                | `Vec<T>`              | 创建向量                           |                  |
@@ -168,9 +174,6 @@ description:
 | `eprintln!(fmt[, ...])`    | `()`                  | 标准错误输出（换行）               |                  |
 | `write(buf, fmt[, ...])`   | `()`                  | 向缓冲区写入格式化字符串（不换行） |                  |
 | `writeln(buf, fmt[, ...])` | `()`                  | 向缓冲区写入格式化字符串（换行）   |                  |
-
-> - `std::macro`：<https://doc.rust-lang.org/stable/std/index.html#macros>
-
 
 ##  常用 *Traits*
 
@@ -207,6 +210,7 @@ description:
 | `string::ToString`                    | 转换为 `String`            | 2018      |             |
 | `future::Future`                      | 异步任务结果               | 2024      |             |
 | `future::IntoFuture`                  | 可转换为异步任务           | 2024      |             |
+| `task::Wake`                          | 可唤醒异步任务             |           |             |
 | `hash::Hash`                          | 可哈希                     |           |             |
 | `any::Any`                            | 模拟动态类型               |           |             |
 | `io::Read`                            | 可从中读取字节             |           |             |
@@ -754,6 +758,52 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 
 > - `std::io::Seek`：<https://doc.rust-lang.org/stable/std/io/trait.Seek.html>
 
+### 异步任务
+
+####    `future::Future`
+
+```rust
+pub trait Future {
+    type Output;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>;
+}
+
+pub trait IntoFuture {
+    type Output;
+    type IntoFuture: Future<Output = Self::Output>;
+    fn into_future(self) -> Self::IntoFuture;
+}
+```
+
+-   `future::Future` 用于实现具体异步计算任务、状态机
+    -   `Future::poll()` 方法尝试推动 `Future` 计算任务（手动定义异步任务、`impl Future`）
+        -   若返回、得到 `task::Poll::Ready(T)`，表示任务完成、结果为 `T`
+        -   若返回 `task::Poll::Pending`，表示任务尚未就绪，在返回前应
+            -   `poll()` 中应 `Context::waker()` 获取、设置 `&Waker`
+            -   执行具体异步任务，并在任务完成后通知异步运行时、唤醒任务
+    -   此外，常用 `async {}` 异步代码块生成匿名 `impl Future`
+        -   其中，常用 `<impl Future>.await` 推动 `Future` 计算任务，而不是直接调用 `Future::poll()`
+
+> - `std::future::Future`：<https://doc.rust-lang.org/stable/std/future/trait.Future.html>
+> - `std::future::IntoFuture`：<https://doc.rust-lang.org/stable/std/future/trait.IntoFuture.html>
+
+####    `task::Wake`
+
+```rust
+pub trait Wake {
+    fn wake(self: Arc<Self>);                   // 仅必须实现此方法
+    fn wake_by_ref(self: &Arc<Self>) {}
+}
+impl<W> From<Arc<W>> for Waker                  // `Wake` 特性用于快速创建 `Waker`
+where
+    W: Wake + Send + Sync + 'static
+```
+
+-   `task::Wake` 用于快速创建 `task::Waker`
+    -   `Waker` 实现有 `From<Arc<W: impl Wake>>`，可从通过定义类型 `W: impl Wake` 快速创建
+
+> - `std::task::Wake`：<https://doc.rust-lang.org/stable/std/task/trait.Wake.html>
+
 ##  常用类型
 
 | 常用类型                             | 说明                       | *Prelude*  |
@@ -779,6 +829,7 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 | `io::BufWriter<W>`                   | 带缓冲 *Writer*            |            |
 | `io::Stdin`                          | 标准输入                   |            |
 | `io::Stdout`                         | 标准输出                   |            |
+| `fs::File`                           | 文件系统文件               |            |
 | `net::TcpListener`                   | TCP 监听服务               |            |
 | `net::TcpStream`                     | TCP 数据流                 |            |
 | `time::Duration`                     | 时间段                     |            |
@@ -799,6 +850,10 @@ buffer.write_fmt(format_args!("{:.*}", 2, 1.234};
 | `mem::ManuallyDrop<T>`               | 避免编译器自动销毁实例     |            |
 | `ptr::NonNull<T>`                    | 非空、协变 `*mut T`        |            |
 | `alloc::Layout`                      | 内存布局                   |            |
+| `task::Context`                      | 异步上下文                 |            |
+| `task::Waker`                        | 唤醒器                     |            |
+| `task::RawWaker`                     | 裸唤醒器（宽指针）         |            |
+| `task::RawWakerVTable`               | 唤醒器函数虚表             |
 
 > - `std::prelude`：<https://doc.rust-lang.org/stable/std/prelude/index.html>
 > - `std::prelude` 中文：<https://rustwiki.org/zh-CN/std/prelude/index.html>
@@ -1998,8 +2053,7 @@ pub struct BufWriter<W: ?Sized + Write> {
 
 > - `std::io::BufWriter`：<https://doc.rust-lang.org/stable/std/io/struct.BufWriter.html>
 
-####    `io::Stdin`、`io::Stdout`、`io::Sink`G
-
+####    `io::Stdin`、`io::Stdout`、`io::Sink`
 
 | `io::Stdin` 方法 | 返回值                     | 描述                                         | 其他 |
 |------------------|----------------------------|----------------------------------------------|------|
@@ -2330,7 +2384,7 @@ pub struct BufWriter<W: ?Sized + Write> {
 > - `std::thread::park`：<https://doc.rust-lang.org/stable/std/thread/fn.park.html>
 > - Rust 多线程的高效等待术：`park()` 与 `unpark()` 信号通信实战：<https://paxonqiao.com/rust-thread-parking/>
 
-####    `thread::Scope`、`thread::ScopedJoined
+####    `thread::Scope`、`thread::ScopedJoined`
 
 | `Scope` 方法 | 返回值                  | 描述           | 其他 |
 |--------------|-------------------------|----------------|------|
@@ -2677,7 +2731,78 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
 | `fetch_max(val, order)`                                 | `isize`                | 较小者                                        |                          |
 | `fetch_update(set_order, fetch_order, f)`               | `Result<isize, isize>` | 按 `FnMut(isize) -> Option<isize>` 更新       | 可能执行多次但只生效一次 |
 | `compare_exchange(current, new, success, failure)`      | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 |                          |
-| `compare_exchange_weak(current, new, success, failure)` | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 | 相同也可能不更新值       |
+| `compare_exchange_weak(current, new, success, failure)` | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 |  相同也可能不更新值       |
 
 > - `std::sync::atomic`：<https://doc.rust-lang.org/stable/std/sync/atomic/index.html>
 > - `std::sync::atomic::AutomicIsize`：<https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicIsize.html#method.store>
+
+### 异步任务
+
+####    `task::Context`、`task::Waker`
+
+| `task::Context<'a>` 方法     | 返回值        | 描述         | 其他 |
+|------------------------------|---------------|--------------|------|
+| `Context::from_waker(waker)` | `Context<'a>` | 从唤醒器创建 |      |
+| `waker()`                    | `&'a Waker`   | 获取唤醒器   |      |
+
+| `task::Waker` 方法         | 返回值                    | 描述                       | 其他                                |
+|----------------------------|---------------------------|----------------------------|-------------------------------------|
+| `waker()`                  | `()`                      | 消耗、唤醒关联任务         |                                     |
+| `waker_by_ref()`           | `()`                      | 唤醒关联任务               |                                     |
+| `will_wake(other)`         | `()`                      | 是否两个唤醒器关联同一任务 |                                     |
+| `data()`                   | `*const ()`               | 获取数据指针               |                                     |
+| `vtable()`                 | `&'static RawWakerVTable` | 获取虚表指针               |                                     |
+| `Waker::new(data, vtable)` | `Waker`                   | 创建唤醒器                 | `unsafe` 需确保虚表适配、数据合法   |
+| `Waker::from_raw(waker)`   | `Waker`                   | 从 `RawWaker` 创建         | `unsafe` 需确保 `RawWaker` 遵守协议 |
+| `Waker::noop()`            | `&'statci Waker`          | 返回无操作 `&Waker`        |                                     |
+
+-   `std::task` 异步任务模块中仅包含用于规范的公共类型、特性，异步运行时、异步任务等依赖额外框架
+    -   `task::RawWakerVTable` 指示 `RawWaker` 行为的虚函数指针表
+    -   `task::RawWaker` 包含数据裸指针、虚表指针的 “宽指针”
+    -   `task::Waker` 唤醒器：任务完成时，通知异步执行器任务已完成、可恢复执行
+        -   “通知异步执行器” 常见即：将当前任务加入就绪队列（等待恢复执行）
+        -   特别的 `Waker` 实现有 `From<Arc<W: impl Wake>>`，可从通过定义类型 `W: impl Wake` 快速创建
+    -   `task::Context` 异步上下文：作为 `Future::poll()` 实参被传递
+        -   当前，仅用于获取 `&Waker`
+
+> - `std::task`：<https://doc.rust-lang.org/stable/std/task/index.html>
+
+####    `task::Poll`
+
+```rust
+pub enum Poll<T> {
+    Ready(T),
+    Pending,
+}
+```
+
+| `task::Poll<T>` 方法 | 返回值    | 描述                              | 其他 |
+|----------------------|-----------|-----------------------------------|------|
+| `map(f)`             | `Poll<U>` | 对 `Ready(T)` 按 `f(T) -> U` 映射 |      |
+| `is_ready()`         | `bool`    | 是否为 `Ready(T)`                 |      |
+| `is_pending()`       | `bool`    | 是否为 `Pending`                  |      |
+
+-    `task::Poll` 指示当前任务结果就绪、或等待被异步执行器调度唤醒
+    -   `task::Poll` 常由 `Future::poll()` 方法返回
+
+| `task::Poll<Result<T, E>>` 方法 | 返回值               | 描述                                  | 其他 |
+|---------------------------------|----------------------|---------------------------------------|------|
+| `map_ok(f)`                     | `Poll<Result<U, E>>` | 对 `Read(Ok(T))` 按 `f(T) -> U` 映射  |      |
+| `map_err(f)`                    | `Poll<Result<T, U>>` | 对 `Read(Err(E))` 按 `f(E) -> U` 映射 |      |
+
+| `task::Poll<Option<Result<T, E>>>` 方法 | 返回值                       | 描述                                        | 其他 |
+|-----------------------------------------|------------------------------|---------------------------------------------|------|
+| `map_ok(f)`                             | `Poll<Option<Result<U, E>>>` | 对 `Read(Some(Ok(T)))` 按 `f(T) -> U` 映射  |      |
+| `map_err(f)`                            | `Poll<Option<Result<T, U>>>` | 对 `Read(Some(Err(E)))` 按 `f(E) -> U` 映射 |      |
+
+> - `std::task::Poll`：<https://doc.rust-lang.org/stable/std/task/enum.Poll.html>
+
+####    `std::future` 函数
+
+| `std::future` 函数         | 返回值       | 描述                                                     | 其他 |
+|----------------------------|--------------|----------------------------------------------------------|------|
+| `future::pending<T>()`     | `Pending<T>` | 创建永远在计算的 `impl Future`                           |      |
+| `future::ready<T>()`       | `Ready<T>`   | 创建已就绪的 `impl Future`                               |      |
+| `future::poll_fn<T, T>(f)` | `PollFn<F>`  | 将 `f(&mut Context<'_>) -> Poll<T>` 转换为 `impl Future` |      |
+
+> - `std::future` 函数：<https://doc.rust-lang.org/stable/std/future/index.html#functions>
