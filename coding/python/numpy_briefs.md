@@ -10,7 +10,7 @@ tags:
   - Numpy
   - Numpy Array
 date: 2023-01-12 15:06:16
-updated: 2024-11-18 11:44:45
+updated: 2026-03-31 19:15:36
 toc: true
 mathjax: true
 description: 
@@ -525,19 +525,35 @@ class dtype(obj[,align,copy])
             -   位长别名字符串：不支持指定字节序
     -   另外，`np.format_parser(formats,names,titles[,aligned,byteorder])` 也可用于创建数据类型实例
 
+####    结构化数据类型
+
+```python
+np.dtype([('x', 'f4'), ('y', np.float32), ('z', 'f4', (2, 2))])         // 按元组创建结构化类型
+np.dtype('i8, f4, S3')                                                  // 按 `,` 分隔的字符串
+np.dtype({                                                              // 按字典
+    "names": ["col1", col2"],
+    "formats": ["i4", "f4"],
+    "offsets": [0, 4],
+    "itemsize": 12
+})
+```
+
 -   除直接传递字符串外，`np.dtype` 接受字符串、列表、字典创建结构化数据类型
     -   非结构化数据类型
         -   `(FLEXIBLE_DTYPE, SIZE)`：不定长类型（此语法无法设置不定长类型形状）
         -   `(DTYPE, SHAPE)`：不定长类型需使用 *Array-protocol* 形式指定长度
-    -   `[SHAPE][BYTE_ORDER]<AP>, ...`：`,` 分隔字段的字符串
-        -   各字段名为 `f#`
-    -   `[(FILED_NAME, DTYPE, SHAPE),...]`：不定长类型需使用 *Array-protocol* 形式指定长度
-        -   `FIELD_NAME` 可为 `(META, NAME)` 或字符串，置 `""` 时各字段名为 `f#`
-    -   `{"names": ..., "formats": ..., "offsets": ..., "titles": ..., "itemsize": ...}`
-        -   `names`、`formats` 必须
-    -   `(BASE_DTYPE, NEW_DTYPE)`：解释基数据类型为结构化数据类型
-        -   `NEW_DTYPE` 可为上述取值，但注意大小需兼容
-        -   甚至，可用于实现 *C* 中 `union` 类型
+    -   具名结构化数据
+        -   `"[SHAPE][BYTE_ORDER]<AP>, ...'`（`,` 分隔字段的字符串）
+            -   各字段名为 `f#`
+        -   `[(FILED_NAME, DTYPE, SHAPE),...]`
+            -   不定长类型需使用 *Array-protocol* 形式指定长度
+            -   `FIELD_NAME` 可为 `(META, NAME)` 或字符串，置 `""` 时各字段名为 `f#`
+        -   `{"names": ..., "formats": ..., "offsets": ..., "titles": ..., "itemsize": ...}`
+            -   `names`、`formats` 必须
+    -   解释基数据类型为结构化数据类型
+        -   `(BASE_DTYPE, NEW_DTYPE)`
+            -   `NEW_DTYPE` 可为上述取值，但注意大小需兼容
+            -   甚至，可用于实现 *C* 中 `union` 类型
 
 ####    `np.dtype` 属性
 

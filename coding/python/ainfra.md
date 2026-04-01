@@ -5,7 +5,7 @@ categories:
 tags:
   - Algorithm
 date: 2025-12-09 21:56:25
-updated: 2025-12-12 20:18:47
+updated: 2026-03-31 13:42:50
 toc: true
 mathjax: true
 description: 
@@ -86,6 +86,28 @@ void cblas_zgemv(
 | 一般矩阵 | `ge`     |
 | 对称矩阵 | `sy`     |
 | 三角矩阵 | `tr`     |
+
+### Python 数据表
+
+|          | *NumPy*      | *PyArrow*              | *Pandas*                | *Polars*                     |
+|----------|--------------|------------------------|-------------------------|------------------------------|
+| 核心定位 | 数值计算     | 内存数据标准           | *DataFrame* 数据分析    | *DataFrame* 查询执行         |
+| 内存布局 | *NumPy* 数组 | *Apache Arrow*         | 基于 *NumPy*、*PyArrow* | *Rust* 实现的 *Apache Arrow* |
+| 生态定位 | 科学计算基石 | 跨语言、大规模数据桥梁 | 通用数据框分析          | 高效 *ETL*                   |
+| 执行模式 | 立即执行     | 函数式                 | 立即执行                | 支持优化器、延迟执行         |
+
+|          | *NumPy* 数组             | *Apache Arrow* 格式、内存标准    |
+|----------|--------------------------|----------------------------------|
+| 内存布局 | 行优先、列优先的连续块   | 列式、Chunked、缓冲区分离        |
+| 混合类型 | 单一类型                 | 每列可为单独类型                 |
+| 缺失值   | `np.nan` 仅浮点          | 位图 `null` 独立标记             |
+| 字符串   | `object` Python 对象指针 | 原生字符串缓冲区、偏移量数组     |
+| 嵌套数据 | `np.dtype` 构造嵌套      | 原生支持 `List`、`Struct`、`Map` |
+| 可变性   | 可变                     | 不可变                           |
+| 跨语言   | Python 专属格式          | 平台无关 *C/Arrow* 格式          |
+| 大数据   | 慢、内存瓶颈             | 快                               |
+
+> - *Polars* 用户指南 - 从 *Pandas* 迁移：<https://docs.polars.org.cn/user-guide/migration/pandas/>
 
 ##  *AI Infra*
 
