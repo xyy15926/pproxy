@@ -8,7 +8,7 @@ tags:
   - Display
   - Data Visualization
 date: 2024-09-21 17:16:05
-updated: 2025-03-08 20:19:09
+updated: 2026-04-20 23:14:44
 toc: true
 mathjax: true
 description: 
@@ -18,59 +18,104 @@ description:
 
 ##  *PyEcharts* 配置
 
--   *PyEcharts*：*Echarts* 的 *Python* 封装
-    -   *PyEcharts* 本质上即将 *Echarts* 配置项由 *Python* `dict` 序列化为 *JSON* 格式
-        -   即，其支持的数据格式取决于 *JSON* 支持的数据类型
-        -   则，数据传入 *PyEchart* 前需自行将数据转换为 **Python 原生数据格式**（包括 `np.int64` 等）
+### `Chart.options`
 
--   *PyEcharts* 中配置项基本采用 `XXXOpts`、`XXXItems` 或 `dict` 形式，两种形式完全等价
-    -   配置项项类归属 `options` 模块中
-        -   全局配置项 `options.global_options`：配置某图表全局
-            -   可通过 `charts.charts.chart.set_global_options` 方法设置
-        -   系列配置项 `options.series_options`：配置图表中某个系列数据
-            -   可通过 `charts.charts.chart.set_series_options` 方法设置
-    -   `set_global_options`、`set_series_options` 方法中
-        -   对应配置项 `XXXOpts`、`XXXItems` 参数名一般为 `xxx_opts`、`xxx_items`
-            -   除 `xaxis_opts`、`yaxis_opts` 等
+-   *PyEcharts*：*Echarts* 的 *Python* 封装
+    -   *PyEcharts* 本质上即将 *Echarts* 配置项（**包括数据配置、控制配置**）由 *Python* `dict` 序列化为 *JSON* 格式
+        -   事实上，*PyEcharts* 中图表核心即 `Chart.options` 字典中配置
+        -   图表将按 `Chart.options` 中配置（序列化的 *JSON*）进行渲染
+        -   即，修改 `Chart.options` 中配置项即可修改图表
+    -   `Chart.options` 中选项值支持列表、单个元素
+        -   对，允许重复的选项，列表中多个元素同时生效
+        -   否则，列表中首个元素生效
+    -   大部分选项同时支持 `XXXOpts`、等价 `dict` 作为选项值（列表元素）
+        -   但，`Chart.options["title"]` 等部分仅支持 `dict`
+
+####    数据配置
+
+-   数据配置：即指数据点，对应 `Chart.options["series"][N]["data"]` 项
+    -   对应各类图表 `add_xxx` 方法中形参 `xaxis_data`、`y_axis`、`data` 等
+    -   *PyEcharts* 支持的数据格式取决于 *JSON* 支持的数据类型
+        -   则，数据传入 *PyEchart* 前需自行将数据转换为 **Python 原生数据格式**
+        -   即，`np.int64` 等不继承自 `int` 需要转换
+    -   `RectChart` 直角坐标系图表需要配置 *X*、*Y* 两轴数据
+        -   `RectChart.add_xaxis(xaxis_data)`：添加 *X* 轴数据
+            -   `xaxis_data` 实参：常为列表，其中元素为字符串、日期、数值等标量值
+        -   `RectChart.add_yaxis(series_name, y_axis)`：添加 *Y* 轴数据
+            -   `y_axis` 实参常为列表，其中元素依赖于具体图表类型，可为标量、元组、`XXXXItem` 实例等
+    -   其他图表一般只需要通过 `add(series_name, yaxis_data)` 配置单一数据
 
 > - *PyEcharts* 数据格式：<https://pyecharts.org/#/zh-cn/data_format>
-> - *PyEcharts* 参数配置：<https://pyecharts.org/#/zh-cn/parameters>
+
+####    控制配置
+
+-   控制配置：即指图表渲染的配置项，分为全局配置项、数据序列配置项两类
+    -   全局配置项：针对图表全局的配置项，对应 `Chart.options` 整体
+        -   通过 `charts.charts.chart.set_global_options` 方法指定全局配置项
+        -   配置项类 `XXXOpts` 位于 `options.global_options` 模块中
+    -   数据序列配置项：针对图表中某个序列数据的配置项类，对应 `Chart.options["series"]` 中元素
+        -   通过 `charts.charts.chart.set_series_options` 方法指定系列配置项
+            -   实质上即遍历 `Chart.options["series"]` 中每个元素、修改配置
+        -   配置项类 `XXXOpts`、`XXXItems` 位于 `options.series_options` 模块中
+    -   配置项形参名一般为 `xxx_opts`、`xxx_items`
+        -   对应配置项类名为 `XXXOpts`、`XXXItems`
+        -   配置项实参可为 `XXXOpts`、`XXXItems` 实例或 `dict` 形式，两种形式完全等价
+            -   事实上，配置项类就是 `dict` 的简单封装
+
+> - *PyEcharts* 参数传递：<https://pyecharts.org/#/zh-cn/parameters>
 
 ### 全局配置项
 
-| 配置项类                                       | 含义                           |
-|------------------------------------------------|--------------------------------|
-| `global_options.InitOpts`                      | 初始化配置项                   |
-| `global_options.AnimationOpts`                 | 动画                           |
-| `global_options.RenderOpts`                    | 渲染                           |
-| `global_options.TooltipOpts`                   | 提示框                         |
-| `global_options.TitleOpts`                     | 标题                           |
-| `global_options.LegendOpts`                    | 图例                           |
-| `global_options.ArialLabelOpts`                | 无障碍标签                     |
-| `global_options.AriaDecalOpts`                 | 无障碍贴花                     |
-| `global_options.ToolBoxFeatureSaveAsImageOpts` | 工具箱保存图片                 |
-| `global_options.ToolBoxFeatureRestoreOpts`     | 工具箱还原配置                 |
-| `global_options.ToolBoxFeatureDataViewOpts`    | 工具箱数据视图工具             |
-| `global_options.ToolBoxFeatureDataZoomOpts`    | 工具箱区域缩放                 |
-| `global_options.ToolBoxFeatureMagicTypeOpts`   | 工具箱动态类型切换             |
-| `global_options.ToolBoxFeatureBrushOpts`       | 工具箱选框组件                 |
-| `global_options.ToolBoxFeatureOpts`            | 工具箱工具配置                 |
-| `global_options.ToolBoxOpts`                   | 工具箱配置项                   |
-| `global_options.BrushOpts`                     | 区域组件选择组件               |
-| `global_options.DataZoomOpts`                  | 区域缩放                       |
-| `global_options.VisualMapOpts`                 | 视觉区块                       |
-| `global_options.AxisLineOpts`                  | 坐标轴线                       |
-| `global_options.AxisTickOpts`                  | 坐标轴刻度                     |
-| `global_options.AxisPointerOpts`               | 坐标轴指示器                   |
-| `global_options.AxisOpts`                      | 坐标轴                         |
-| `global_options.SingleAxisOpts`                | 单轴                           |
-| `global_options.PolarOpts`                     | 极坐标系                       |
-| `global_options.DataSetTransformOpts`          | 数据集转换                     |
-| `global_options.EmphasisOpts`                  | 高亮状态下多边形和标签样式     |
-| `global_options.Emphasis3DOpts`                | 3D图高亮状态下多边形和标签样式 |
-| `global_options.BlurOpts`                      | 淡出状态下多边形和标签样式     |
-| `global_options.SelectOpts`                    | 选中状态下多边形和标签样式     |
-| `global_options.TreeLeavesOpts`                | *Tree Leaves* 组件配置         |
+| 配置项类                                       | `set_global_opts` 中形参   | 含义                     |
+|------------------------------------------------|----------------------------|--------------------------|
+| `global_options.InitOpts`                      |                            | 初始化配置项             |
+| `global_options.TitleOpts`                     | `title_opts`               | 标题                     |
+| `global_options.LegendOpts`                    | `legend_opts`              | 图例                     |
+| `global_options.AnimationOpts`                 |                            | 动画                     |
+| `global_options.RenderOpts`                    |                            | 渲染                     |
+| `global_options.ArialLabelOpts`                |                            | 无障碍标签               |
+| `global_options.AriaDecalOpts`                 |                            | 无障碍贴花               |
+| `global_options.ToolBoxOpts`                   | `toolbox_opts`             | 工具箱配置项             |
+| `global_options.ToolBoxFeatureSaveAsImageOpts` |                            | 工具箱保存图片           |
+| `global_options.ToolBoxFeatureRestoreOpts`     |                            | 工具箱还原配置           |
+| `global_options.ToolBoxFeatureDataViewOpts`    |                            | 工具箱数据视图工具       |
+| `global_options.ToolBoxFeatureDataZoomOpts`    |                            | 工具箱区域缩放           |
+| `global_options.ToolBoxFeatureMagicTypeOpts`   |                            | 工具箱动态类型切换       |
+| `global_options.ToolBoxFeatureBrushOpts`       |                            | 工具箱选框组件           |
+| `global_options.ToolBoxFeatureOpts`            |                            | 工具箱工具配置           |
+| `global_options.BrushOpts`                     |                            | 区域组件选择组件         |
+| `global_options.AxisOpts`                      | `xaxis_opts`、`yaxis_opts` | *XY* 坐标轴配置          |
+| `global_options.AxisLineOpts`                  |                            | 坐标轴线                 |
+| `global_options.AxisTickOpts`                  |                            | 坐标轴刻度               |
+| `global_options.AxisPointerOpts`               |                            | 坐标轴指示器             |
+| `global_options.SingleAxisOpts`                |                            | 单轴配置                 |
+| `global_options.PolarOpts`                     |                            | 极坐标系                 |
+| `global_options.DataZoomOpts`                  | `datazoom_opts`            | 区域缩放                 |
+| `global_options.VisualMapOpts`                 | `visualmap_opts`           | 数据值视觉映射、过滤     |
+
+![pyecharts_global_opts_example](imgs/pyecharts_global_opts_example.png)
+
+-   全局配置项指不特定于具体数据序列的配置，即 `Chart.options` 中配置
+    -   全局配置项设置方式
+        -   部分全局配置项通过图表的 `.set_global_opts()` 方法配置
+        -   部分全局配置项在 `.add_yaxis()` 等添加数据序列、图形类初始化时配置
+    -   `Chart.options` 对任意 `Chart` 类型总存在
+        -   但，部分 `Chart` 类型（如 `Grid`）无 `.set_global_opts()` 方法
+        -   无 `.set_global_opts()` 方法 `Chart` 衍生图表类，直接修改 `options` 属性同样有效
+
+| 配置项类                              | `add_yaxis` 等中形参 | 含义                           |
+|---------------------------------------|----------------------|--------------------------------|
+| `global_options.TooltipOpts`          | `tooltip_opts`       | 提示框                         |
+| `global_options.DataSetTransformOpts` |                      | 数据集转换                     |
+| `global_options.EmphasisOpts`         |                      | 高亮状态下多边形和标签样式     |
+| `global_options.Emphasis3DOpts`       |                      | 3D图高亮状态下多边形和标签样式 |
+| `global_options.BlurOpts`             |                      | 淡出状态下多边形和标签样式     |
+| `global_options.SelectOpts`           |                      | 选中状态下多边形和标签样式     |
+| `global_options.TreeLeavesOpts`       |                      | *Tree Leaves* 组件配置         |
+
+> - 全局配置项：<https://pyecharts.org/#/zh-cn/global_options>
+
+### 原生图形配置项类
 
 | 原生图形配置项类                     | 含义                 |
 |--------------------------------------|----------------------|
@@ -84,28 +129,33 @@ description:
 | `charts_options.GraphTextStyleOpts`  | 原生图形文本样式配置 |
 | `charts_options.GraphicRect`         | 原生图形矩形配置     |
 
-> - 全局配置项：<https://pyecharts.org/#/zh-cn/global_options>
+> - 原生图形组件：<https://pyecharts.org/#/zh-cn/global_options?id=graphicgroup%ef%bc%9a%e5%8e%9f%e7%94%9f%e5%9b%be%e5%bd%a2%e5%85%83%e7%b4%a0%e7%bb%84%e4%bb%b6>
 
 ### 系列配置项
 
-| 配置项类                                | 含义                     |
-|-----------------------------------------|--------------------------|
-| `series_options.ItemStyleOpts`          | 图元样式                 |
-| `series_options.TextStyleOpts`          | 文字样式                 |
-| `series_options.LabelOpts`              | 标签                     |
-| `series_options.LineStyle`              | 线样式                   |
-| `series_options.SplitLineOpts`          | 分割线配置               |
-| `series_options.SplitAreaOpts`          | 分隔区域配置             |
-| `series_options.MarkPointItem`          | 标记点数据项             |
-| `series_options.MarkPointOpts`          | 标记点数据项             |
-| `series_options.MarkLineItem`           | 标记线数据项             |
-| `series_options.MarkLineOpts`           | 标记线样式               |
-| `series_options.MarkAreaItem`           | 标记区域数据项           |
-| `series_options.MarkAreaOpts`           | 标记区域样式             |
-| `series_options.MinorTickOpts`          | 次级刻度配置             |
-| `series_options.MinorSplitLineOpts`     | 次级分割线配置           |
-| `series_options.Line3DEffectOpts`       | 3D样式                   |
-| `series_options.GraphGLForceAltas2Opts` | *GraphGL Atlas* 算法配置 |
+| 配置项类                                | `add_yaxis` 等中形参 | 含义                     | 其他                         |
+|-----------------------------------------|----------------------|--------------------------|------------------------------|
+| `series_options.ItemStyleOpts`          | `itemstyle_opts`     | 图元样式                 |                              |
+| `series_options.TextStyleOpts`          |                      | 文字样式                 |                              |
+| `series_options.LabelOpts`              | `label_opts`         | 标签                     |                              |
+| `series_options.LineStyle`              |                      | 线样式                   |                              |
+| `series_options.SplitLineOpts`          |                      | 分割线配置               |                              |
+| `series_options.SplitAreaOpts`          |                      | 分隔区域配置             |                              |
+| `series_options.MarkPointOpts`          | `markpoint_opts`     | 标记点配置               |                              |
+| `series_options.MarkPointItem`          |                      | 标记点配置数据项         | 可用于初始化 `MarkPointOpts` |
+| `series_options.MarkLineOpts`           | `markline_opts`      | 标记线配置               |                              |
+| `series_options.MarkLineItem`           |                      | 标记线配置数据项         | 可用于初始化 `MarkLineOpts`  |
+| `series_options.MarkAreaOpts`           | `markarea_opts`      | 标记区域配置             |                              |
+| `series_options.MarkAreaItem`           |                      | 标记区域配置数据项       | 可用于初始化 `MarkAreaOpts`  |
+| `series_options.MinorTickOpts`          |                      | 次级刻度配置             |                              |
+| `series_options.MinorSplitLineOpts`     |                      | 次级分割线配置           |                              |
+| `series_options.Line3DEffectOpts`       |                      | 3D样式                   |                              |
+| `series_options.GraphGLForceAltas2Opts` |                      | *GraphGL Atlas* 算法配置 |                              |
+
+-   系列配置项指具体数据序列的配置，即 `Chart.options["series"]` 列表中配置
+    -   `Chart.options["series"]` 中每个 `dict` 元素即代表单个数据序列
+        -   `RectChart.add_yaxis` 方法实质上即向其中新增元素
+        -   即，直接向其中添加元素即可增加数据序列
 
 > - 系列配置项：<https://pyecharts.org/#/zh-cn/series_options>
 
@@ -126,33 +176,94 @@ description:
 
 -   `pyecharts.Base` 是所有图表的基类
 
+> - 图表 *API*：<https://pyecharts.org/#/zh-cn/chart_api>
+
 ###    直角坐标系图
 
-| 方法                                                     | 含义            |
-|----------------------------------------------------------|-----------------|
-| `RectChart.extend_axis(xaxis_data,xaxis,yaxis)`          | 扩展*X/Y* 轴    |
-| `RectChart.add_xaxis(xaxis_data)`                        | 新增 *X* 轴数据 |
-| `RectChart.reversal_axis()`                              | 翻转 *X/Y* 轴   |
-| `RectChart.overlap(chart)`                               | 层叠多图        |
-| `RectChart.add_dataset(source,dimensions,source_header)` | 添加数据集      |
+| 方法                                                     | 含义            |                      |
+|----------------------------------------------------------|-----------------|----------------------|
+| `RectChart.add_xaxis(xaxis_data)`                        | 新增 *X* 轴数据 |                      |
+| `RectChart.add_yaxis(series_name,y_axis,...)`            | 新歌 *Y* 轴数据 | `Overlap` 图无此方法 |
+| `RectChart.extend_axis(xaxis_data,xaxis,yaxis)`          | 扩展 *X/Y* 轴   |                      |
+| `RectChart.reversal_axis()`                              | 翻转 *X/Y* 轴   |                      |
+| `RectChart.overlap(chart)`                               | 层叠多图        |                      |
+| `RectChart.add_dataset(source,dimensions,source_header)` | 添加数据集      |                      |
 
 -   直角坐标系图表均继承自 `charts.RectChart`
-    -   `RectChart.overlap` 方法似乎是合并 Y 轴数据、绘制
-        -   `overlap` 返回结果为覆盖图表
-        -   被重叠图表的全局配置整体被覆盖，同覆盖图表
+    -   `RectChart` 类总是通过 `add_xaxis(xaxis_data)` 添加 **X 轴坐标刻度**
+    -   `RectChart` 类常通过 `add_yaxis(series_name, y_axis,...)` 添加 **Y 轴数据序列**（除 `Overlap`、`HeatMap`）
+        -   可多次调用、添加多组 *Y* 轴数据在同一图表中展示
+            -   多组数据一般以不同颜色渲染、对应图例
+        -   `y_axis` 参数即为添加的数据列表，其中元素可为多种类型
+            -   基础格式：一般即为 *Y* 轴取值，按顺序与 `xaxis_data` 匹配
+            -   扩展格式：前 `xindex`、后补 `extra...` 作为数据序列
+                -   `xindex` 指对应的 `xaxis_data` 位序（若基础格式本身为元组，则可省略）
+                -   `extra...` 可为任意、数量元素，用于帮助调整数据项渲染（被 `JsCode` 封装回调函数获取）
+            -   对应的数据项类
+        -   `add_yaxis` 方法中其他形参可以使用 `common.utils.JsCode` 实例作为实参
+            -   `JsCode` 内应封装回调函数 `function (params) {}`
+            -   回调函数参数 `params` 代表单个数据对象
+                -   `param.value` 即为 `y_axis` 序列中单个数据项
+    -   特殊说明
+        -   `HeatMap.add_yaxis(series_name, yaxis_data, value)` 中需额外设置 **Y 轴坐标刻度**
+            -   `yaxis_data` 类似 `add_xaxis(xaxis_data)` 中 `xaxis_data` 指定刻度
+            -   `value` 对应一般的 `add_yaxis(series_name, y_axis)` 
+        -   `RectChart.overlap()` 方法返回 `charts.Overlap` 覆盖图表
+            -   被重叠图表的全局配置整体被覆盖，同覆盖图表
 
-| 图表       | 类                                |
-|------------|-----------------------------------|
-| 条形图     | `charts.Bar(init_opts)`           |
-| 象形条形图 | `charts.PictoriaBar(init_opts)`   |
-| 散点图     | `charts.Scatter(init_opts)`       |
-| 涟漪散点图 | `charts.EffectScatter(init_opts)` |
-| 折线图     | `charts.Line(init_opts)`          |
-| 箱线图     | `charts.Boxplot(init_opts)`       |
-| *K* 线图   | `charts.Kline(init_opts)`         |
-| 热力图     | `charts.HeatMap(init_opts)`       |
+| 类                                | 图表       | 备注                            |
+|-----------------------------------|------------|---------------------------------|
+| `charts.Bar(init_opts)`           | 条形图     |                                 |
+| `charts.PictoriaBar(init_opts)`   | 象形条形图 | 可用 `symbol` 指定条形形状      |
+| `charts.Scatter(init_opts)`       | 散点图     |                                 |
+| `charts.EffectScatter(init_opts)` | 涟漪散点图 | 可用 `symbol` 指定散点形状      |
+| `charts.Line(init_opts)`          | 折线图     |                                 |
+| `charts.Boxplot(init_opts)`       | 箱线图     | 扩展格式中`xindex` 可选         |
+| `charts.Kline(init_opts)`         | *K* 线图   | 扩展格式中 `xindex` 可选        |
+| `charts.HeatMap(init_opts)`       | 热力图     |                                 |
+| `charts.Overlap()`                | 层叠多图   | 通过 `Chart.overlap()` 方法创建 |
 
 > - *PyEcharts* 直角坐标系图：<https://pyecharts.org/#/zh-cn/rectangular_charts>
+> - 原生 *Javascript*：<https://pyecharts.org/#/zh-cn/javascript>
+
+####    `add_yaxis` 数据形参 `y_axis`
+
+| 图表            | `y_axis` 基础格式            | `y_axis` 扩展格式                              | `y_axis` 数据项类   |
+|-----------------|------------------------------|------------------------------------------------|---------------------|
+| `Bar`           | `[value,]`                   | `[(xindex, value, extra...)]`                  | `BarItem`           |
+| `PictoriaBar`   | `[value,]`                   | `[(xindex, value, extra...)]`                  |                     |
+| `Scatter`       | `[y,]`                       | `[(xindex, y, size, extra...)]`                | `ScatterItem`       |
+| `EffectScatter` | `[y,]`                       | `[(xindex, y, size, extra...)]`                | `EffectScatterItem` |
+| `Line`          | `[y,]`                       | `[(xindex, y, size, extra...)]`                | `LineItem`          |
+| `Boxplot`       | `[(min, q1, med, q3, max),]` | `[(xindex, min, q1, med, q3, max, extra...),]` | `BoxplotItem`       |
+| `Kline`         | `[(o, c, l, h),]`            | `[(xindex, o, c, l, h, extra...),]`            | `CandleStickItem`   |
+| `HeatMap`       | `[(x, y, value),]`           | `[(x, y, value, extra...),]`                   | `HeatMapItem`       |
+
+####    `add_yaxis` 其他参数
+
+| 常用形参               | 类型                                    | 说明                 | 其他                               |
+|------------------------|-----------------------------------------|----------------------|------------------------------------|
+| `series_name`          | `str`                                   | 序列名               |                                    |
+| `y_axis`               | `Sequence[opts.XXXItem, dict]`          | 数据                 |                                    |
+| `is_selected`          | `bool`                                  | 图例默认选中（展示） |                                    |
+| `xaxis_index`          | `Optional[Numeric]`                     | *X* 轴位序           | 图表中存在多个 *X* 轴时，`0` 起始  |
+| `yaxis_index`          | `Optional[Numeric]`                     | *Y* 轴位序           | 图表中存在多个 *Y* 轴时，`0` 起始  |
+| `polar_index`          | `Optional[Numeric]`                     | 极坐标系位序         | 图表中存在多个极坐标系时，`0` 起始 |
+| `is_legend_hover_link` | `bool`                                  | 鼠标图例上悬浮时高亮 |                                    |
+| `color`                | `Optional[str]`                         | 颜色                 |                                    |
+| `tooltip_opts`         | `Union[opts.TooltipOpts, dict, None]`   | 提示框组件           |                                    |
+| `label_opts`           | `Union[opts.LabelOpts, dict]`           | 标签配置             |                                    |
+| `markpoint_opts`       | `Union[opts.MarkPointOpts, dict, None]` | 标记点配置           |                                    |
+| `markline_opts`        | `Union[opts.MarkLineOpts, dict, None]`  | 标记线配置           |                                    |
+| `markarea_opts`        | `Union[opts.MarkArea, dict, None]`      | 标记区域             |                                    |
+| `itemstyle_opts`       | `Union[opts.ItemStyleOpts, dict, None]` | 图元样式             |                                    |
+| `emphasis_opts`        | `Union[opts.Emphasis, dict, None]`      | 高亮配置             |                                    |
+
+-   说明
+    -   `charts.Overlap`、`charts.Grid` 是单个图表，其中数据序列、坐标轴位序按添加先后顺序统一计数
+
+> - 直角坐标系图表：<https://pyecharts.org/#/zh-cn/rectangular_charts>
+> - 系列配置项：<https://pyecharts.org/#/zh-cn/series_options>
 
 ###    其他基本图表
 
@@ -210,8 +321,16 @@ description:
 | 选项卡   | `charts.Tab(page_title,js_host)`                  |
 | 顺序轮播 | `charts.Timeline(init_opts)`                      |
 
--   组合图表整体数据组合渲染
-    -   组合中多个图表的的坐标共用坐标轴序号，绑定数据时注意全局考虑序号
+-   组合图表与常规图表没有太大不同，以 `Grid` 为例
+    -   `Grid.add_chart(Chart)` 实质上即将图表中配置选项 `Chart.options` 复制至 `Grid.options` 中（`RectChart.overlap` 行为类似）
+        -   故，`.add_chart(Chart)` 之后，对原 `Chart` 修改对 `Grid` 无影响
+        -   且因此，`Grid.options` 中配置项可能包含大量重复配置
+    -   `Grid.options["grid"]` 列表中存储 `opt.GridOpts` 是网格布局的核心
+        -   `Grid.options["grid"]` 中每个 `opt.GridOpts` 对应单个网格布局
+        -   `Grid.options["aAxis"]`、`Grid.options["yAxis"]` 每个直角坐标系轴通过其 `grid_index` 项与对应网格关联
+        -   `Grid.options["series"]` 每个数据序列通过 `xaxis_index`、`yaxis_index` 与对应坐标轴关联
+            -   即，组合中多个图表的的坐标共用坐标轴序号，绑定数据时注意全局考虑序号
+            -   且，非 `RectChart` 被 `Grid.add_chart` 添加无法与对应网格绑定（可渲染，但不受网格配置影响）
 
 | 配置项类                        | 含义              |
 |---------------------------------|-------------------|
