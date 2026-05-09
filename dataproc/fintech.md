@@ -1530,7 +1530,7 @@ description:
 |---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|----------|
 | `PC02ES02 == count(PD01AJ01)`                                                                     | `(PD01AD01 in ["D1"]) and (ifnull(PD02CD01, PD01BD01) not in ["3", "5"])` | 0/5354   |
 | `PC02EJ01 == sum(PD01AJ01)`                                                                       | `(PD01AD01 in ["D1"]) and (ifnull(PD02CD01, PD01BD01) not in ["3", "5"])` | 204/5354 |
-| `PC02EJ01 == sum(ifnull(PD02AJ01, PD01AJ01)`                                                      | `(PD01AD01 in ["D1"]) and (ifnull(PD02CD01, PD01BD01) not in ["3", "5"])` | 147/5354 |
+| `PC02EJ01 == sum(ifnull(PD02AJ01, PD01AJ01))`                                                     | `(PD01AD01 in ["D1"]) and (ifnull(PD02CD01, PD01BD01) not in ["3", "5"])` | 147/5354 |
 | `PC02EJ02 == sum(ifnull(PD01CJ01, PD01BJ01))`                                                     | `(PD01AD01 in ["D1"]) and (ifnull(PD02CD01, PD01BD01) not in ["3", "5"])` | 0/5354   |
 | `PC02FS02 == count(PD01AJ01)`                                                                     | `(PD01AD01 in ["R4"]) and (ifnull(PD02CD01, PD01BD01) != "3")`            | 0/2023   |
 | `PC01FJ01 == sum(PD02AJ01)`                                                                       | `(PD01AD01 in ["R4"]) and (ifnull(PD02CD01, PD01BD01) != "3")`            | 0/2023   |
