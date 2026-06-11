@@ -8,7 +8,7 @@ tags:
   - Py3Ref
   - Class
 date: 2019-05-25 19:53:54
-updated: 2022-12-06 17:48:06
+updated: 2026-05-21 22:15:19
 toc: true
 mathjax: true
 comments: true
@@ -359,38 +359,45 @@ class super:
 			# `type2`作为首个参数
 
 	def __get__(self, obj, type=None):
-		
+
 
 def super(cls, inst/subcls):
-    mro = inst.__class__.mro()
+	mro = inst.__class__.mro()
 	mro = subcls.mro()
-    return mro[mro.index(cls) + 1]
+	return mro[mro.index(cls) + 1]
 ```
 
--	`super([type,[object-or-type]])`：
+-	`super([type,[object-or-type]])`：返回代理对象，根据 *MRO* 动态查找 *MRO* 序列中下个类，用于访问父类属性
 	-	参数
 		-	`type`：在 *MRO* 列表中定位类搜索起点（不包括）
 		-	`object-or-type`：提供 *MRO* 列表
 			-	类：直接传递 *MRO* 列表
 			-	实例：传递所属类的 *MRO* 列表
-		-	返回值：代理对象，可将方法调用委托给 `type` 的父类、兄弟类（取决于 *MRO*）
-			-	类似于返回MRO列表中某个类的实例，取决于访问的属性
+		-	返回值：代理对象，可用于访问 *MRO* 列表中父类、兄弟类的 **类属性（包括方法）**
+			-	但是动态绑定（绑定当前对象、类）、延迟解析，而不是硬编码指定父类
+				-	可将方法调用委托给 `type` 的父类、兄弟类
+				-	类似于返回 *MRO* 列表中某个类的实例
+				-	具体访问类属性所属的类的取决于 *MRO* 列表顺序、类是否有该属性
+			-	代理对象并不是真正的父类、兄弟类，无法、不应使用 `setattr`、或直接对类属性赋值
 	-	功能：依次遍历 *MRO* 列表（指定位置开始）中类，查找指定属性
 		-	可在创建 `super` 实例时指定搜索起始点，跳过对部分类搜索
-		-	若需继承链中该方法都被链式调用，需 *MRO* 列表中每个类中的方法都通过 `super()` 调用
-		-	`super` 功能依赖其作为描述器的实现
-			-	即依赖 `super` 类的 `__getattribute__`、`__get__` 方法
-			-	则仅通过 `.` 属性访问的方式才能（通过描述器机制）正确获取目标属性
-	-	用途
-		-	单继承中，`super` 可用于引用父类而不必指定名称，便于维护
-		-	在动态执行环境中支持多重继承带来的“菱形图”
-			-	避免硬编码父类名称导致多次调用
+		-	动态绑定：`super()` 获取的方法 **首个参数将绑定为当前对象**
+			-	若 *MRO* 列表中每个类中的方法设置 `super()` 调用，则可链式对当前对象调用继承链中方法
+			-	但注意：`setattr(super(), name, val)` 是给
+		-	延期解析：`super` 可用于引用父类而不必硬编码指定名称，便于维护
+			-	在单继承中仅是便于维护
+			-	在多重继承带来的 “菱形图” 中，可避免硬编码父类名称导致多次调用，尤其是在动态执行环境中
 	-	注意
 		-	两个参数的形式明确的 `super` 可在类外使用
+			-	同样对静态方法，也需要两参数明确形式
 		-	零个参数的形式需要编译器填入必要细节，仅适用于类定义内部
+			-	编译器会根据类定义、方法（类方法）的首个参数推导参数
 		-	`super` 访问的属性路线不够明确，继承链中最好保证
 			-	同名方法参数调用兼容，比如：相同参数个数、名称
 			-	最顶层类提供方法实现，确保在 *MRO* 查找链上可找到方法
+		-	`super` 功能依赖其作为描述器的实现
+			-	即依赖 `super` 类的 `__getattribute__`、`__get__` 方法
+			-	则仅通过 `.` 属性访问的方式才能（通过描述器机制）正确获取目标属性
 
 > - `super()` 第二个参数一般为 `self`，即在调用链中始终由当前实例提供 `mro` 列表
 > - <https://docs.python.org/zh-cn/3.9/library/functions.html#super>
@@ -505,7 +512,8 @@ def super(cls, inst/subcls):
 	-	三种方法区别
 		-	`.` 是最常用、最快方式，核心即 `LOAD_ATTR`
 		-	`getattr` 稍慢，应是 `CALL_FUNCTION` 中包含 `LOAD_ATTR` 核心逻辑
-		-	`.__getattribute__` 最慢，`LOAD_ATTR` 后再 `CALL_FUNCTION`
+			-	但若触发后续兜底逻辑，则可能更慢
+		-	`.__getattribute__` 最慢，`LOAD_ATTR` （拿到 `__getattribute__`）后再 `CALL_FUNCTION`
 	-	重载 `__getattribute__` 应会修改类型的 `tp_getattro` 域，进而影响三种属性获取方式
 	-	部分钩子函数会跳过重载的对应特殊方法
 
@@ -601,13 +609,13 @@ PyObject * _PyObject_GenericGetAttrWithDict(PyObject *obj, PyObject *name,
 	descr = _PyType_Lookup(tp, name);				// 在对象 type 中寻找属性
 	if (descr != NULL) {
 		...
-        f = Py_TYPE(descr)->tp_descr_get;
-        if (f != NULL && PyDescr_IsData(descr)) {	// 属性存在且为数据描述器，则直接获取
-            res = f(descr, obj, (PyObject *)Py_TYPE(obj));
+		f = Py_TYPE(descr)->tp_descr_get;
+		if (f != NULL && PyDescr_IsData(descr)) {	// 属性存在且为数据描述器，则直接获取
+			res = f(descr, obj, (PyObject *)Py_TYPE(obj));
 			...
 			goto done;
-        }
-    }
+		}
+	}
 	if (dict == NULL){								// `dict` 默认将被尝试置为对象 `__dict__` 域
 		dictoffset = tp->tp_dictoffset;
 		if(dictoffset != 0){
@@ -997,9 +1005,12 @@ class Property(object):
 ####	`wrapper` 类
 
 -	`wrapper_descripter`：`<slot wrapper>`，封装 C 实现的函数
-	-	等价于 CPython3 中函数
-	-	调用 `__get__` 绑定后得到 `<method-wrapper>`
-	-	`object` 的方法全是 `<slot wrapper>`
+	-	`object` 的方法全是 `<slot wrapper>`，如 `__getattribute__`、`__setattr__` 等
+		-	等价于 CPython3 中函数
+		-	调用 `__get__` 绑定后得到 `<method-wrapper>`
+	-	是类型对象的固有属性，不经过可覆盖的属性查找协议
+		-	可视为特殊的资料描述器，无法在实例层面被覆盖
+			-	但其没有 `__set__` 方法
 
 -	`method-wrapper`：`<method-wrapper>`，封装 C 实现的绑定方法
 	-	等价于 CPython3 中绑定方法
@@ -1169,9 +1180,9 @@ class method:
 			if slots:
 				for i, slot in enumerate(slots):
 					namespace[slot] = Member(i)
-				original_init = namespace.get('__init__')                
+				original_init = namespace.get('__init__')
 				def __init__(self, *args, **kwds):
-					'Create _slotvalues list and call the original __init__'                
+					'Create _slotvalues list and call the original __init__'
 					self._slotvalues = [None] * len(slots)
 					if original_init is not None:
 						original_init(self, *args, **kwds)
