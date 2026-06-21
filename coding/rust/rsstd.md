@@ -7,7 +7,7 @@ tags:
   - Coding
   - Rust
 date: 2026-01-25 16:18:02
-updated: 2026-03-30 19:57:11
+updated: 2026-06-18 13:50:53
 toc: true
 mathjax: true
 description: 
@@ -1058,6 +1058,7 @@ where
 > - `std::ptr`：<https://doc.rust-lang.org/stable/std/ptr/index.html>
 
 ####    `*const T` 方法
+
 | `*const T` 转换、操作     | 返回值                       | 描述                                      | 其他                                |
 |---------------------------|------------------------------|-------------------------------------------|-------------------------------------|
 | `is_null()`               | `bool`                       | 是否为空                                  |                                     |
@@ -1210,7 +1211,6 @@ pub struct NonNull<T: PointeeSized> {
 | `hash<T, S>(hashee, into)`                | `()`   | 将裸指针写入 `impl Hasher`         |                                               |
 
 > - `std::ptr` 函数：<https://doc.rust-lang.org/stable/std/ptr/index.html#functions>
-
 
 ### 内存管理
 
@@ -2687,7 +2687,7 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
     -   原子类型包括一系列 `AutomicBool`、`AotomicIsize`、`AutomicU16` 等，以及 `Atomic<T>` 别名
         -   不同原子类型方法类似
         -   但因系统架构原因，部分原子类型、原子操作方法可能不可用
-    -   原子类型实现 `Sync` 可在多线程间安全共享
+    -   原子类型实现 `Sync`，可在多线程间安全共享
         -   考虑到仅 `Atomic::get_mut()` 需可变借用，包括 `store`、`swap` 在内的方法均只需共享借用
         -   `move Arc<Atomic<>>`、或直接借用均可在多线程间同步、通信
 
@@ -2705,7 +2705,7 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
 | `as_ptr()`                         | `*mut isize`         | 创建可变裸指针           |                    |
 
 -   `AtomicIsize` 方法说明
-    -   `AtomicIsize` 方法往往需要指定内存顺序约束
+    -   `AtomicIsize` 方法往往需要指定内存顺序约束，约束 **单个原子类型值自身** 的执行顺序（指令重排可能导致多线程间指令逻辑不一致）
         -   `load` 方法只读，不允许 `Release`、`AcqRel` 约束
         -   `store` 方法只写，不允许 `Acquire`、`AcqRel` 约束
         -   `fetch_`、`swap` 方法同时包含读写，不同内存顺序约束有不同同步结果
@@ -2715,6 +2715,10 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
             -   同样的，`failure` 不允许 `Release`、`AcqRel` 约束
             -   `compare_exchange_weak` 可能有虚假失败，即原值与 `current` 一致也不更新，以提升效率
         -   `fetch_update` 类似 `compare_exchange` 区分更新成功 `set_order`、失败 `fetch_order`
+    -   `atomic::fence(order)` 函数则是针对全局的内存顺序约束
+        -   `atomic::fence` 函数前后所有的读、写顺序被约束
+            -   可用于普通变量读、写内存顺序的跨线程同步
+            -   少量 `fence` 配合多个原子变量 `Ordering::Relaxed` 读、写，可减少原子操作开销
 
 | `AtomicIsize` 原子操作                                  | 返回值                 | 描述                                          | 其他                     |
 |---------------------------------------------------------|------------------------|-----------------------------------------------|--------------------------|
@@ -2731,10 +2735,11 @@ pub type Atomic<T> = <T as AtomicPrimitive>::AtomicInner;
 | `fetch_max(val, order)`                                 | `isize`                | 较小者                                        |                          |
 | `fetch_update(set_order, fetch_order, f)`               | `Result<isize, isize>` | 按 `FnMut(isize) -> Option<isize>` 更新       | 可能执行多次但只生效一次 |
 | `compare_exchange(current, new, success, failure)`      | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 |                          |
-| `compare_exchange_weak(current, new, success, failure)` | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 |  相同也可能不更新值       |
+| `compare_exchange_weak(current, new, success, failure)` | `Result<isize, isize>` | 现值与 `current` 相同则存储 `new`，总返回旧值 | 相同也可能不更新值       |
 
 > - `std::sync::atomic`：<https://doc.rust-lang.org/stable/std/sync/atomic/index.html>
 > - `std::sync::atomic::AutomicIsize`：<https://doc.rust-lang.org/stable/std/sync/atomic/struct.AtomicIsize.html#method.store>
+> - `std::sync::atomic::fence`：<https://doc.rust-lang.org/std/sync/atomic/fn.fence.html>
 
 ### 异步任务
 
