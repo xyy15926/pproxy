@@ -13,7 +13,7 @@ date: 2022-12-19 14:07:33
 updated: 2023-12-30 16:02:20
 toc: true
 mathjax: true
-description:
+description: SciPy 科学计算函数速查
 ---
 
 ##  *Scipy*

@@ -1,14 +1,15 @@
 ---
-title:
+title: Python Logging
 categories:
-  -
+  - Python
 tags:
-  -
+  - Python
+  - Logging
 date: 2022-07-20 16:11:59
 updated: 2022-07-20 19:34:00
 toc: true
 mathjax: true
-description:
+description: Python logging 模块使用指南
 ---
 
 ##  Logging

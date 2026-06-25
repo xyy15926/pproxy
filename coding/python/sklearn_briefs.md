@@ -14,7 +14,7 @@ date: 2022-12-19 14:04:39
 updated: 2025-01-21 17:34:00
 toc: true
 mathjax: true
-description:
+description: Scikit-learn 机器学习 API 速查
 ---
 
 ##  *API* 参考

@@ -12,7 +12,7 @@ date: 2023-03-10 14:35:03
 updated: 2023-12-31 22:24:18
 toc: true
 mathjax: true
-description:
+description: SQLAlchemy ORM 数据库操作
 ---
 
 ##  SQLAlchemy 概述

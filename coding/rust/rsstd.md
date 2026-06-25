@@ -10,7 +10,7 @@ date: 2026-01-25 16:18:02
 updated: 2026-06-18 13:50:53
 toc: true
 mathjax: true
-description:
+description: Rust 标准库 API 速查
 ---
 
 ##  *Rust Std*

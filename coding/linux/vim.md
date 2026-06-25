@@ -11,7 +11,7 @@ date: 2025-09-25 15:21:59
 updated: 2026-01-30 15:51:36
 toc: true
 mathjax: true
-description:
+description: Vim 编辑器功能与配置
 ---
 
 #   *Vim* 启动、配置

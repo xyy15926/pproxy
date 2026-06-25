@@ -1,14 +1,16 @@
 ---
-title:
+title: TA-Lib
 categories:
-  -
+  - Python
 tags:
-  -
+  - Python
+  - TA-Lib
+  - Finance
 date: 2024-11-15 15:57:17
 updated: 2024-11-19 07:22:08
 toc: true
 mathjax: true
-description:
+description: TA-Lib 金融技术指标
 ---
 
 ##  金融指数

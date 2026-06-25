@@ -1,14 +1,15 @@
 ---
 title: Python3 标准库
 categories:
-  -
+  - Python
 tags:
-  -
+  - Python
+  - Standard Library
 date: 2023-10-18 18:16:32
 updated: 2023-10-22 16:06:11
 toc: true
 mathjax: true
-description:
+description: Python3 标准库模块概览
 ---
 
 ##  文本处理

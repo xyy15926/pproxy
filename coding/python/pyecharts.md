@@ -11,7 +11,7 @@ date: 2024-09-21 17:16:05
 updated: 2026-04-20 23:14:44
 toc: true
 mathjax: true
-description:
+description: PyEcharts 数据可视化
 ---
 
 #   *PyEcharts*

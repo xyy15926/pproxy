@@ -13,7 +13,7 @@ date: 2022-07-26 11:28:10
 updated: 2024-01-16 14:39:09
 toc: true
 mathjax: true
-description:
+description: Pandas DataFrame 与 Series 操作速查
 ---
 
 ##  `DataFrame`、`Series`

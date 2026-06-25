@@ -8,7 +8,7 @@ date: 2025-12-09 21:56:25
 updated: 2026-03-31 13:42:50
 toc: true
 mathjax: true
-description:
+description: AI 基础设施：BLAS、LAPACK、GPU 计算
 ---
 
 ##  数值计算库、标准

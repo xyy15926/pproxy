@@ -12,7 +12,7 @@ date: 2021-08-10 16:29:08
 updated: 2024-07-09 21:54:38
 toc: true
 mathjax: true
-description:
+description: Bash 内建关键字与命令速查
 ---
 
 #   *Shell* 基本特性

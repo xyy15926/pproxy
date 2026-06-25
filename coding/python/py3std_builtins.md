@@ -1,14 +1,15 @@
 ---
-title:
+title: Python Builtins
 categories:
-  -
+  - Python
 tags:
-  -
+  - Python
+  - Builtins
 date: 2023-10-19 18:18:27
 updated: 2023-10-19 18:18:27
 toc: true
 mathjax: true
-description:
+description: Python 内置异常层次结构
 ---
 
 ##  内置异常

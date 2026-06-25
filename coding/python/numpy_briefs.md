@@ -13,7 +13,7 @@ date: 2023-01-12 15:06:16
 updated: 2026-03-31 19:15:36
 toc: true
 mathjax: true
-description:
+description: NumPy 数组操作与函数速查
 ---
 
 #   *NumPy* 数组对象
