@@ -1,14 +1,14 @@
 ---
 title: Python3 标准库
 categories:
-  - 
+  -
 tags:
-  - 
+  -
 date: 2023-10-18 18:16:32
 updated: 2023-10-22 16:06:11
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 ##  文本处理
@@ -35,7 +35,7 @@ description:
 | `hexdigits`       |            |
 | `octdigits`       |            |
 | `punctuation`     | 标点符号   |
-| `prinatable`      | 可打印     |
+| `printable`       | 可打印     |
 | `whitespace`      | 空白符     |
 
 | 类          | 描述         | 说明 |
@@ -55,14 +55,14 @@ description:
 |----------------------------|------------|------|
 | `struct.Struct(self, fmt)` | 结构体对象 |      |
 
-| 函数                                          | 描述             | 返回值   | 说明 |
-|-----------------------------------------------|------------------|----------|------|
-| `struct.pack(fmt,v1,v2,...)`                  | 封装数据         | `bytes`  |      |
-| `struct.packint(fmt,buffer,offset,v1,v2,...)` | 封装数据至buffer |          |      |
-| `struct.unpack(fmt,buffer)`                   | 拆包数据         | `tuples` |      |
-| `struct.unpack_from(fmt,buffer[,offset])`     | 拆包数据         | `tuples` |      |
-| `struct.iter_unpack(fmt,buffer)`              | 迭代拆包         |          |      |
-| `struct.calsize(fmt)`                         | 空间占用         | `int`    | Byte |
+| 函数                                            | 描述             | 返回值   | 说明 |
+|-------------------------------------------------|------------------|----------|------|
+| `struct.pack(fmt,v1,v2,...)`                    | 封装数据         | `bytes`  |      |
+| `struct.pack_into(fmt,buffer,offset,v1,v2,...)` | 封装数据至buffer |          |      |
+| `struct.unpack(fmt,buffer)`                     | 拆包数据         | `tuples` |      |
+| `struct.unpack_from(fmt,buffer[,offset])`       | 拆包数据         | `tuples` |      |
+| `struct.iter_unpack(fmt,buffer)`                | 迭代拆包         |          |      |
+| `struct.calcsize(fmt)`                          | 空间占用         | `int`    | Byte |
 
 -   说明
     -   `struct.Struct` 类型具备 `struct` 模块中函数的同名方法
@@ -128,12 +128,12 @@ description:
 |--------------------------------------------------------------|------------------|------|
 | `codecs.CodecInfo(encode,decodep[,streamreader...])`         | 编解码器信息包装 |      |
 | `codecs.EncodedFile(file,data_encoding[,file_encoding,...])` |                  |      |
-| `codecs.IncrementalEncoder([errors])`                               |                  |      |
-| `codecs.IncrementalDecoder([errors])`                               |                  |      |
-| `codecs.StreamWriter(stream[,errors])`                              |                  |      |
-| `codecs.StreamReader(stream[,errors])`                              |                  |      |
-| `codecs.StreamReaderWriter(stream,Reader,Writer[,errors])`          |                  |      |
-| `codecs.StreamRecoder(stream,encode,decode,...)`                    |                  |      |
+| `codecs.IncrementalEncoder([errors])`                        |                  |      |
+| `codecs.IncrementalDecoder([errors])`                        |                  |      |
+| `codecs.StreamWriter(stream[,errors])`                       |                  |      |
+| `codecs.StreamReader(stream[,errors])`                       |                  |      |
+| `codecs.StreamReaderWriter(stream,Reader,Writer[,errors])`   |                  |      |
+| `codecs.StreamRecoder(stream,encode,decode,...)`             |                  |      |
 
 | 函数                                         | 描述                 | 返回值                   | 说明 |
 |----------------------------------------------|----------------------|--------------------------|------|
@@ -141,7 +141,7 @@ description:
 | `codecs.decode(obj[,encoding,erros])`        | 解码                 | 同上                     |      |
 | `codecs.lookup(encoding)`                    | 编解码器描述         | `CodecInfo`              |      |
 | `codecs.getencoder(encoding)`                | 编码函数、类         | `function`               |      |
-| `codecs.gedecoder(encoding)`                 | 解码函数、类         | `function`               |      |
+| `codecs.getdecoder(encoding)`                | 解码函数、类         | `function`               |      |
 | `codecs.getincrementalencoder(encoding)`     | 增量编码函数、类     | `function`               |      |
 | `codecs.getincrementaldecoder(encoding)`     | 增量解码函数、类     | `function`               |      |
 | `codecs.getreader(encoding)`                 | 读流                 | `ReadStreaming`          |      |
@@ -180,9 +180,9 @@ description:
 
 ##  运行时服务
 
-| 模块     | 描述       |
-|----------|------------|
-| `sys` | Python 解释器组件|
+| 模块  | 描述              |
+|-------|-------------------|
+| `sys` | Python 解释器组件 |
 
 ### `sys`
 
@@ -208,15 +208,15 @@ description:
 
 ##  数值、数学
 
-| 模块        | 描述         |
-|-------------|--------------|
-| `numbers`   | 数值抽象类   |
-| `math`      | 数学函数     |
-| `cmath`     | 复数数学函数 |
-| `decimal`   | 定点数     |
-| `fractions` | 实数         |
-|`random`|随机数|
-|`statistics`|统计函数|
+| 模块         | 描述         |
+|--------------|--------------|
+| `numbers`    | 数值抽象类   |
+| `math`       | 数学函数     |
+| `cmath`      | 复数数学函数 |
+| `decimal`    | 定点数       |
+| `fractions`  | 实数         |
+| `random`     | 随机数       |
+| `statistics` | 统计函数     |
 
 ##  函数编程
 
@@ -226,29 +226,29 @@ description:
 | `functools` | 高阶函数     |
 | `operator`  | 标准符号函数 |
 
-##	文件、目录
+##  文件、目录
 
-| 模块        | 描述                 |
-|-------------|----------------------|
-| `pathlib`   | 面向对象文件系统路径 |
-| `os.path`   | 通用文件路径操作     |
-| `fileinput` | 多输入流迭代行       |
-| `stat`      | 解释`os.stat()` 结果 |
-|`filecmp`|文件、目录比较|
-|`tempfile`|临时文件、目录|
-|`glob`|Unix 风格文件路径扩展|
-|`fnmatch`|Unix 风格文件名匹配|
-|`linecache`|随机获取文本行|
-|`shutil`|高层级文件操作|
+| 模块        | 描述                  |
+|-------------|-----------------------|
+| `pathlib`   | 面向对象文件系统路径  |
+| `os.path`   | 通用文件路径操作      |
+| `fileinput` | 多输入流迭代行        |
+| `stat`      | 解释`os.stat()` 结果  |
+| `filecmp`   | 文件、目录比较        |
+| `tempfile`  | 临时文件、目录        |
+| `glob`      | Unix 风格文件路径扩展 |
+| `fnmatch`   | Unix 风格文件名匹配   |
+| `linecache` | 随机获取文本行        |
+| `shutil`    | 高层级文件操作        |
 
-##	数据持久化
+##  数据持久化
 
 | 模块      | 描述                   |
 |-----------|------------------------|
 | `pickle`  | Python 对象序列化      |
 | `copyreg` | 注册 `pickle` 支持函数 |
 
-##	数据压缩、归档
+##  数据压缩、归档
 
 | 模块      | 描述             |
 |-----------|------------------|
@@ -259,7 +259,7 @@ description:
 | `zipfile` | *ZIP* 压缩       |
 | `tarfile` | *tar* 归档       |
 
-##	文件格式
+##  文件格式
 
 | 模块           | 描述     |
 |----------------|----------|
@@ -269,7 +269,7 @@ description:
 | `netrc`        | `netrc`  |
 | `plistlib`     | `.plist` |
 
-##	加密
+##  加密
 
 | 模块      | 描述               |
 |-----------|--------------------|
@@ -277,7 +277,7 @@ description:
 | `hmac`    | 基于密钥的消息认证 |
 | `secrets` | 密钥随机数         |
 
-##	通用 OS 服务
+##  通用 OS 服务
 
 | 模块               | 描述                         |
 |--------------------|------------------------------|
@@ -298,7 +298,7 @@ description:
 | `errno`            | 标准 *errno* 系统符号        |
 | `ctypes`           | 封装 C 库                    |
 
-##	并发执行
+##  并发执行
 
 | 模块                            | 描述           |
 |---------------------------------|----------------|
@@ -312,7 +312,7 @@ description:
 | `contextvars`                   | 上下文变量     |
 | `_thread`                       | 底层多线程 API |
 
-##	网络、进程通信
+##  网络、进程通信
 
 | 模块        | 描述                     |
 |-------------|--------------------------|
@@ -324,7 +324,7 @@ description:
 | `signal`    | 异步事件处理             |
 | `mmap`      | 内存映射文件             |
 
-##	网络数据处理
+##  网络数据处理
 
 | 模块        | 描述                   |
 |-------------|------------------------|
@@ -336,7 +336,7 @@ description:
 | `binascii`  | 二进制、ASCII 转换     |
 | `quopri`    | 编解码 *MIME* 转码数据 |
 
-##	标记文本处理
+##  标记文本处理
 
 | 模块                    | 描述                           |
 |-------------------------|--------------------------------|
@@ -353,7 +353,7 @@ description:
 | `xml.sax.xmlreader`     | *XML* 解析器接口               |
 | `xml.parsers.expat`     | 使用 `Expat` 得快速 *XML* 解析 |
 
-##	互联网
+##  互联网
 
 | 模块                 | 描述                        |
 |----------------------|-----------------------------|
@@ -381,21 +381,21 @@ description:
 | `xmlrpc.server`      | *XMLRPC* 服务器             |
 | `ipaddress`          | *IPv4/IPv6* 操作            |
 
-##	多媒体服务
+##  多媒体服务
 
 | 模块       | 描述           |
 |------------|----------------|
 | `wave`     | *WAV* 格式读写 |
 | `colorsys` | 颜色系统转换   |
 
-##	国际化
+##  国际化
 
 | 模块      | 描述             |
 |-----------|------------------|
 | `gettext` | 多语种国际化服务 |
 | `locale`  | 国际化服务       |
 
-##	程序框架
+##  程序框架
 
 | 模块     | 描述               |
 |----------|--------------------|
@@ -403,7 +403,7 @@ description:
 | `cmd`    | 面向行的命令解释器 |
 | `shlex`  | 词法分析           |
 
-##	Tk GUI
+##  Tk GUI
 
 | 模块                   | 描述          |
 |------------------------|---------------|
@@ -417,7 +417,7 @@ description:
 | `tkinter.tix`          | *Tk* 扩展包   |
 | `IDLE`                 |               |
 
-##	开发工具
+##  开发工具
 
 | 模块                            | 描述                 |
 |---------------------------------|----------------------|
@@ -437,7 +437,7 @@ description:
 | `test.support.import_helper`    | 导入测试             |
 | `test.support.warnings_helper`  | 警告测试             |
 
-##	调试、分析
+##  调试、分析
 
 | 模块           | 描述             |
 |----------------|------------------|
@@ -448,7 +448,7 @@ description:
 | `trace`        | 跟踪语句执行     |
 | `tracemalloc`  | 跟踪内存分配     |
 
-##	打包分发软件
+##  打包分发软件
 
 | 模块        | 描述                      |
 |-------------|---------------------------|
@@ -456,7 +456,7 @@ description:
 | `venv`      | 虚拟环境                  |
 | `zipapp`    | 管理可执行 *Zip* 打包文件 |
 
-##	运行时服务
+##  运行时服务
 
 | 模块             | 描述               |
 |------------------|--------------------|
@@ -476,14 +476,14 @@ description:
 | `inspect`        | 检查对象           |
 | `site`           | 指定域配置钩子     |
 
-##	自定义解释器
+##  自定义解释器
 
 | 模块     | 描述       |
 |----------|------------|
 | `code`   | 解释器基类 |
 | `codeop` | 编译代码   |
 
-##	导入模块
+##  导入模块
 
 | 模块                      | 描述                   |
 |---------------------------|------------------------|
@@ -497,7 +497,7 @@ description:
 | `importlib.metadata`      | 包元数据               |
 | `sys.path`                | 模块搜索路径初始化     |
 
-##	语言服务
+##  语言服务
 
 | 模块          | 描述                |
 |---------------|---------------------|

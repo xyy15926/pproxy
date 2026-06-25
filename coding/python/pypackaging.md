@@ -10,16 +10,16 @@ date: 2025-01-19 20:13:19
 updated: 2025-12-15 14:16:53
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
-## Python 项目开发
+##  Python 项目开发
 
-###	Python相关环境变量
+### Python相关环境变量
 
 -   Python相关环境变量
     -   `PYTHONHOME`：标准 Python 库位置
-    -	`PYTHONPATH`：模块文件查找路径，格式同 `PATH`
+    -    `PYTHONPATH`：模块文件查找路径，格式同 `PATH`
     -   `PYTHONSTARTUP`：该文件中的 Python 命令会在交互模式的首个提示符显示之前被执行
 
 > - 命令行与环境：<https://docs.python.org/zh-cn/3.13/using/cmdline.html#envvar-PYTHONSTARTUP>
@@ -34,7 +34,7 @@ description:
     readline.parse_and_bind("tab:complete")     # 绑定`<tab>`为自动补全
     try:
         # 读取上次存储输入历史
-        readline.read_history("/path/to/python_history") 
+        readline.read_history("/path/to/python_history")
     except:
         pass
     # 将函数注册为退出 Python 环境时执行，将历史输入存储在文件中
@@ -48,7 +48,7 @@ description:
 > - 交互模式：<https://docs.python.org/zh-cn/3.13/tutorial/appendix.html#tut-interac>
 > - site - 本地环境钩子：<https://docs.python.org/zh-cn/3.13/library/site.html#module-site>
 
-###  包管理、环境依赖
+### 包管理、环境依赖
 
 | 包、应用                  | 说明                                                              |
 |---------------------------|-------------------------------------------------------------------|
@@ -95,7 +95,7 @@ description:
 > - *Conda v.s. Pip*：<https://www.reddit.com/r/Python/comments/w564g0/can_anyone_explain_the_differences_of_conda_vs_pip/>
 > - *The relationship between virtualenv and pyenv*：<https://stackoverflow.com/questions/29950300/what-is-the-relationship-between-virtualenv-and-pyenv>
 
-###  打包 *Packaging*
+### 打包 *Packaging*
 
 | 包、应用     | 说明                                                 |
 |--------------|------------------------------------------------------|
@@ -146,7 +146,7 @@ description:
 ####    `pyproject.toml`
 
 ```toml
-# Project infomation.
+#   Project infomation.
 [project]
 name = "pyproj"
 version = 0.0.1
@@ -174,12 +174,12 @@ cli = [
 Homepage = "https://example.com"
 Issues = "https://example.com/issues"
 
-# Specify build system.
+#   Specify build system.
 [build-system]
 requires = ["setuptools >= 60.0"]
 build-backend = "setuptools.build_meta"
 
-# Specifications for tools such as linter, build-backend and etc.
+#   Specifications for tools such as linter, build-backend and etc.
 [tool.<MOD>]
 ```
 
@@ -197,11 +197,11 @@ build-backend = "setuptools.build_meta"
 ####    `MANIFEST.in`
 
 ```conf
-# Include files matching pattern.
+#   Include files matching pattern.
 include data/*.txt
-# Exclude files matching pattern.
+#   Exclude files matching pattern.
 exclude data/*.rst
-# Include the whole directory and keep the file-tree structure.
+#   Include the whole directory and keep the file-tree structure.
 recursive-include templates *
 ```
 
@@ -222,7 +222,7 @@ recursive-include templates *
 ####    *PyPI* 包名约定
 
 ```
-# 获取支持的 python、abi、platform 包标签（3 元组列表）
+#   获取支持的 python、abi、platform 包标签（3 元组列表）
 from pip import pep425tags
 pep425tags.get_supported()
 ```
@@ -252,7 +252,7 @@ pep425tags.get_supported()
 > - *Python ABI* 兼容性解析：编程语言接口标准与实现细节探讨*：<https://www.oryoy.com/news/python-abi-jian-rong-xing-jie-xi-bian-cheng-yu-yan-jie-kou-biao-zhun-yu-shi-xian-xi-jie-tan-tao.html>
 > - *ABI* 是什么：<https://www.zhihu.com/question/381069847>
 
-## *Pip*
+##  *Pip*
 
 -   *Pip*：Python 包管理工具，从 *PyPI* 中获取 Python 包
     -   Pip 配置文件：`~/.config/pip/pip.conf`
@@ -303,7 +303,7 @@ pep425tags.get_supported()
 ### *Setuptools* 功能、配置
 
 ```toml
-# Dependency management.
+#   Dependency management.
 [project]
 ...
 dependencies = [
@@ -312,11 +312,11 @@ dependencies = [
     ...
 ]
 
-# Entry points.
-[project.scritps]
+#   Entry points.
+[project.scripts]
 cli-name = "<PKG>.<MOD>:some_func"
 
-# Package discovery.
+#   Package discovery.
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["*"]
@@ -449,7 +449,7 @@ namespaces = true
 -   *Pixi* 配置：`~/.pixi/config.toml` 全局配置、`<PROJ_ROOT>/.pixi/config.toml` 项目配置
     -   *Conda* 包源
         -   `default-channels`：默认包源，列表
-            -   默认为 `[ conda-forge ]` 
+            -   默认为 `[ conda-forge ]`
             -   仅用于初始化工作目录时，项目包源由项目内配置确定
         -   `mirrors`：替换包源 *URL* 地址中匹配前缀部分为镜像站地址，值为列表的字典
             -   *Pixi* 优先匹配最长前缀并替换
@@ -489,7 +489,7 @@ namespaces = true
 
 | `feature.<NAME>` 环境描述字段 | 描述                                   |
 |-------------------------------|----------------------------------------|
-| `dependecies`                 | 依赖                                   |
+| `dependencies`                | 依赖                                   |
 | `pypi-dependencies`           | *PyPI* 依赖                            |
 | `system-requirements`         | 系统需求                               |
 | `activation`                  | 环境激活配置                           |

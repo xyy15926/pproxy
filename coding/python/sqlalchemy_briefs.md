@@ -12,7 +12,7 @@ date: 2023-03-10 14:35:03
 updated: 2023-12-31 22:24:18
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 ##  SQLAlchemy 概述
@@ -45,7 +45,7 @@ description:
 
 | 方言（数据库） | 驱动                 |
 |----------------|----------------------|
-| `postgrqsql`   | `psycopg2`、`pg8000` |
+| `postgresql`   | `psycopg2`、`pg8000` |
 | `mysql`        | `mysqldb`、`pymysql` |
 | `oracle`       | `cx_oracle`          |
 | `mssql`        | `pyodbc`、`pymssql`  |
@@ -57,13 +57,13 @@ description:
 
 ### *Engine* 配置
 
-| `Engine` 相关 *API*                                     | 描述                  |
-|---------------------------------------------------------|-----------------------|
-| `sa.create_engine(url, **kwargs)`                       | 创建引擎              |
-| `sa.create_mock_engine(url,executor,**kw)`              | 创建回显 *DDL* 假引擎 |
-| `sa.engine_from_config(configuration[,prefi],**kwargs)` | 根据配置创建引擎      |
-| `sa.make_url(name_or_url)`                              | 生成 URL 实例         |
-| `URL`                                                   | 连接数据库 URL 组件   |
+| `Engine` 相关 *API*                                      | 描述                  |
+|----------------------------------------------------------|-----------------------|
+| `sa.create_engine(url, **kwargs)`                        | 创建引擎              |
+| `sa.create_mock_engine(url,executor,**kw)`               | 创建回显 *DDL* 假引擎 |
+| `sa.engine_from_config(configuration[,prefix],**kwargs)` | 根据配置创建引擎      |
+| `sa.make_url(name_or_url)`                               | 生成 URL 实例         |
+| `URL`                                                    | 连接数据库 URL 组件   |
 
 -   说明
     -   部分参数说明
@@ -141,17 +141,17 @@ with engine.connect() as conn:
 
 ####    列元素基础构造函数
 
-| 列元素基础构造器         | *SQL* 关键字                   | 描述     | 对应 *Python* 算符 |
-|--------------------------|--------------------------------|----------|--------------------|
-| `and_(*clauses)`         | `AND`                          | 与       | `&`                |
-| `or_(*clauses)`          | `OR`                           | 或       | `|`                |
-| `not_(clause)`           | `NOT`                          | 非       | `!`                |
-| `null()`                 | `NULL`                         | 空       | `is None`          |
-| `distinct(expr)`         | `DISTINCT`                     | 唯一值   |                    |
-| `case(*whens, **kw)`     | `CASE`                         | 匹配     |                    |
-| `cast(expression,type_)` | `CAST`                         | 类型转换 |                    |
-| `false()`                | `false`、`0 = 1`（不支持场合） | 否       |                    |
-| `true()`                 | `true`、`1 = 1`（不支持场合）  | 是       |                    |
+| 列元素基础构造器         | *SQL* 关键字                   | 描述     | 对应 *Python* 算符 |   |
+|--------------------------|--------------------------------|----------|--------------------|---|
+| `and_(*clauses)`         | `AND`                          | 与       | `&`                |   |
+| `or_(*clauses)`          | `OR`                           | 或       | `                  | ` |
+| `not_(clause)`           | `NOT`                          | 非       | `!`                |   |
+| `null()`                 | `NULL`                         | 空       | `is None`          |   |
+| `distinct(expr)`         | `DISTINCT`                     | 唯一值   |                    |   |
+| `case(*whens, **kw)`     | `CASE`                         | 匹配     |                    |   |
+| `cast(expression,type_)` | `CAST`                         | 类型转换 |                    |   |
+| `false()`                | `false`、`0 = 1`（不支持场合） | 否       |                    |   |
+| `true()`                 | `true`、`1 = 1`（不支持场合）  | 是       |                    |   |
 
 | 函数                                                             | 描述                                |
 |------------------------------------------------------------------|-------------------------------------|
@@ -238,11 +238,11 @@ with engine.connect() as conn:
 
 ####    逻辑运算符
 
-| `Operators` 连接操作符 | 函数版本    | *SQL* 关键字 | 描述   |
-|------------------------|-------------|--------------|--------|
-| `__and__()`            | `sa.and_()` | `AND`        | `&` 与 |
-| `__or__()`             | `sa.or_()`  | `OR`         | `|` 或 |
-| `__invert__()`         | `sa.not_()` | `NOT`        | `~` 非 |
+| `Operators` 连接操作符 | 函数版本    | *SQL* 关键字 | 描述   |      |
+|------------------------|-------------|--------------|--------|------|
+| `__and__()`            | `sa.and_()` | `AND`        | `&` 与 |      |
+| `__or__()`             | `sa.or_()`  | `OR`         | `      | ` 或 |
+| `__invert__()`         | `sa.not_()` | `NOT`        | `~` 非 |      |
 
 -   逻辑运算符（方法）定义在 `Operators` 类中
     -   在 `Select.where`、`Update.where`、`Delete.where` 子句中 `AND` 在以下场合自动应用
@@ -278,30 +278,30 @@ with engine.connect() as conn:
 
 ####    算数运算符
 
-| `ColumnOperators` 算术操作符 | *SQL* 关键字        | 描述 |
-|------------------------------|---------------------|------|
-| `__add__()`、`__radd__()`    | 数值 `+`、字符 `||` | `+`  |
-| `__sub__()`、`__rsub__()`    | `-`                 | `-`  |
-| `__mul__()`、`__rmul__()`    | `*`                 | `*`  |
-| `__div__()`、`__rdiv__()`    | `/`                 | `/`  |
-| `__mod__()`、`__rmod__()`    | `%`                 | `%`  |
+| `ColumnOperators` 算术操作符 | *SQL* 关键字     | 描述 |   |     |
+|------------------------------|------------------|------|---|-----|
+| `__add__()`、`__radd__()`    | 数值 `+`、字符 ` |      | ` | `+` |
+| `__sub__()`、`__rsub__()`    | `-`              | `-`  |   |     |
+| `__mul__()`、`__rmul__()`    | `*`              | `*`  |   |     |
+| `__div__()`、`__rdiv__()`    | `/`              | `/`  |   |     |
+| `__mod__()`、`__rmod__()`    | `%`              | `%`  |   |     |
 
 ####    字符串比较、操作
 
-| `ColomnOperators` 字符串 | *SQL* 关键字                    | 描述             |
-|--------------------------|---------------------------------|------------------|
-| `like()`                 | `LIKE`                          |                  |
-| `ilike()`                | `lower(_) LIKE lower(_)`        | 大小写不敏感匹配 |
-| `notlike()`              | `NOT LIKE`                      |                  |
-| `notilike()`             | `lower(_) NOT LIKE lower(_)`    |                  |
-| `startswith()`           | `LIKE _ || '%'`                 |                  |
-| `endswith()`             | `LIKE '%' || _`                 |                  |
-| `contains()`             | `LIKE '%' || _ || '%'`          |                  |
-| `match()`                | `MATCH`                         |                  |
-| `regexp_match()`         | `~ %(_)s`、`REGEXP`             | 正则匹配         |
-| `concat()`               | `||`                            | 字符类型 `+` 同  |
-| `regex_replace()`        | `REGEXP_REPALCE(_,%(_)s,%(_)s)` | 正则替换         |
-| `collate()`              | `COLLATE`                       | 指定字符集排序   |
+| `ColomnOperators` 字符串 | *SQL* 关键字                    | 描述             |      |                 |      |  |
+|--------------------------|---------------------------------|------------------|------|-----------------|------|--|
+| `like()`                 | `LIKE`                          |                  |      |                 |      |  |
+| `ilike()`                | `lower(_) LIKE lower(_)`        | 大小写不敏感匹配 |      |                 |      |  |
+| `notlike()`              | `NOT LIKE`                      |                  |      |                 |      |  |
+| `notilike()`             | `lower(_) NOT LIKE lower(_)`    |                  |      |                 |      |  |
+| `startswith()`           | `LIKE _                         |                  | '%'` |                 |      |  |
+| `endswith()`             | `LIKE '%'                       |                  | _`   |                 |      |  |
+| `contains()`             | `LIKE '%'                       |                  | _    |                 | '%'` |  |
+| `match()`                | `MATCH`                         |                  |      |                 |      |  |
+| `regexp_match()`         | `~ %(_)s`、`REGEXP`             | 正则匹配         |      |                 |      |  |
+| `concat()`               | `                               |                  | `    | 字符类型 `+` 同 |      |  |
+| `regex_replace()`        | `REGEXP_REPLACE(_,%(_)s,%(_)s)` | 正则替换         |      |                 |      |  |
+| `collate()`              | `COLLATE`                       | 指定字符集排序   |      |                 |      |  |
 
 -   说明
     -   `match`、`regexp_match`、`regex_replace` 的支持、行为（方言）、结果依赖数据库后端
@@ -478,7 +478,7 @@ with engine.connect() as conn:
 | `count`             | `COUNT`             | 缺省即 `COUNT(*)`              |
 | `char_length`       | `CHAR_LENGTH`       |                                |
 | `concat`            | `CONCAT`            | 字符串连接                     |
-| `grouping_sets`     | `GTOUPING SETS`     | 创建多个分组集                 |
+| `grouping_sets`     | `GROUPING SETS`     | 创建多个分组集                 |
 | `cube`              | `CUBE`              | 生成幂集作为分组集             |
 | `next_value`        |                     | 下个值，需 `Sequence` 作为参数 |
 | `now`               | `now`               |                                |
@@ -496,15 +496,15 @@ with engine.connect() as conn:
 | `current_user`      | `CURRENT_USER`      |                                |
 | `coalesce`          |                     |                                |
 
-| 预定义聚合函数      | 假设聚合函数                | 描述                   |
-|---------------------|-----------------------------|------------------------|
-| `rank`              | 假设聚合函数 `rank`         | 在各组中位置，不       |
-| `dense_rank`        | 假设聚合函数 `dense_rank`   |                        |
-| `percent_rank`      | 假设聚合函数 `percent_rank` | 在各组中百分比位置     |
-| `percentile_cont`   | 假设聚合函数 `percent_cont` |                        |
-| `percentile_disc`   | 假设聚合函数 `percent_disc` |                        |
-| `mode`              | `mode`                      |                        |
-| `cume_dist`         | `cume_dist`                 | 返回 `sa.Numeric` 类型 |
+| 预定义聚合函数    | 假设聚合函数                | 描述                   |
+|-------------------|-----------------------------|------------------------|
+| `rank`            | 假设聚合函数 `rank`         | 在各组中位置，不       |
+| `dense_rank`      | 假设聚合函数 `dense_rank`   |                        |
+| `percent_rank`    | 假设聚合函数 `percent_rank` | 在各组中百分比位置     |
+| `percentile_cont` | 假设聚合函数 `percent_cont` |                        |
+| `percentile_disc` | 假设聚合函数 `percent_disc` |                        |
+| `mode`            | `mode`                      |                        |
+| `cume_dist`       | `cume_dist`                 | 返回 `sa.Numeric` 类型 |
 
 ##  *Core* 数据库模式
 
@@ -514,7 +514,7 @@ with engine.connect() as conn:
 
 > - *SQLALchemy 1.4 Core* 模式定义语言：<https://www.osgeo.cn/sqlalchemy/core/schema.html>
 
-###  描述数据库
+### 描述数据库
 
 | 数据库元数据描述                            | 描述               |
 |---------------------------------------------|--------------------|
@@ -587,7 +587,7 @@ with engine.connect() as conn:
 
 > - *SQLALchemy 1.4 Core* 约束和索引：<https://www.osgeo.cn/sqlalchemy/core/constraints.html>
 
-### *DDL* 
+### *DDL*
 
 
 ##  *Core* 数据类型

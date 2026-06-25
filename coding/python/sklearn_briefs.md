@@ -14,10 +14,10 @@ date: 2022-12-19 14:04:39
 updated: 2025-01-21 17:34:00
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
-##	*API* 参考
+##  *API* 参考
 
 | 模块                            | 模块描述               |
 |---------------------------------|------------------------|
@@ -50,7 +50,7 @@ description:
 | `sklearn.random_projection`     | 随机投影               |
 | `sklearn.calibration`           | 预测概率校准           |
 | `sklearn.multiclass`            |                        |
-| `sklearn.multiouput`            |                        |
+| `sklearn.multioutput`           |                        |
 | `sklearn.utils`                 | 实用工具               |
 | `sklearn.impute`                | 插补                   |
 | `sklearn.inspector`             | 检查                   |
@@ -61,9 +61,9 @@ description:
 > - *Scikit-Learn 0.23 API* 中文参考：<https://scikit-learn.org.cn/lists/3.html>
 > - *Scikit-Learn 0.23* 中文指南：<https://scikit-learn.org.cn/lists/2.html>
 
-##	基础模块
+##  基础模块
 
-###	`sklearn.base`
+### `sklearn.base`
 
 | 估计器基类、*Mixin* 类 | 描述               | 核心方法、属性                                             |
 |------------------------|--------------------|------------------------------------------------------------|
@@ -92,7 +92,7 @@ description:
 | `set_config()`                   | 设置全局配置           |
 | `show_versions()`                | 打印版本信息           |
 
-###	估计器特征函数
+### 估计器特征函数
 
 | 估计器类通用属性、方法     | 含义                       | 依赖类、方法                                                                           |
 |----------------------------|----------------------------|----------------------------------------------------------------------------------------|
@@ -110,14 +110,14 @@ description:
 | `transform(X)`             | 转换                       | `TransformerMixin.fit_transform`                                                       |
 | `get_feature_names_out()`  | 获取转换后特征名           | `ClassNamePrefixFeatureOutMixin`、`OneToOneFeatureMixin`                               |
 
-##	线性估计
+##  线性估计
 
-###	`sklearn.linear_model`
+### `sklearn.linear_model`
 
 > - *Scikit-Learn 0.24* 线性模型指南 - 中文：<https://scikit-learn.org.cn/view/4.html>
 > - *Scikit-Learn 1.2.0* 线性模型指南：<https://scikit-learn.org/1.2/modules/linear_model.html#linear-model>
 
-####	线性分类
+####    线性分类
 
 | 线性分类 *Estimator*                                   | 描述                 |
 |--------------------------------------------------------|----------------------|
@@ -127,7 +127,7 @@ description:
 | `linear_model.RidgeClassifierCV(alpha,*,...)`          | 交叉验证岭回归分类器 |
 | `linear_model.SGDClassifier(loss,*,panelty,...)`       | *SGD* 训练分类器     |
 | `linear_model.Perceptron(*,penalty,alpha,...)`         | 感知机               |
-| `linear_model.PasssiveAggressiveClassifier(*,...)`     | 被动攻击算法         |
+| `linear_model.PassiveAggressiveClassifier(*,...)`      | 被动攻击算法         |
 
 -   说明
     -   `SGD` 是拟合线性模型的通用方法，适合大样本数量场合
@@ -135,7 +135,7 @@ description:
         -   损失函数置为 `"hinge"` 拟合线性支持向量机
     -   `Perceptron` 感知机只使用错误样本更新模型，训练速度快
 
-####	线性回归
+####    线性回归
 
 | 线性回归 *Estimator*                               | 描述             |
 |----------------------------------------------------|------------------|
@@ -144,10 +144,10 @@ description:
 | `linear_model.RidgeCV(alphas,*,fit_intercept,...)` | 交叉验证岭回归   |
 | `linear_model.SGDRegressor(loss,*,penalty,...)`    | 随机梯度下降回归 |
 
--	说明
-	-	`Ridge` 通过提高偏差降低多重共线性带来的估计方差
+-    说明
+    -    `Ridge` 通过提高偏差降低多重共线性带来的估计方差
 
-####	特征选择线性回归
+####    特征选择线性回归
 
 | 带特征选择的回归 *Estimator*                 | 描述                       |
 |----------------------------------------------|----------------------------|
@@ -159,8 +159,8 @@ description:
 | `linear_model.LassoLarsIC(alpha)`            | 信息量最小角回归 *Lasso*   |
 | `linear_model.ElasticNet(alpha, l1_ratio)`   | 弹性网                     |
 | `linear_model.ElasticNetCV(alpha, l1_ratio)` | 交叉验证弹性网             |
-| `linear_model.OrthogonalMatcingPursuit()`    | 正交匹配追踪               |
-| `linear_model.OrthogonalMatcingPursuitCV()`  | 交叉验证正交匹配追踪       |
+| `linear_model.OrthogonalMatchingPursuit()`   | 正交匹配追踪               |
+| `linear_model.OrthogonalMatchingPursuitCV()` | 交叉验证正交匹配追踪       |
 
 | 工具函数                                          | 描述                             |
 |---------------------------------------------------|----------------------------------|
@@ -179,15 +179,15 @@ description:
 | `linear_model.MultiTaskElasticNet(alpha, l1_ratio)`   | 多任务弹性网   |
 | `linear_model.MultiTaskElasticNetCV(alpha, l1_ratio)` | 多任务弹性网   |
 
--	说明
-	-	`MultiTask` 特征选择估计指同一组特征被用于拟合多个任务（模型）
-		-	即，因变量为二维矩阵
-		-	用于强约束多任务中有效特征相同，即确保相同特征训练过程中被选中
-		-	可视为线性模型中的归纳、迁移，即多模型共享相同学习经验
-	-	`MultiTask` 通过系数 $l_{21}$ 范数确保系数整体在多模型中被同时选中
-		-	此时，单个模型中稀疏性让位于多任务整体特征选择
+-    说明
+    -    `MultiTask` 特征选择估计指同一组特征被用于拟合多个任务（模型）
+        -    即，因变量为二维矩阵
+        -    用于强约束多任务中有效特征相同，即确保相同特征训练过程中被选中
+        -    可视为线性模型中的归纳、迁移，即多模型共享相同学习经验
+    -    `MultiTask` 通过系数 $l_{21}$ 范数确保系数整体在多模型中被同时选中
+        -    此时，单个模型中稀疏性让位于多任务整体特征选择
 
-####	异常值稳健回归
+####    异常值稳健回归
 
 | 异常值稳健回归器                   | 描述             |
 |------------------------------------|------------------|
@@ -200,14 +200,14 @@ description:
     -   `TheilSen` 是基于空间中值的非参估计器，对数据基本分布无假设
     -   `Huber` 根据样本点绝对误差区分有效点、离群点，赋予离群点（残差超过阈值）较小权重
 
-####	贝叶斯回归
+####    贝叶斯回归
 
 | 贝叶斯回归 *Estimator*         | 描述                 |
 |--------------------------------|----------------------|
 | `linear_model.BayesianRidge()` | 贝叶斯岭回归         |
 | `linear_model.ARDRegression()` | 主动相关决策理论回归 |
 
-####	广义线性回归
+####    广义线性回归
 
 | 广义线性回归 *Estimator*                     | 描述                       |
 |----------------------------------------------|----------------------------|
@@ -215,7 +215,7 @@ description:
 | `linear_model.TweedieRegressor(*,power,...)` | *Tweedie* 分布广义线性模型 |
 | `linear_model.GammaRegressor(*,power,...)`   | *Gamma* 分布广义线性模型   |
 
-###	`sklearn.svm`
+### `sklearn.svm`
 
 | 估计器                                       | 描述                   |
 |----------------------------------------------|------------------------|
@@ -228,14 +228,14 @@ description:
 | `svm.OneClassSVM(*,kernel,degree,gamma,...)` | 无监督异常值检测       |
 | `svm.l1_min_c(X,y,*,loss,fit_intercept,...)` | *C* 最低界限           |
 
-###	`sklearn.discriminant_analysis`
+### `sklearn.discriminant_analysis`
 
 | 类、*Mixin*                       | 描述         |
 |-----------------------------------|--------------|
 | `LinearDiscriminantAnalysis()`    | 线性判别分析 |
 | `QuadraticDiscriminantAnalysis()` | 二次判别分析 |
 
-###	`sklearn.isotonic`
+### `sklearn.isotonic`
 
 | 类                                         | 描述           |
 |--------------------------------------------|----------------|
@@ -243,30 +243,30 @@ description:
 | `isotonic.check_increasing(x,y)`           | 检查单调相关性 |
 | `isotonic.isotonic_regression(y,*,...)`    |                |
 
-###	`sklearn.kernel_ridge`
+### `sklearn.kernel_ridge`
 
 | 类                                             | 描述       |
 |------------------------------------------------|------------|
-| `kernel_ridge.KernelRdige(alpha,kernel,*,...)` | 内核岭回归 |
+| `kernel_ridge.KernelRidge(alpha,kernel,*,...)` | 内核岭回归 |
 
-###	`sklearn.naive_bayes`
+### `sklearn.naive_bayes`
 
 | 估计器                                    | 描述           |
 |-------------------------------------------|----------------|
-| `navie_bayes.BernoulliNB(*,alpha,...)`    | 多元伯努利     |
-| `navie_bayes.CategoricalNB(*,alpha,...)`  | 分类           |
-| `navie_bayes.ComplementNB(*,alpha,...)`   | 补体贝叶斯     |
-| `navie_bayes.GaussianNB(*,priors,...)`    | 高斯朴素贝叶斯 |
-| `navie_bayes.MultinominalNB(*,alpha,...)` | 多项分布       |
+| `naive_bayes.BernoulliNB(*,alpha,...)`    | 多元伯努利     |
+| `naive_bayes.CategoricalNB(*,alpha,...)`  | 分类           |
+| `naive_bayes.ComplementNB(*,alpha,...)`   | 补体贝叶斯     |
+| `naive_bayes.GaussianNB(*,priors,...)`    | 高斯朴素贝叶斯 |
+| `naive_bayes.MultinominalNB(*,alpha,...)` | 多项分布       |
 
-##	非线性估计
+##  非线性估计
 
-###	`sklearn.tree`
+### `sklearn.tree`
 
 | 估计器                                                                              | 描述       |
 |-------------------------------------------------------------------------------------|------------|
 | `tree.DecisionTreeClassifier(*,criterion,splitter,max_depth,min_samples_split,...)` | 决策树分类 |
-| `tree.DecisionTreeRegreesor(*,criterion,...)`                                       | 决策树回归 |
+| `tree.DecisionTreeRegressor(*,criterion,...)`                                       | 决策树回归 |
 | `tree.ExtraTreeClassifier(*,criterion,...)`                                         | 极端树分类 |
 | `tree.ExtraTreeRegressor(*,criterion,...)`                                          | 极端树回归 |
 
@@ -306,7 +306,7 @@ description:
 > - *Scikit-Learn 1.2.0 Tree Structure*：<https://scikit-learn.org/1.2/auto_examples/tree/plot_unveil_tree_structure.html>
 > - *Scikit-Learn Stable Tree Structure*：<https://scikit-learn.org/stable/auto_examples/tree/plot_unveil_tree_structure.html>
 
-###	`sklearn.neural_networks`
+### `sklearn.neural_network`
 
 | 神经网络                                        | 描述                 |
 |-------------------------------------------------|----------------------|
@@ -314,9 +314,9 @@ description:
 | `neural_network.MLPClassifier(...)`             | 多层感知机分类器     |
 | `neural_network.MLPRegressor(...)`              | 多层感知机回归器     |
 
-##	集成工具
+##  集成工具
 
-###	`sklearn.ensemble`
+### `sklearn.ensemble`
 
 | 集成 *Estimator*                               | 描述     |
 |------------------------------------------------|----------|
@@ -325,7 +325,7 @@ description:
 > - *Scikit-Learn 0.24* 集成算法指南 - 中文：<https://scikit-learn.org.cn/view/90.html>
 > - *Scikit-Learn 1.2.0* 集成算法指南：<https://scikit-learn.org/1.2/modules/ensemble.html#ensemble>
 
-####	平均集成
+####    平均集成
 
 | 平均集成 *Estimator*                                                             | 描述                         |
 |----------------------------------------------------------------------------------|------------------------------|
@@ -334,29 +334,29 @@ description:
 | `ensemble.RandomForestClassifier(n_estimator,*,max_depth,min_samples_split,...)` | 随机森林分类器               |
 | `ensemble.RandomForestRegressor(n_estimator,*,,...)`                             | 随机森林回归器               |
 | `ensemble.ExtraTreesClassifier(n_estimator,*,...)`                               | 极端随机树分类器             |
-| `ensemble.ExtraTressRegressor(n_estimators,*,...)`                               | 极端随机树回归器             |
+| `ensemble.ExtraTreesRegressor(n_estimators,*,...)`                               | 极端随机树回归器             |
 | `ensemble.RandomTreesEmbedding(n_estimators,*,max_depth,...)`                    | 随机决策树嵌入 *Transformer* |
 
--	说明
-	-	`Bagging` 通过在原始训练集的随机子集上训练引入随机性
-		-	集成即可降低单个估计器方差
-		-	可降低过拟合，对复杂模型效果更好
-	-	`RandomForest` 为随机抽取特征、有放回抽样、最佳分割点
-	-	`ExtraTree` 为随机抽取特征、有放回抽样、最佳随机分割点
-		-	略微增加偏差、降低方差
+-    说明
+    -    `Bagging` 通过在原始训练集的随机子集上训练引入随机性
+        -    集成即可降低单个估计器方差
+        -    可降低过拟合，对复杂模型效果更好
+    -    `RandomForest` 为随机抽取特征、有放回抽样、最佳分割点
+    -    `ExtraTree` 为随机抽取特征、有放回抽样、最佳随机分割点
+        -    略微增加偏差、降低方差
     -   `RandomTreesEmbedding` 利用树、叶子节点编码原始特征做高维、稀疏嵌入
         -   转换为 *One-hot* 编码，每棵树视为新特征、每个叶子视为特征中取值
         -   其中树是 **无监督、随机** 构建的
         -   当然，可使用 `RandomForestClassifier` 等做有监督嵌入
 
-####	提升集成
+####    提升集成
 
 | 提升集成 *Estimator*                               | 描述                       |
 |----------------------------------------------------|----------------------------|
 | `ensemble.AdaBoostClassifier(...)`                 | *AdaBoost* 分类器          |
 | `ensemble.AdaBoostRegressor(base_estimator,*,...)` | *AdaBoost* 回归器          |
 | `ensemble.GradientBoostingClassifier(...)`         | 梯度提升分类器             |
-| `ensemble.GradientBossingRegressor(...)`           | 梯度提升回归器             |
+| `ensemble.GradientBoostingRegressor(...)`          | 梯度提升回归器             |
 | `ensemble.HistGradientBoostingRegressor(...)`      | 基于直方图的梯度提升分类树 |
 | `ensemble.HistGradientBoostingClassifier(...)`     | 基于直方图的梯度提升分类树 |
 
@@ -367,12 +367,12 @@ description:
 
 ####    投票、堆叠
 
-| 集成 *Estimator*                                                 | 描述                      |
-|------------------------------------------------------------------|---------------------------|
-| `ensemble.VotingClassifer(estimators,*,voting,weights,...)`      | 软投票分类器              |
-| `ensemble.VotingRegression(estimators,*,weights,...)`            | 预测投票回归器            |
-| `ensemble.StackingClassfier(estimators,final_estimator,*,...)`   | 带最终分类器的 *Stacking* |
-| `ensemble.StackingRegression(estimators,finale_estimator,*,...)` | 带最终回归器的 *Stacking* |
+| 集成 *Estimator*                                                | 描述                      |
+|-----------------------------------------------------------------|---------------------------|
+| `ensemble.VotingClassifier(estimators,*,voting,weights,...)`    | 软投票分类器              |
+| `ensemble.VotingRegression(estimators,*,weights,...)`           | 预测投票回归器            |
+| `ensemble.StackingClassifier(estimators,final_estimator,*,...)` | 带最终分类器的 *Stacking* |
+| `ensemble.StackingRegression(estimators,final_estimator,*,...)` | 带最终回归器的 *Stacking* |
 
 -   说明
     -   `Voting` 使用平均数（回归）、众数（分类）得到最终决策结果
@@ -380,7 +380,7 @@ description:
         -   组合估计器以减少偏差，但实际应用中效果基本同基本层最佳预测器
         -   可将 `final_estimator` 参数置为其他堆叠估计器实现多个堆叠层
 
-###	`sklearn.pipeline`
+### `sklearn.pipeline`
 
 | 管道 *Estimator*、函数                          | 描述         |
 |-------------------------------------------------|--------------|
@@ -398,7 +398,7 @@ description:
 > - *Scikit-Learn 0.24* 管道复合指南 - 中文：<https://scikit-learn.org.cn/view/118.html>
 > - *Scikit-Learn 1.2.0* 管道复合指南：<https://scikit-learn.org/1.2/modules/compose.html>
 
-###	`sklearn.compose`
+### `sklearn.compose`
 
 | 转换器类、函数                                                        | 描述                            |
 |-----------------------------------------------------------------------|---------------------------------|
@@ -415,7 +415,7 @@ description:
 > - *Scikit-Learn 0.24* 管道复合指南 - 中文：<https://scikit-learn.org.cn/view/118.html>
 > - *Scikit-Learn 1.2.0* 管道复合指南：<https://scikit-learn.org/1.2/modules/compose.html>
 
-###	`sklearn.multiclass`
+### `sklearn.multiclass`
 
 | 多分类策略类                                       | 描述          |
 |----------------------------------------------------|---------------|
@@ -423,7 +423,7 @@ description:
 | `multiclass.OneVsOneClassifier(estimator,*,...)`   | *1vs1* 多策略 |
 | `multiclass.OutputCodeClassifier(estimator,*,...)` | 输出代码策略  |
 
-###	`sklearn.multioutput`
+### `sklearn.multioutput`
 
 | 多输出类                                              | 描述       |
 |-------------------------------------------------------|------------|
@@ -432,9 +432,9 @@ description:
 | `multioutput.MultiOutputClassifier(estimators,*,...)` | 多目标分类 |
 | `multioutput.MultiOutputRegressor(estimators,*,...)`  | 多目标回归 |
 
-##	无、半监督学习
+##  无、半监督学习
 
-###	`sklearn.cluster`
+### `sklearn.cluster`
 
 | 基类、*Mixin*                                     | 描述                 |
 |---------------------------------------------------|----------------------|
@@ -442,9 +442,9 @@ description:
 | `cluster.AgglomerativeClustering(...)`            | 聚集聚类             |
 | `cluster.Birch(*[,threshold,...])`                | *Birch* 聚类         |
 | `cluster.DBSCAN([eps,*,min_samples,metrics,...])` | *DBSCAN* 聚类        |
-| `cluster.FeatureAgglomeration([n_cluster,...])`   |                      |
-| `cluster.KMeans([n_cluster,init,n_init,...])`     | *K-* 均值聚类        |
-| `cluster.MiniBatchKMeans([n_cluster,init,...])`   | 小批次 *K-* 均值聚类 |
+| `cluster.FeatureAgglomeration([n_clusters,...])`  |                      |
+| `cluster.KMeans([n_clusters,init,n_init,...])`    | *K-* 均值聚类        |
+| `cluster.MiniBatchKMeans([n_clusters,init,...])`  | 小批次 *K-* 均值聚类 |
 | `cluster.MeanShift(*[,bandwidth,seed,...])`       | 均值漂移聚类         |
 | `cluster.OPTICS(*[,min_samples,max_eps,...])`     |                      |
 | `cluster.SpectralClustering([n_clusters,...])`    |                      |
@@ -467,7 +467,7 @@ description:
 > - 聚类方法：<https://scikit-learn.org/stable/modules/clustering.html>
 > - 聚类方法 - 中文：<https://scikit-learn.org.cn/view/108.html>
 
-###	`sklearn.neighbors`
+### `sklearn.neighbors`
 
 | 近邻估计                                           | 描述                         |
 |----------------------------------------------------|------------------------------|
@@ -488,7 +488,7 @@ description:
 | `neighbors.kneighbors_graph(X,n_neighbors,*,...)`  | *K* 近邻加权图               |
 | `neighbors.radius_neighbors_graph(X,radius,*,...)` | 半径近邻加权图               |
 
-###	`sklearn.gaussian_process`
+### `sklearn.gaussian_process`
 
 | 类                                                | 描述         |
 |---------------------------------------------------|--------------|
@@ -506,20 +506,20 @@ description:
 | `gaussian_process.kernels.Exponentiation(...)`            | 幂运算核                          |
 | `gaussian_process.kernels.Matern(...)`                    | 主核                              |
 | `gaussian_process.kernels.PariwiseKernel(...)`            | `sklearn.metrics.pairwise` 核包装 |
-| `guassian_process.kenrels.RBF(length_scale,...)`          | 径向基核                          |
-| `guassian_process.kenrels.RationalQuasdratic(...)`        | 有理平方核                        |
-| `guassian_process.kenrels.Sum(k1,k2)`                     | 加和核                            |
-| `guassian_process.kenrels.ProductKernel(k1,k2)`           | 乘积核                            |
-| `guassian_process.kenrels.WhiteKernel(...)`               |                                   |
+| `gaussian_process.kernels.RBF(length_scale,...)`          | 径向基核                          |
+| `gaussian_process.kernels.RationalQuasdratic(...)`        | 有理平方核                        |
+| `gaussian_process.kernels.Sum(k1,k2)`                     | 加和核                            |
+| `gaussian_process.kernels.ProductKernel(k1,k2)`           | 乘积核                            |
+| `gaussian_process.kernels.WhiteKernel(...)`               |                                   |
 
-###	`sklearn.mixture`
+### `sklearn.mixture`
 
 | 类                                            | 描述                     |
 |-----------------------------------------------|--------------------------|
 | `mixture.GaussianMixture([n_components,...])` | 高斯混合模型             |
 | `mixture.BayesGaussianMixture(*,...)`         | 高斯混合的变分贝叶斯估计 |
 
-###	`sklearn.manifold`
+### `sklearn.manifold`
 
 | 工具函数                                                  | 描述                           |
 |-----------------------------------------------------------|--------------------------------|
@@ -533,16 +533,16 @@ description:
 | `manifold.spectral_embedding(adjacency,*,...)`            | 投影至拉普拉斯算子首个特征向量 |
 | `manifold.trustworthiness(X,X_embedded,*,...)`            | 本地结构保留程度               |
 
-###	`sklearn.semi_supervised`
+### `sklearn.semi_supervised`
 
 | 类                                             | 描述         |
 |------------------------------------------------|--------------|
 | `semi_supervised.LabelPropagation(kernel,...)` | 标签传播分类 |
 | `semi_supervised.LabelSpreading(kernel,...)`   |              |
 
-## 模型选择、评估
+##  模型选择、评估
 
-###	`sklearn.metrics`
+### `sklearn.metrics`
 
 | 工具函数                                                  | 描述                         |
 |-----------------------------------------------------------|------------------------------|
@@ -572,7 +572,7 @@ description:
 | `metrics.explained_variance_score(y_true,...)`        | 方差回归得分解释    |
 | `metrics.max_error(y_true,y_pred)`                    | 最大误差            |
 | `metrics.mean_absolute_error(y_true,y_pred,*,...)`    | 平均绝对误差        |
-| `metrics.mean_squared_erro(y_true,y_pred,*,...)`      | 均方误差            |
+| `metrics.mean_squared_error(y_true,y_pred,*,...)`     | 均方误差            |
 | `metrics.mean_squared_log_error(y_true,y_pred,*,...)` | 均方对数误差        |
 | `metrics.median_absolute_error(y_true,y_pred,*,...)`  | 中值绝对误差        |
 | `metrics.mean_possion_deviance(y_true,y_pred,*,...)`  | 平均泊松偏差        |
@@ -592,7 +592,7 @@ description:
 |------------------------------------------------------|---------------------------------------|
 | `metrics.balanced_accuracy_score(y_true,...)`        | 平衡准确率                            |
 | `metrics.top_k_accuracy_score(y_true,y_score,*,...)` | （多分类）*TopK* （包含真实类）准确率 |
-| `metrics.confussion_matrix(y_true,y_pred,*,...)`     | 混淆矩阵                              |
+| `metrics.confusion_matrix(y_true,y_pred,*,...)`      | 混淆矩阵                              |
 | `metrics.cohen_kappa_score(y1,y2,*,...)`             | 科恩卡帕系数                          |
 | `metrics.roc_auc_score(y_true,y_score,*,...)`        | *ROC*、*AUC*                          |
 | `metrics.mathews_corrcoef(y_true,y_pred,*,...)`      | 马修斯相关系数                        |
@@ -647,15 +647,15 @@ description:
 | `metrics.mutual_info_score(labels_true,...)`             | 互信息                           |
 | `metrics.normalized_mutual_info_score(labels_true,...)`  | 标准化互信息                     |
 | `metrics.adjusted_mutual_info_score(...)`                | 调整的互信息                     |
-| `metrics.homogenetiy_score(labels_true,...)`             | 同质性                           |
+| `metrics.homogeneity_score(labels_true,...)`             | 同质性                           |
 | `metrics.completeness_score(label_true,...)`             | 完整性                           |
 | `metrics.v_measure_score(labels_true,label_pred,*,beta)` | *V-measure* 分数                 |
 | `metrics.homogeneity_completeness_v_measures(...)`       | 同质性、完整性、*V-measure* 分数 |
 | `metrics.adjusted_rand_score(labels_true,...)`           | 调整的兰德指数                   |
 | `metrics.calinski_harabasz_score(X,labels)`              | *Calinski*、*Harabasz* 得分      |
 | `metrics.davies_bouldin_score(X,labels)`                 | *Davies-Bouldin* 分数            |
-| `metrics.cluster.contigency_matrix(...)`                 | 列联表                           |
-| `metrics.fowlkes_mallows_score(labels_ture,...)`         |                                  |
+| `metrics.cluster.contingency_matrix(...)`                | 列联表                           |
+| `metrics.fowlkes_mallows_score(labels_true,...)`         |                                  |
 | `metrics.silhouette_score(X,labels,*,...)`               | 平均轮廓系数                     |
 | `metrics.silhouette_sample(X,labels,*,...)`              | 各样本轮廓系数                   |
 
@@ -711,7 +711,7 @@ description:
 | `metrics.plot_precision_recall_curve(...)`        | 精度、召回曲线   |
 | `metrics.plot_roc_curve(estimator,X,y,*,...)`     | *ROC* 曲线       |
 
-###	`sklearn.model_selection`
+### `sklearn.model_selection`
 
 | 模型选择辅助函数                                   | 描述                 |
 |----------------------------------------------------|----------------------|
@@ -836,14 +836,14 @@ description:
 > - *Scikit-Learn 0.24* 超参设置中文指南：<http://scikit-learn.org.cn/view/99.html>
 > - *Scikit-Learn 1.2.0* 超参设置指南：<https://scikit-learn.org/1.2/modules/grid_search.html>
 
-###	`sklearn.clibration`
+### `sklearn.clibration`
 
 | 基类、*Mixin* 类、函数                           | 描述                       |
 |--------------------------------------------------|----------------------------|
 | `calibration.CalibratedClassifierCV`             | 保序回归、逻辑回归概率校准 |
 | `calibration.calibration_curve(y_true,y_prob,*)` | 计算校准曲线真实、预测概率 |
 
-###	`sklearn.inspection`
+### `sklearn.inspection`
 
 | 函数                                                 | 描述           |
 |------------------------------------------------------|----------------|
@@ -852,16 +852,16 @@ description:
 | `inspection.PartialDependenceDisplay(...)`           |                |
 | `inspection.plot_partial_dependence(...)`            |                |
 
-###	`sklearn.dummy`
+### `sklearn.dummy`
 
 | 估计器类                                | 描述           |
 |-----------------------------------------|----------------|
 | `dummy.DummyClassifier(*,strategy,...)` | 简单规则分类器 |
 | `dummy.DummyRegressor(*,strategy,...)`  | 简单规则回归器 |
 
-##	数据处理、变换
+##  数据处理、变换
 
-###	`sklearn.preprocessing`
+### `sklearn.preprocessing`
 
 | 预处理 *Transformer* 类                       | 描述                   |
 |-----------------------------------------------|------------------------|
@@ -875,7 +875,7 @@ description:
 > - *Scikit-Learn 0.24 API* 中文：<https://scikit-learn.org.cn/view/123.html>
 > - *Scikit-Learn 1.2.0 API*：<https://scikit-learn.org/1.2/modules/preprocessing.html>
 
-####	缩放、标准化
+####    缩放、标准化
 
 | 预处理 *Transformer* 类                            | 描述                 |
 |----------------------------------------------------|----------------------|
@@ -891,7 +891,7 @@ description:
 | `preprocessing.maxabs_scale(X[*,axis,copy])`  | 绝对值缩放                 |
 | `preprocessing.robust_scale(X,*,axis,...)`    | 异常值稳健缩放             |
 
-#####	非线性变换
+#####   非线性变换
 
 | 预处理 *Transformer* 类                      | 描述       |
 |----------------------------------------------|------------|
@@ -903,7 +903,7 @@ description:
 | `preprocessing.quantile_transform(X[*,axis,copy])` | 分位数变换 |
 | `preprocessing.power_transform(X[,method,...])`    | 幂变换     |
 
-#####	归一化
+#####   归一化
 
 | 预处理 *Transformer* 类                 | 描述                         |
 |-----------------------------------------|------------------------------|
@@ -913,7 +913,7 @@ description:
 |-----------------------------------------------|------------------------------|
 | `preprocessing.normalize(X[,norm,axis,copy])` | （向量）正则化（单位化）缩放 |
 
-####	特征编码
+####    特征编码
 
 | 预处理 *Transformer* 类                                     | 描述                                 |
 |-------------------------------------------------------------|--------------------------------------|
@@ -927,13 +927,13 @@ description:
 |----------------------------------------------------|--------------|
 | `preprocessing.label_binarize(X,*,threshold,copy)` | 标签布尔阈值 |
 
--	说明
-	-	`OneHotEncoder` 与 `LabelBinarizer` 类似，都是 `0-1` 二值化
-		-	`OneHotEncoder` 拟合形如 `sample * feature` 的二维样本数据
-		-	`LabelBinarizer` 拟合形如 `label_enum` 的枚举标签数据
-		-	`MultiLabelBinarizer` 拟合形如 `[sample_labels,...]` 的枚举标签数据，行为类似 `OneHotEncoder`，但不要求数据对齐
+-    说明
+    -    `OneHotEncoder` 与 `LabelBinarizer` 类似，都是 `0-1` 二值化
+        -    `OneHotEncoder` 拟合形如 `sample * feature` 的二维样本数据
+        -    `LabelBinarizer` 拟合形如 `label_enum` 的枚举标签数据
+        -    `MultiLabelBinarizer` 拟合形如 `[sample_labels,...]` 的枚举标签数据，行为类似 `OneHotEncoder`，但不要求数据对齐
 
-####	离散化
+####    离散化
 
 | 预处理 *Transformer* 类                      | 描述   |
 |----------------------------------------------|--------|
@@ -944,13 +944,13 @@ description:
 |----------------------------------------------|----------|
 | `preprocessing.binarize(X,*,threshold,copy)` | 布尔阈值 |
 
-####	多项式特征
+####    多项式特征
 
 | 预处理 *Transformer* 类                        | 描述           |
 |------------------------------------------------|----------------|
 | `preprocessing.PolynomialFeatures(degree,...)` | 多项式交互特征 |
 
-###	`sklearn.feature_selection`
+### `sklearn.feature_selection`
 
 | 特征选择 *Transformer* 类                        | 描述         |
 |--------------------------------------------------|--------------|
@@ -959,7 +959,7 @@ description:
 > - *Scikit-Learn 0.24* 中文指南：<https://scikit-learn.org.cn/view/101.html>
 > - *Scikit-Learn 1.2.0* 指南：<https://scikit-learn.org/1.2/modules/feature_selection.html#feature-selection>
 
-####	单变量特征选择
+####    单变量特征选择
 
 | 特征选择 *Transformer* 类                                            | 描述                             |
 |----------------------------------------------------------------------|----------------------------------|
@@ -978,8 +978,8 @@ description:
 | `feature_selection.mutual_info_classif(X,y,*,...)`    | （离散）互信息   |
 | `feature_selection.muutal_info_regression(X,y,*,...)` | （连续）互信息   |
 
--	说明
-	-	`GenericUnivariateSelect` 通过配置 `score_func`、`mode`、`param` 参数即可实现预定义的 5 种特征选择器功能
+-    说明
+    -    `GenericUnivariateSelect` 通过配置 `score_func`、`mode`、`param` 参数即可实现预定义的 5 种特征选择器功能
     -   此处 `Fpr`、`Fdr`、`Fwe` 是指统计中多重假设检验的各种错误概率（将原假设视为负样本，则类似混淆矩阵中指标含义）
         -   *False Positive Rate*：假正率，即原假设为真而被错误拒绝概率，即 *p-value*
         -   *False Discovery Rate*：误报率，即拒绝原假设中原假设为真的概率
@@ -991,7 +991,7 @@ description:
 > - *Wiki FWE*：<https://en.wikipedia.org/wiki/Family-wise_error_rate>
 > - 多重假设检验：<https://www.cnblogs.com/minks/p/4715336.html>
 
-####	估计器特征选择
+####    估计器特征选择
 
 | 特征选择 *Transfromer* 类                                      | 描述                           |
 |----------------------------------------------------------------|--------------------------------|
@@ -999,14 +999,14 @@ description:
 | `feature_selection.RFECV(estimator,*,step,...)`                | 根据特征重要性交叉验证递归选择 |
 | `feature_selection.SelectFromModel(estimator,*,threshold,...)` | 根据特征重要度选择             |
 
--	说明
-	-  估计器 `coef_`、`feature_importances_` 属性被用于衡量特征重要性，由此确认每轮迭代剔除特征
-	-	`RFE`、`REFCV` 中 `fit` 递归逐步剔除不重要特征
-	-	`SelectFromeModel` 中 `fit` 则根据根据阈值、特征数量剔除
-		-	但，也可结合 $l_1$ 范数惩罚线性模型选择特征：`Lasso`、`LogisticRegression`、`LinearSVC`
-			-	 此时 `threshold` 参数可不设置，而由估计器做特征选择
+-    说明
+    -  估计器 `coef_`、`feature_importances_` 属性被用于衡量特征重要性，由此确认每轮迭代剔除特征
+    -    `RFE`、`REFCV` 中 `fit` 递归逐步剔除不重要特征
+    -    `SelectFromeModel` 中 `fit` 则根据根据阈值、特征数量剔除
+        -    但，也可结合 $l_1$ 范数惩罚线性模型选择特征：`Lasso`、`LogisticRegression`、`LinearSVC`
+            -     此时 `threshold` 参数可不设置，而由估计器做特征选择
 
-###	`sklearn.decomposition`
+### `sklearn.decomposition`
 
 | 类、*Mixin*                                    | 描述           |
 |------------------------------------------------|----------------|
@@ -1022,7 +1022,7 @@ description:
 > - *Scikit-Learn 0.24* 矩阵分解指南 - 中文：<https://scikit-learn.org.cn/view/110.html>
 > - *Scikit-Learn 1.2.0* 矩阵分解指南：<https://scikit-learn.org/1.2/modules/decomposition.html#decompositions>
 
-####	主成分分析、因子分析
+####    主成分分析、因子分析
 
 | 矩阵分解 *Transformer* 类                          | 描述                 |
 |----------------------------------------------------|----------------------|
@@ -1033,23 +1033,23 @@ description:
 | `decomposition.MiniBatchSparsePCA(...)`            | 小批量稀疏主成分分析 |
 | `decomposition.FactorAnalysis(n_components,*,...)` | 因子分析             |
 
--	说明
-	-	可设置 `PCA` 中 `svd_solver="randomized"`，启用随机化 *SVD* 分解，在仅需保留少量特征向量时可在保证精度情况下提高效率
-		-	但此时 `inverse_transform` 方法不再是 `transform` 精确逆变换
-	-	`IncrementcalPCA` 以小批量方式处理数据，无须将数据全部读入内存
-	-	`SpasePCA` 是 `PCA` 变体，通过 $l_1$ 惩罚项获取稀疏系数
+-    说明
+    -    可设置 `PCA` 中 `svd_solver="randomized"`，启用随机化 *SVD* 分解，在仅需保留少量特征向量时可在保证精度情况下提高效率
+        -    但此时 `inverse_transform` 方法不再是 `transform` 精确逆变换
+    -    `IncrementcalPCA` 以小批量方式处理数据，无须将数据全部读入内存
+    -    `SpasePCA` 是 `PCA` 变体，通过 $l_1$ 惩罚项获取稀疏系数
 
-####	截断奇异值分解
+####    截断奇异值分解
 
 | 矩阵分解 *Transformer* 类 | 描述              |
 |---------------------------|-------------------|
 | `TruncatedSVD`            | 截断的 *SVD* 分解 |
 
--	说明
-	-	`TruncatedSVD` 只计算部分特征值，可恢复类似训练集的低秩版本
-	-	`TruncatedSVD` 类似 `PCA`，但对特征值位置要求不严格
+-    说明
+    -    `TruncatedSVD` 只计算部分特征值，可恢复类似训练集的低秩版本
+    -    `TruncatedSVD` 类似 `PCA`，但对特征值位置要求不严格
 
-####	词典学习
+####    词典学习
 
 | 矩阵分解 *Transformer* 类                                            | 描述                   |
 |----------------------------------------------------------------------|------------------------|
@@ -1063,13 +1063,13 @@ description:
 | `decomposition.dict_learning_online(X[,...])`  |      |
 | `decomposition.sparse_encode(X, dictionary,*)` |      |
 
--	说明
-	-	`DictionaryLearning` 即直接求解类似特征向量的 “字典向量”
-		-	即，期望通过少的向量尽可能重构原始数据
-		-	目标函数中通过 $l_1$ 惩罚以获取系数系数
-	-	`SparseCoder` 通过初始化的预计算词典变换数据，其 `fit` 方法无实际内容
+-    说明
+    -    `DictionaryLearning` 即直接求解类似特征向量的 “字典向量”
+        -    即，期望通过少的向量尽可能重构原始数据
+        -    目标函数中通过 $l_1$ 惩罚以获取系数系数
+    -    `SparseCoder` 通过初始化的预计算词典变换数据，其 `fit` 方法无实际内容
 
-###	`sklearn.feature_extraction`
+### `sklearn.feature_extraction`
 
 | 类、*Mixin*                             | 描述       |
 |-----------------------------------------|------------|
@@ -1079,7 +1079,7 @@ description:
 > - *Scikit-Learn 0.24* 特征提取指南 - 中文：<https://scikit-learn.org.cn/view/122.html>
 > - *Scikit-Learn 1.2.0* 特征提取指南：<https://scikit-learn.org/1.2/modules/feature_extraction.html#feature-extraction>
 
-####	图像特征
+####    图像特征
 
 | 图像特征提取 *Transformer*                                  | 描述 |
 |-------------------------------------------------------------|------|
@@ -1089,7 +1089,7 @@ description:
 | `feature_extraction.image.reconstruct_from_patches_2d(...)` |      |
 | `feature_extraction.image.PatchExtractor(...)`              |      |
 
-####	文本特征
+####    文本特征
 
 | 文字特征提取 *Transformer*                     | 描述 |
 |------------------------------------------------|------|
@@ -1098,7 +1098,7 @@ description:
 | `feature_extraction.text.TfidTransformer(...)` |      |
 | `feature_extraction.text.TfidVectorizer(...)`  |      |
 
-###	`sklearn.random_projection`
+### `sklearn.random_projection`
 
 | 类                                                     | 描述         |
 |--------------------------------------------------------|--------------|
@@ -1106,9 +1106,9 @@ description:
 | `random_projection.SparseRandomProjection(..)`         | 稀疏随机投影 |
 | `random_projection.johnson_lindenstrauss_min_dim(...)` |              |
 
-##	数据工具
+##  数据工具
 
-###	`sklearn.datesets`
+### `sklearn.datesets`
 
 | 数据加载器                                                | 描述                             |
 |-----------------------------------------------------------|----------------------------------|
@@ -1139,30 +1139,30 @@ description:
 | `datasets.load_sample_image(image_name)`                  |                                  |
 | `datasets.load_sample_images()`                           |                                  |
 
-| 数据生成器                                              | 描述                         |
-|---------------------------------------------------------|------------------------------|
-| `datasets.make_classification(n_samples,...)`           | 分类问题数据                 |
-| `datasets.make_regression(n_samples,...)`               | 回归问题数据                 |
-| `datasets.make_multilabel_classification(...)`          | 多标签分类数据               |
-| `datasets.make_blobs(n_samples,n_features,*,...)`       | 各向同性高斯分布             |
-| `datasets.make_gaussian_quantiles(*,mean,...)`          | 各向同性高斯分布，分位数标注 |
-| `datasets.make_checkerboard(shape,n_clusters,*,...)`    | 棋盘格结构数组               |
-| `datasets.make_circles(n_samples,shuffle,...)`          | 圆环                         |
-| `datasets.make_moons(n_samples,shuffle,...)`            | 交错半环                     |
-| `datasets.make_s_curve(n_samples,noise,...)`            | *S* 曲线数据                 |
-| `datasets.make_s_swiss_roll(n_samples,noise,...)`       | 瑞士卷数据                   |
-| `datasets.make_friedman1(n_samples,...)`                |                              |
-| `datasets.make_friedman2(n_samples,...)`                |                              |
-| `datasets.make_friedman3(n_samples,...)`                |                              |
-| `datasets.make_hastie_10_2(n_samples,...)`              |                              |
-| `datasets.make_make_biclusters(shape,n_clusters,*,...)` |                              |
-| `datasets.make_low_rank_matrix(n_samples,...)`          | 钟形奇异值低秩矩阵           |
-| `datasets.make_spd_matrix(dim,...)`                     | 对称正定矩阵                 |
-| `datasets.make_sparse_spd_matrix(dim,...)`              | 稀疏对称正定矩阵             |
-| `datasets.make_sparse_uncorrelated(dim,...)`            | 稀疏不相关回归数据           |
-| `datasets.make_sparse_coded_signal(n_sample,...)`       |                              |
+| 数据生成器                                               | 描述                         |
+|----------------------------------------------------------|------------------------------|
+| `datasets.make_classification(n_samples,...)`            | 分类问题数据                 |
+| `datasets.make_regression(n_samples,...)`                | 回归问题数据                 |
+| `datasets.make_multilabel_classification(...)`           | 多标签分类数据               |
+| `datasets.make_blobs(n_samples,n_features,*,...)`        | 各向同性高斯分布             |
+| `datasets.make_gaussian_quantiles(*,mean,...)`           | 各向同性高斯分布，分位数标注 |
+| `datasets.make_checkerboard(shape,n_clusters,*,...)`     | 棋盘格结构数组               |
+| `datasets.make_circles(n_samples,shuffle,...)`           | 圆环                         |
+| `datasets.make_moons(n_samples,shuffle,...)`             | 交错半环                     |
+| `datasets.make_s_curve(n_samples,noise,...)`             | *S* 曲线数据                 |
+| `datasets.make_s_swiss_roll(n_samples,noise,...)`        | 瑞士卷数据                   |
+| `datasets.make_friedman1(n_samples,...)`                 |                              |
+| `datasets.make_friedman2(n_samples,...)`                 |                              |
+| `datasets.make_friedman3(n_samples,...)`                 |                              |
+| `datasets.make_hastie_10_2(n_samples,...)`               |                              |
+| `datasets.make_make_biclusters(shape,n_clusters,*,...)`  |                              |
+| `datasets.make_low_rank_matrix(n_samples,...)`           | 钟形奇异值低秩矩阵           |
+| `datasets.make_spd_matrix(dim,...)`                      | 对称正定矩阵                 |
+| `datasets.make_sparse_spd_matrix(dim,...)`               | 稀疏对称正定矩阵             |
+| `datasets.make_sparse_uncorrelated(dim,...)`             | 稀疏不相关回归数据           |
+| `datasets.make_sparse_coded_signal(n_sample,...)`        |                              |
 
-###	`sklearn.covariance`
+### `sklearn.covariance`
 
 | 基类、*Mixin*                                  | 描述                                      |
 |------------------------------------------------|-------------------------------------------|
@@ -1183,7 +1183,7 @@ description:
 | `covariance.oas(X,*,assume_centered,...)`         | *Oracle* 近似收缩估计    |
 | `covariance.shrunk_covariance(emp_cov,...)`       | 对角线收缩的协方差估计   |
 
-###	`sklearn.cross_decomposition`
+### `sklearn.cross_decomposition`
 
 | 类、*Mixin*                                      | 描述               |
 |--------------------------------------------------|--------------------|
@@ -1192,7 +1192,7 @@ description:
 | `cross_decomposition.PLSRegression(...)`         | 偏最小二乘回归     |
 | `cross_decomposition.PLSSVD(n_components,*,...)` | 偏最小二乘 *SVD*   |
 
-###	`sklearn.impute`
+### `sklearn.impute`
 
 | 类                                              | 描述             |
 |-------------------------------------------------|------------------|
@@ -1201,7 +1201,7 @@ description:
 | `impute.MissingIndicator(*,missing_values,...)` | 根据其他特征插补 |
 | `impute.KNNImputer(*,missing_values,...)`       | K近邻插补        |
 
-###	`sklearn.utils`
+### `sklearn.utils`
 
 | 工具函数                                                | 描述                                |
 |---------------------------------------------------------|-------------------------------------|

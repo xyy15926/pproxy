@@ -11,10 +11,10 @@ date: 2024-09-21 17:16:05
 updated: 2026-04-20 23:14:44
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
-#   *PyEharts*
+#   *PyEcharts*
 
 ##  *PyEcharts* 配置
 
@@ -66,32 +66,32 @@ description:
 
 ### 全局配置项
 
-| 配置项类                                       | `set_global_opts` 中形参   | 含义                     |
-|------------------------------------------------|----------------------------|--------------------------|
-| `global_options.InitOpts`                      |                            | 初始化配置项             |
-| `global_options.TitleOpts`                     | `title_opts`               | 标题                     |
-| `global_options.LegendOpts`                    | `legend_opts`              | 图例                     |
-| `global_options.AnimationOpts`                 |                            | 动画                     |
-| `global_options.RenderOpts`                    |                            | 渲染                     |
-| `global_options.ArialLabelOpts`                |                            | 无障碍标签               |
-| `global_options.AriaDecalOpts`                 |                            | 无障碍贴花               |
-| `global_options.ToolBoxOpts`                   | `toolbox_opts`             | 工具箱配置项             |
-| `global_options.ToolBoxFeatureSaveAsImageOpts` |                            | 工具箱保存图片           |
-| `global_options.ToolBoxFeatureRestoreOpts`     |                            | 工具箱还原配置           |
-| `global_options.ToolBoxFeatureDataViewOpts`    |                            | 工具箱数据视图工具       |
-| `global_options.ToolBoxFeatureDataZoomOpts`    |                            | 工具箱区域缩放           |
-| `global_options.ToolBoxFeatureMagicTypeOpts`   |                            | 工具箱动态类型切换       |
-| `global_options.ToolBoxFeatureBrushOpts`       |                            | 工具箱选框组件           |
-| `global_options.ToolBoxFeatureOpts`            |                            | 工具箱工具配置           |
-| `global_options.BrushOpts`                     |                            | 区域组件选择组件         |
-| `global_options.AxisOpts`                      | `xaxis_opts`、`yaxis_opts` | *XY* 坐标轴配置          |
-| `global_options.AxisLineOpts`                  |                            | 坐标轴线                 |
-| `global_options.AxisTickOpts`                  |                            | 坐标轴刻度               |
-| `global_options.AxisPointerOpts`               |                            | 坐标轴指示器             |
-| `global_options.SingleAxisOpts`                |                            | 单轴配置                 |
-| `global_options.PolarOpts`                     |                            | 极坐标系                 |
-| `global_options.DataZoomOpts`                  | `datazoom_opts`            | 区域缩放                 |
-| `global_options.VisualMapOpts`                 | `visualmap_opts`           | 数据值视觉映射、过滤     |
+| 配置项类                                       | `set_global_opts` 中形参   | 含义                 |
+|------------------------------------------------|----------------------------|----------------------|
+| `global_options.InitOpts`                      |                            | 初始化配置项         |
+| `global_options.TitleOpts`                     | `title_opts`               | 标题                 |
+| `global_options.LegendOpts`                    | `legend_opts`              | 图例                 |
+| `global_options.AnimationOpts`                 |                            | 动画                 |
+| `global_options.RenderOpts`                    |                            | 渲染                 |
+| `global_options.ArialLabelOpts`                |                            | 无障碍标签           |
+| `global_options.AriaDecalOpts`                 |                            | 无障碍贴花           |
+| `global_options.ToolBoxOpts`                   | `toolbox_opts`             | 工具箱配置项         |
+| `global_options.ToolBoxFeatureSaveAsImageOpts` |                            | 工具箱保存图片       |
+| `global_options.ToolBoxFeatureRestoreOpts`     |                            | 工具箱还原配置       |
+| `global_options.ToolBoxFeatureDataViewOpts`    |                            | 工具箱数据视图工具   |
+| `global_options.ToolBoxFeatureDataZoomOpts`    |                            | 工具箱区域缩放       |
+| `global_options.ToolBoxFeatureMagicTypeOpts`   |                            | 工具箱动态类型切换   |
+| `global_options.ToolBoxFeatureBrushOpts`       |                            | 工具箱选框组件       |
+| `global_options.ToolBoxFeatureOpts`            |                            | 工具箱工具配置       |
+| `global_options.BrushOpts`                     |                            | 区域组件选择组件     |
+| `global_options.AxisOpts`                      | `xaxis_opts`、`yaxis_opts` | *XY* 坐标轴配置      |
+| `global_options.AxisLineOpts`                  |                            | 坐标轴线             |
+| `global_options.AxisTickOpts`                  |                            | 坐标轴刻度           |
+| `global_options.AxisPointerOpts`               |                            | 坐标轴指示器         |
+| `global_options.SingleAxisOpts`                |                            | 单轴配置             |
+| `global_options.PolarOpts`                     |                            | 极坐标系             |
+| `global_options.DataZoomOpts`                  | `datazoom_opts`            | 区域缩放             |
+| `global_options.VisualMapOpts`                 | `visualmap_opts`           | 数据值视觉映射、过滤 |
 
 ![pyecharts_global_opts_example](imgs/pyecharts_global_opts_example.png)
 
@@ -159,7 +159,7 @@ description:
 
 > - 系列配置项：<https://pyecharts.org/#/zh-cn/series_options>
 
-## *Pyecharts* 图表支持
+##  *Pyecharts* 图表支持
 
 | 方法                                   | 含义                                                         |
 |----------------------------------------|--------------------------------------------------------------|
@@ -178,12 +178,12 @@ description:
 
 > - 图表 *API*：<https://pyecharts.org/#/zh-cn/chart_api>
 
-###    直角坐标系图
+### 直角坐标系图
 
 | 方法                                                     | 含义            |                      |
 |----------------------------------------------------------|-----------------|----------------------|
 | `RectChart.add_xaxis(xaxis_data)`                        | 新增 *X* 轴数据 |                      |
-| `RectChart.add_yaxis(series_name,y_axis,...)`            | 新歌 *Y* 轴数据 | `Overlap` 图无此方法 |
+| `RectChart.add_yaxis(series_name,y_axis,...)`            | 新增 *Y* 轴数据 | `Overlap` 图无此方法 |
 | `RectChart.extend_axis(xaxis_data,xaxis,yaxis)`          | 扩展 *X/Y* 轴   |                      |
 | `RectChart.reversal_axis()`                              | 翻转 *X/Y* 轴   |                      |
 | `RectChart.overlap(chart)`                               | 层叠多图        |                      |
@@ -207,7 +207,7 @@ description:
     -   特殊说明
         -   `HeatMap.add_yaxis(series_name, yaxis_data, value)` 中需额外设置 **Y 轴坐标刻度**
             -   `yaxis_data` 类似 `add_xaxis(xaxis_data)` 中 `xaxis_data` 指定刻度
-            -   `value` 对应一般的 `add_yaxis(series_name, y_axis)` 
+            -   `value` 对应一般的 `add_yaxis(series_name, y_axis)`
         -   `RectChart.overlap()` 方法返回 `charts.Overlap` 覆盖图表
             -   被重叠图表的全局配置整体被覆盖，同覆盖图表
 
@@ -265,11 +265,11 @@ description:
 > - 直角坐标系图表：<https://pyecharts.org/#/zh-cn/rectangular_charts>
 > - 系列配置项：<https://pyecharts.org/#/zh-cn/series_options>
 
-###    其他基本图表
+### 其他基本图表
 
 | 图表       | 类                             |
 |------------|--------------------------------|
-| 日历图     | `charts.Calender(init_opts)`   |
+| 日历图     | `charts.Calendar(init_opts)`   |
 | 漏斗图     | `charts.Funnel(init_opts)`     |
 | 仪表盘     | `charts.Gauge(init_opts)`      |
 | 关系图     | `charts.Graph(init_opts)`      |
@@ -288,7 +288,7 @@ description:
 > - *PyEcharts* 基本图表：<https://pyecharts.org/#/zh-cn/basic_charts>
 > - *PyEcharts* 树形图：<https://pyecharts.org/#/zh-cn/tree_charts>
 
-###    地理图表
+### 地理图表
 
 | 图表       | 类                                                  |
 |------------|-----------------------------------------------------|
@@ -298,7 +298,7 @@ description:
 
 > - *PyEcharts* 地理图表：<https://pyecharts.org/#/zh-cn/geography_charts>
 
-###    *3D* 图表
+### *3D* 图表
 
 | 图表        | 类                            |
 |-------------|-------------------------------|
@@ -312,7 +312,7 @@ description:
 
 > - *PyEcharts 3D* 图表：<https://pyecharts.org/#/zh-cn/3d_charts>
 
-###    组合图表
+### 组合图表
 
 | 组合方式 | 类                                                |
 |----------|---------------------------------------------------|
@@ -339,7 +339,7 @@ description:
 
 > - *PyEcharts* 组合图表：<https://pyecharts.org/#/zh-cn/composite_charts>
 
-###    网页组件
+### 网页组件
 
 | 组件 | 类                                     |
 |------|----------------------------------------|
@@ -429,7 +429,7 @@ description:
 > - Page and Navigation：<https://docs.streamlit.io/develop/concepts/multipage-apps/page-and-navigation>
 > - `pages` Directory：<https://docs.streamlit.io/develop/concepts/multipage-apps/pages-directory>
 
-###  *Streamlit Widget* 组件
+### *Streamlit Widget* 组件
 
 -   *Widget* （交互）组件：完成信息展示、动作交互的 *Streamlit* 应用核心元素
     -   组件包含三个范畴：组件函数、前端渲染实体、后端状态集合

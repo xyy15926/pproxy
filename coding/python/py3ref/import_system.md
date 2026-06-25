@@ -61,18 +61,18 @@ description: Python 包、模块及导入机制
 
 ```conf
 // 若 `dir1`、`dir2` 均在导入路径中，则 `foo` 即可导入为命名空间包
-|-- dir1/
-|   |-- foo/
-|       |-- mod1.py
-|
-|-- dir2/
-|   |-- foo/
-|       |-- mod2.py
+|  |
+|--|
+|  |
+|  |
+|  |
+|  |
+|  |
 ```
 
 > - 利用命名空间包导入目录分散的代码：<https://python3-cookbook.readthedocs.io/zh_CN/latest/c10/p05_separate_directories_import_by_namespace.html>
 
-###  导入机制
+### 导入机制
 
 -   触发导入机制 3 种方式
     -   `import` 语句：包含命名模块搜索（加载）、绑定包至局部作用域两个操作
@@ -100,7 +100,7 @@ description: Python 包、模块及导入机制
 > - Python Library `importlib` 提供与导入系统交互的 *API*：<https://docs.python.org/zh-cn/3/library/importlib.html>
 > - Python `__import__ fromlist`：<https://www.imooc.com/article/289030>
 
-#### *Import Protocol*
+####    *Import Protocol*
 
 -   导入协议
     -   *Finder*：查找器，确定能否使用所知策略找到指定名称模块
@@ -212,7 +212,7 @@ description: Python 包、模块及导入机制
         -   每次模块搜索时，当前工作目录总被重新确认路径条目查找器
         -   `sys.path_importer_cache` 中键、 `importlib.machinery.PathFinder.find_spec()` 返回路径为实际路径而非空字符串
 
-###    *Path Entry Finder*
+### *Path Entry Finder*
 
 -   路径条目查找器：负责路径条目指定位置的模块实际搜索
     -   路径条目查找器需实现 *Path Entry Finder Protocol*，即 `find_spec` 方法
@@ -282,16 +282,16 @@ return sys.modules[spec.name]
 
 ### 模块规格说明
 
-|模块规格说明属性|模块属性|描述|
-|-----|-----|-----|
-|`name`|`__name__`|完整限定名称|
-|`loader`|`__loader__`|加载器|
-|`orgin`|`__file__`|加载源|
-|`submodule_search_locations`|`__path__`|子模块搜索路径|
-|`loader_state`| |加载模块所需的额外数据|
-|`cached`|`__cached__`|模块缓存源|
-|`parent`|`__package__`|父模块名|
-|`has_location`| |`origin` 是否为可加载地址|
+| 模块规格说明属性             | 模块属性      | 描述                      |
+|------------------------------|---------------|---------------------------|
+| `name`                       | `__name__`    | 完整限定名称              |
+| `loader`                     | `__loader__`  | 加载器                    |
+| `orgin`                      | `__file__`    | 加载源                    |
+| `submodule_search_locations` | `__path__`    | 子模块搜索路径            |
+| `loader_state`               |               | 加载模块所需的额外数据    |
+| `cached`                     | `__cached__`  | 模块缓存源                |
+| `parent`                     | `__package__` | 父模块名                  |
+| `has_location`               |               | `origin` 是否为可加载地址 |
 
 -   `_frozen_importlib.ModuleSpec` 模块规格说明：用于封装导入相关信息
     -   用于在导入系统各组件之间传递状态
@@ -317,10 +317,10 @@ return sys.modules[spec.name]
             -   而是通过在 `sys.modules` 中查找模块名称获取模块对象，可能会间接导致被导入模块可能在 `sys.modules` 中替换其自身
 
 > - Python3.4 前，由 `load_module` 方法负责模块加载
-> - Python3.6 后，加载器中定义 `exce_module` 同时未定义 `create_module` 将 `raise ImportError`
+> - Python3.6 后，加载器中定义 `exec_module` 同时未定义 `create_module` 将 `raise ImportError`
 > - `importlib.abc` 中包含用于导入的抽象基类 `import.abc.Finder`、`import.abc.Loader` 等，但外部
 
-#### 缓存字节码失效
+####    缓存字节码失效
 
 -   Python 从 `.pyc` 文件加载缓存字节码前会检查其是否最新
     -   缺省通过比较文件元数据确定缓存有效性
@@ -393,7 +393,7 @@ spam.foo is sys['spam.foo']
 -   相对导入使用模块 `__name__`（`__package__`）属性确定模块在包层次中位置
     -   若 `__name__` 中不包含包信息（`__package__=None`），相对引用认为该模块为顶级模块（而不考虑实际文件系统中位置）
 
-###    脚本执行
+### 脚本执行
 
 -   Python 脚本执行
     -   `$ python <PYSCRIPT>` 直接执行脚本时
@@ -420,7 +420,7 @@ spam.foo is sys['spam.foo']
 
 > - `-m` 执行模块时 `sys.path` 首个值为空字符串，而直接执行脚本时首个值为脚本所在目录
 
-###  导入钩子
+### 导入钩子
 
 -   导入机制中设计有两个钩子（位点）以提供扩展性
     -   *Meta Hooks* 元（路径）钩子：向 `sys.meta_path` 添加查找器
@@ -430,7 +430,7 @@ spam.foo is sys['spam.foo']
         -   `_frozen_importlib_external.PathFinder` 机制中调用
         -   在处理 `sys.path`、`package.__path__` 中对应路径项目时被调用
 
-#### 导入路径修改
+####    导入路径修改
 
 -   `sys.path` 可通过以下方式修改
     -   运行时修改 `sys.path` 列表：`sys.path.insert(0, /path/to/modules)`
@@ -445,4 +445,3 @@ spam.foo is sys['spam.foo']
  # extras.pth
 /path/to/fold/contains/module
 ```
-

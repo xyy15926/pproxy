@@ -13,7 +13,7 @@ date: 2022-12-19 14:07:33
 updated: 2023-12-30 16:02:20
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 ##  *Scipy*
@@ -30,7 +30,7 @@ description:
 | `cluster.vq`               | 向量量化（*K-means*）  |
 | `cluster.hierarchy`        | 层次聚类               |
 | `constants`                | 数学、物理常量、单位   |
-| `datesets`                 | 数据集                 |
+| `datasets`                 | 数据集                 |
 | `fft`                      | 离散傅里叶、变换       |
 | `fftpack`                  | （传统）离散傅里叶变换 |
 | `integrate`                | 数值积分               |
@@ -103,113 +103,113 @@ description:
 
 ### 连续分布
 
-| 单变量连续分布        | 描述             |
-|-----------------------|------------------|
-| `alpha`               | *alpha* 分布实例 |
-| `beta`                | *beta* 分布实例  |
-| `betaprime`           |                  |
-| `anglit`              |                  |
-| `arcsine`             |                  |
-| `argus`               |                  |
-| `bradford`            |                  |
-| `burr`                |                  |
-| `burr12`              |                  |
-| `cauchy`              |                  |
-| `halfcauchy`          |                  |
-| `foldcauchy`          |                  |
-| `wrapcauchy`          |                  |
-| `skewcauchy`          |                  |
-| `studentized_range`   |                  |
-| `t`                   |                  |
-| `chi`                 |                  |
-| `chi2`                |                  |
-| `f`                   |                  |
-| `consine`             |                  |
-| `crystalball`         |                  |
-| `erlang`              |                  |
-| `expon`               |                  |
-| `exponnorm`           |                  |
-| `exponpow`            |                  |
-| `genexpon`            |                  |
-| `truncexpon`          |                  |
-| `fatiguelife`         |                  |
-| `fisk`                |                  |
-| `genextreme`          |                  |
-| `gausshyper`          |                  |
-| `geninvgauss`         |                  |
-| `invgauss`            |                  |
-| `recipinvgauss`       |                  |
-| `gamma`               |                  |
-| `dgamma`              |                  |
-| `gengamma`            |                  |
-| `invgamma`            |                  |
-| `loggamma`            |                  |
-| `genhyperbolic`       |                  |
-| `gibrat`              |                  |
-| `gompertz`            |                  |
-| `gumbel_r`            |                  |
-| `gumbel_l`            |                  |
-| `hypsecant`           |                  |
-| `johnsonsb`           |                  |
-| `johnsonsu`           |                  |
-| `kappa4`              |                  |
-| `kappa3`              |                  |
-| `ksone`               |                  |
-| `kstwo`               |                  |
-| `kstwobign`           |                  |
-| `laplace`             |                  |
-| `laplace_asynmmetric` |                  |
-| `loglaplace`          |                  |
-| `levy`                |                  |
-| `levy_l`              |                  |
-| `levy_stable`         |                  |
-| `logistic`            |                  |
-| `halflogistic`        |                  |
-| `genlogistic`         |                  |
-| `genhalflogistic`     |                  |
-| `loguniform`          |                  |
-| `lomax`               |                  |
-| `maxwell`             |                  |
-| `mielke`              |                  |
-| `moyal`               |                  |
-| `nakagami`            |                  |
-| `ncx2`                |                  |
-| `ncf`                 |                  |
-| `nct`                 |                  |
-| `norm`                |                  |
-| `truncnorm`           |                  |
-| `norminvgauss`        |                  |
-| `halfnorm`            |                  |
-| `halfgennorm`         |                  |
-| `foldnorm`            |                  |
-| `gennorm`             |                  |
-| `skewnorm`            |                  |
-| `lognorm`             |                  |
-| `pareto`              |                  |
-| `genpareto`           |                  |
-| `truncpareto`         |                  |
-| `pearson3`            |                  |
-| `powerlaw`            |                  |
-| `powerlognorm`        |                  |
-| `powernorm`           |                  |
-| `rdist`               |                  |
-| `rayleigh`            |                  |
-| `rel_breitwigner`     |                  |
-| `rice`                |                  |
-| `semicircular`        |                  |
-| `trapezoid`           |                  |
-| `triang`              |                  |
-| `tukeylambda`         |                  |
-| `uniform`             |                  |
-| `vonmises`            |                  |
-| `vonmises_line`       |                  |
-| `wald`                |                  |
-| `weibull_min`         |                  |
-| `weibull_max`         |                  |
-| `truncweibull_min`    |                  |
-| `dweibull`            |                  |
-| `invweibull`          |                  |
-| `exponweib`           |                  |
+| 单变量连续分布       | 描述             |
+|----------------------|------------------|
+| `alpha`              | *alpha* 分布实例 |
+| `beta`               | *beta* 分布实例  |
+| `betaprime`          |                  |
+| `anglit`             |                  |
+| `arcsine`            |                  |
+| `argus`              |                  |
+| `bradford`           |                  |
+| `burr`               |                  |
+| `burr12`             |                  |
+| `cauchy`             |                  |
+| `halfcauchy`         |                  |
+| `foldcauchy`         |                  |
+| `wrapcauchy`         |                  |
+| `skewcauchy`         |                  |
+| `studentized_range`  |                  |
+| `t`                  |                  |
+| `chi`                |                  |
+| `chi2`               |                  |
+| `f`                  |                  |
+| `cosine`             |                  |
+| `crystalball`        |                  |
+| `erlang`             |                  |
+| `expon`              |                  |
+| `exponnorm`          |                  |
+| `exponpow`           |                  |
+| `genexpon`           |                  |
+| `truncexpon`         |                  |
+| `fatiguelife`        |                  |
+| `fisk`               |                  |
+| `genextreme`         |                  |
+| `gausshyper`         |                  |
+| `geninvgauss`        |                  |
+| `invgauss`           |                  |
+| `recipinvgauss`      |                  |
+| `gamma`              |                  |
+| `dgamma`             |                  |
+| `gengamma`           |                  |
+| `invgamma`           |                  |
+| `loggamma`           |                  |
+| `genhyperbolic`      |                  |
+| `gibrat`             |                  |
+| `gompertz`           |                  |
+| `gumbel_r`           |                  |
+| `gumbel_l`           |                  |
+| `hypsecant`          |                  |
+| `johnsonsb`          |                  |
+| `johnsonsu`          |                  |
+| `kappa4`             |                  |
+| `kappa3`             |                  |
+| `ksone`              |                  |
+| `kstwo`              |                  |
+| `kstwobign`          |                  |
+| `laplace`            |                  |
+| `laplace_asymmetric` |                  |
+| `loglaplace`         |                  |
+| `levy`               |                  |
+| `levy_l`             |                  |
+| `levy_stable`        |                  |
+| `logistic`           |                  |
+| `halflogistic`       |                  |
+| `genlogistic`        |                  |
+| `genhalflogistic`    |                  |
+| `loguniform`         |                  |
+| `lomax`              |                  |
+| `maxwell`            |                  |
+| `mielke`             |                  |
+| `moyal`              |                  |
+| `nakagami`           |                  |
+| `ncx2`               |                  |
+| `ncf`                |                  |
+| `nct`                |                  |
+| `norm`               |                  |
+| `truncnorm`          |                  |
+| `norminvgauss`       |                  |
+| `halfnorm`           |                  |
+| `halfgennorm`        |                  |
+| `foldnorm`           |                  |
+| `gennorm`            |                  |
+| `skewnorm`           |                  |
+| `lognorm`            |                  |
+| `pareto`             |                  |
+| `genpareto`          |                  |
+| `truncpareto`        |                  |
+| `pearson3`           |                  |
+| `powerlaw`           |                  |
+| `powerlognorm`       |                  |
+| `powernorm`          |                  |
+| `rdist`              |                  |
+| `rayleigh`           |                  |
+| `rel_breitwigner`    |                  |
+| `rice`               |                  |
+| `semicircular`       |                  |
+| `trapezoid`          |                  |
+| `triang`             |                  |
+| `tukeylambda`        |                  |
+| `uniform`            |                  |
+| `vonmises`           |                  |
+| `vonmises_line`      |                  |
+| `wald`               |                  |
+| `weibull_min`        |                  |
+| `weibull_max`        |                  |
+| `truncweibull_min`   |                  |
+| `dweibull`           |                  |
+| `invweibull`         |                  |
+| `exponweib`          |                  |
 
 | 分布方法                                                | 描述                            |
 |---------------------------------------------------------|---------------------------------|
@@ -221,7 +221,7 @@ description:
 | `sf(x,a,b[,loc,scale])`                                 | 生存函数 `1 - cdf`              |
 | `logsf(x,a,b[,loc,scale])`                              | 对数生存函数                    |
 | `ppf(q,a,b[,loc,scale])`                                | 分位数点（分布函数逆）          |
-| `ppf(q,a,b[,loc,scale])`                                | 生存函数逆                      |
+| `isf(q,a,b[,loc,scale])`                                | 生存函数逆                      |
 | `moment(order,a,b[,loc,scale])`                         | 非中心矩                        |
 | `stat(a,b[,loc,scale,moments])`                         | 前4阶矩：均值、方差、偏差、峰度 |
 | `entropy(a,b[,loc,scale])`                              | 信息熵                          |
@@ -278,10 +278,10 @@ description:
 | `multivariate_normal`    |      |
 | `matrix_normal`          |      |
 | `dirichlet`              |      |
-| `dirichlet_multinominal` |      |
+| `dirichlet_multinomial`  |      |
 | `wishart`                |      |
 | `invwishart`             |      |
-| `multinominal`           |      |
+| `multinomial`            |      |
 | `special_ortho_group`    |      |
 | `ortho_group`            |      |
 | `unitary_group`          |      |

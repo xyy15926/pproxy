@@ -8,7 +8,7 @@ date: 2025-12-09 21:56:25
 updated: 2026-03-31 13:42:50
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 ##  数值计算库、标准
@@ -30,7 +30,7 @@ description:
             -   *reference BLAS*：*Fortran 77* 实现，最初版本 *BLAS* 实现
             -   *CBLAS*：*C* 版本实现，实际即对 *Fortran BLAS* 的封装，接口与 *Fortran* 略有不同
             -   *LAPACK*：*Fortran 90* 实现
-            -   *LAPACKE*：*C* 版本实现，实际挤兑 *Frotran LAPACK* 的封装
+            -   *LAPACKE*：*C* 版本实现，实际上即对 *Frotran LAPACK* 的封装
                 -   *reference BLAS*、*CBLAS* 现在其实已被作为 *LAPACK* 的一部分
         -   *Intel Math Kernel Library*：*Intel* 提供、对 *Intel CPU* 性能最高的版本
             -   文档齐全，推荐参考
@@ -47,21 +47,21 @@ description:
 ```c
 // y = alpha * a * x + beta * y
 void cblas_zgemv(
-    const CBLAS_LAYOUT Layout,          // 枚举，行、列优先布局
-    const CBLAS_TRANSPOSE trans,        // 枚举，是否预先转置矩阵
-    const MKL_INT m,                    // 矩阵行数
-    const MKL_INT n,                    // 矩阵列数
+    const CBLAS_LAYOUT Layout,   // 枚举，行、列优先布局
+    const CBLAS_TRANSPOSE trans, // 枚举，是否预先转置矩阵
+    const MKL_INT m,             // 矩阵行数
+    const MKL_INT n,             // 矩阵列数
 
     const void *alpha,
-    const void *a,                      // 矩阵指针
-    const MKL_INT lda,                  // Leading Dimension，矩阵优先维长度（即次维度相邻元素间隔）
+    const void *a,               // 矩阵指针
+    const MKL_INT lda,           // Leading Dimension，矩阵优先维长度（即次维度相邻元素间隔）
 
-    const void *x,                      // 向量指针
-    const MKL_INT incx,                 // 步长（向量 x 中元素间隔）
+    const void *x,               // 向量指针
+    const MKL_INT incx,          // 步长（向量 x 中元素间隔）
 
     const void *beta,
-    void *y                             // 结果向量指针
-    const MKL_INT incy,                 // 步长（向量 y 中元素间隔）
+    void *y                      // 结果向量指针
+    const MKL_INT incy,          // 步长（向量 y 中元素间隔）
 )
 ```
 
@@ -225,7 +225,6 @@ void cblas_zgemv(
 | *TensorRT*         | *Tensile*                        | 推理组件          |
 | *CUDA-Docker*      | *ROCm-Docker*                    |                   |
 
-
 ### *Direct ML*
 
 -   *Direct ML*
@@ -237,4 +236,3 @@ void cblas_zgemv(
 
 > - *Triton* 教程：<https://triton-lang.cn/main/getting-started/tutorials/index.html>
 > - *Triton* 相关工作：<https://triton-lang.cn/main/programming-guide/chapter-2/related-work.html>
-

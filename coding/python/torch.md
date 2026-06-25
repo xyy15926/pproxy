@@ -6,12 +6,12 @@ tags:
   - Python
   - Torch
   - Machine Learning
-  - Nueral Network
+  - Neural Network
 date: 2025-03-11 15:26:53
 updated: 2025-08-03 18:55:38
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 ##  PyTorch
@@ -33,7 +33,7 @@ description:
         -   支持在不同设备之间移动张量
         -   `torchvision`、`torchaudio`、`torchtext` 等包生态
 
-###    *Computational Graphs*
+### *Computational Graphs*
 
 -   计算图：张量、`Function` 代表节点，张量和 `Function` 之间（输入、输出）关系代表边
     -   *PyTorch* 为动态图机制，训练中 **每次迭代** 均会构建新计算图
@@ -68,7 +68,7 @@ description:
 > - *Double Backward with Custom Functions*：<https://pytorch.org/tutorials/intermediate/custom_function_double_backward_tutorial.html>
 
 
-## `torch.Tensor` 张量
+##  `torch.Tensor` 张量
 
 -   `torch.Tensor` 张量：类似 `np.ndarray` 记录模型输入、输出、参数的数据结构，支持包括 GPU 在内的硬件加速
     -   `Tensor` 支持类似于 `np.ndarray` 的各种 API
@@ -107,7 +107,7 @@ description:
 
 > - *Tensor autograd functions*：<https://docs.pytorch.org/docs/stable/autograd.html#tensor-autograd-functions>
 
-###    张量布局
+### 张量布局
 
 -   张量：张量在物理存储器中的布局总是线性的
     -   `device` 存储位置：内存、显存
@@ -130,7 +130,7 @@ description:
 
 > - 张量在内存中的布局：<https://zhuanlan.zhihu.com/p/721855580>
 
-###	`torch.nested`
+### `torch.nested`
 
 | `torch.nested`                       | 说明                                         |
 |--------------------------------------|----------------------------------------------|
@@ -171,7 +171,7 @@ description:
         -   *NJT* 维度总是较其 `values` 组件维数多 1
             -   `values` 组件中不规则维度被 **融合进前 1 个维度**
 
-> -	`torch.nested`：<https://docs.pytorch.org/docs/stable/nested.html>
+> -    `torch.nested`：<https://docs.pytorch.org/docs/stable/nested.html>
 > - `torch.nested`：<https://pytorch.ac.cn/docs/stable/nested.html>
 > - *Getting Started with Nested Tensors*：<https://docs.pytorch.org/tutorials/prototype/nestedtensor.html>
 > - 嵌套张量入门：<https://pytorch.ac.cn/tutorials/prototype/nestedtensor.html>
@@ -323,7 +323,7 @@ class MyCube(torch.autograd.Function):
         result = grad_output * dx + grad_dx * 6 * x
         return result
 
-# Wrap MyCube in a function so that it is clearer what the output is
+#   Wrap MyCube in a function so that it is clearer what the output is
 def my_cube(x):
     result, dx = MyCube.apply(x)
     return result
@@ -413,19 +413,19 @@ def my_cube(x):
 
 -   `autograd.profiler` 函数统计信息模块：提供函数级别统计信息
 
-## `torch.nn` 神经网络
+##  `torch.nn` 神经网络
 
 | 模块            | 说明                 |
 |-----------------|----------------------|
 | `nn.modules`    | 神经网络模块包       |
-| `nn.paremeter`  | 参数、缓冲区模块     |
+| `nn.parameter`  | 参数、缓冲区模块     |
 | `nn.functional` | 神经网络模块函数模块 |
 
 -   `torch.nn` 中包含构建神经网络所需的基本模块
     -   `nn` 命名空间已引入
         -   `nn.modules` 包、子包中定义的常用模块类
         -   `nn.parameter` 中参数类
-    -   `nn.functioncal` 中函数未被引入 `nn` 命名空间
+    -   `nn.functional` 中函数未被引入 `nn` 命名空间
 
 
 > - *What is `torch.nn` really*：<https://pytorch.org/tutorials/beginner/nn_tutorial.html>
@@ -433,7 +433,7 @@ def my_cube(x):
 > - `torch.nn.functional` *API*：<https://pytorch.org/docs/stable/nn.functional.html>
 > - *Pytorch Source Code*：<https://github.com/pytorch/pytorch/tree/main/torch/nn>
 
-###    `nn.modules.module.Module`
+### `nn.modules.module.Module`
 
 ```python
 def DigitsRecogNeuralNetwork(nn.Module):
@@ -683,7 +683,7 @@ class Module:
             yield prefix, self
             for name, module in self._modules.items():
                 if module is None:
-                    contiue
+                    continue
                     submodule_prefix = prefix + ("." + if prefix else "") + name
                     for m in module.named_modules(memo, submodule_prefix):
                         yield m
@@ -875,7 +875,7 @@ __call__: Callable[..., Any] = _call_impl
 
 | `nn.Module` 钩子注册方法                      | 钩子维护 `OrderedDict`              | 描述 |
 |-----------------------------------------------|-------------------------------------|------|
-| `Module._register_state_dict_hook()`          | `Module._load_state_dict_pre_hooks` |      | 
+| `Module._register_state_dict_hook()`          | `Module._load_state_dict_pre_hooks` |      |
 | `Module._regsiter_load_state_dict_pre_hook()` | `Module._load_state_dict_pre_hooks` |      |
 
 ```python
@@ -1031,7 +1031,7 @@ class Module:
             -   即，持久化缓冲可用于存储需要持久化、但无需训练更新的参数
             -   即，非持久化缓冲仅用于同步适配迁移、类型转换动作
 
-##    `torch.optim` 优化器
+##  `torch.optim` 优化器
 
 | `torch.optim` 模块、包 | 描述             |
 |------------------------|------------------|
@@ -1044,7 +1044,7 @@ class Module:
 > - *Optimizer in PyTorch*：<https://zhuanlan.zhihu.com/p/684067397>
 > - *PyTorch* 源码解读之 `torch.optim`：<https://zhuanlan.zhihu.com/p/346205754>
 
-###    `optim.optimizer.Optimizer` 优化器基类
+### `optim.optimizer.Optimizer` 优化器基类
 
 | `optim.optimizer.Optimizer` 方法                 | 描述               |
 |--------------------------------------------------|--------------------|
@@ -1145,7 +1145,7 @@ for epoch in range(20):
 | `lr_scheduler.LambdaLR(optimizer,lr_lambda[,last_epoch,...])`          | 按轮次自定义调整 |
 | `lr_scheduler.MultiplicativeLR(optimizer,lr_lambda[,last_epoch,...])`  | 按轮次自定义调整 |
 
-## 交互
+##  交互
 
 ### `torch.utils.data` 数据加载
 
@@ -1259,7 +1259,7 @@ train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
     -   支持多进程数据加载
     -   支持内存固定
 
-###    可视化
+### 可视化
 
 | `SummaryWriter` 方法                                                  | 描述                     |
 |-----------------------------------------------------------------------|--------------------------|
