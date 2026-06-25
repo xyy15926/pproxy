@@ -12,7 +12,7 @@ date: 2021-08-10 16:29:08
 updated: 2024-07-09 21:54:38
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 #   *Shell* 基本特性
@@ -76,7 +76,6 @@ description:
     -   大部分情况下 `"` 扩起字符串不影响其含义，但
         -   包含 `$IFS` 的字符串字面值被扩起时视为整体，无法被 `for` 迭代
 
-
 ##  Shell 命令
 
 | *Control Operator* | 开头   | 中间                  | 结尾                 |
@@ -115,7 +114,7 @@ description:
 -   *Simple Commands* 简单命令：空白分割的一系列单词、Shell 控制符号结尾
     -   说明
         -   首个单词指定需要被执行的命令，剩余单词为参数
-        -   简单命令退出状态由 *POSIX 1003.1* `waitpid` 函数提供，或者命令由信号 `N` 结束时为 `128 + N` 
+        -   简单命令退出状态由 *POSIX 1003.1* `waitpid` 函数提供，或者命令由信号 `N` 结束时为 `128 + N`
 
 -   *Pipeline* 管道（命令）：由 `|`、`|&` 分割一系列（一个或多个）命令
     -   管道中各命令串联输出、输入
@@ -347,7 +346,7 @@ function <FNAME> [()]
         -   `function` 关键字可以省略，但此时 `()` 不可省略
         -   `COMPOUND_COMMAND` 一般为 `{}` 包裹的命令列表，尤其是 `()` 省略场合下
 
-## *Shell Parameters*
+##  *Shell Parameters*
 
 -   *Parameter* 参数：存储值的实体，可以是名称、数字、特殊字符
     -   *Variable* 变量：用名称标识的参数
@@ -459,7 +458,7 @@ function <FNAME> [()]
 
 > - <https://runebook.dev/en/docs/bash/special-parameters>
 
-## *Shell Expansions*
+##  *Shell Expansions*
 
 -   扩展：在命令行分割出的 Token 结果上执行扩展
     -   扩展按以下顺序执行
@@ -555,14 +554,14 @@ function <FNAME> [()]
 
 -   考虑 `file=/dir1/dir2/dir3/file.txt.bak`
 
-    |命令|解释|结果|
-    |------|------|------|
-    |`${file:0:5}`|提取首个字符开始的5个字符|`/dir1`|
-    |`${file:5:5}`|提取第5个字符开始的5个字符|`/dir2`|
-    |`${file:5}`|提取第5个字符开始至末尾|`/dir2...`|
-    |`${file:0-5}`|反向计算下标|`t.bak`|
-    |`${file: -5:0-1}`|反向计算下标|`t.ba`|
-    |`${file:5:0-2}`|提取第5个字符开始至`-2`下标处|`/dir2.../t.b`|
+    | 命令              | 解释                          | 结果           |
+    |-------------------|-------------------------------|----------------|
+    | `${file:0:5}`     | 提取首个字符开始的5个字符     | `/dir1`        |
+    | `${file:5:5}`     | 提取第5个字符开始的5个字符    | `/dir2`        |
+    | `${file:5}`       | 提取第5个字符开始至末尾       | `/dir2...`     |
+    | `${file:0-5}`     | 反向计算下标                  | `t.bak`        |
+    | `${file: -5:0-1}` | 反向计算下标                  | `t.ba`         |
+    | `${file:5:0-2}`   | 提取第5个字符开始至`-2`下标处 | `/dir2.../t.b` |
 
 ####    序列长度
 
@@ -588,16 +587,16 @@ $ null=
 
     ![shell_variable_assignment](imgs/shell_variable_assignment.png)
 
-    |命令|解释|示例|结果|
-    |-----|-----|-----|-----|
-    |`${<var-name>-<default>}`|变量**未设置**返回默认值|`${invalid-file.txt.bak}`|`file.txt.bak`|
-    |`${<var-name>:-<default>}`|变量**未设置、空值**返回默认值|`${null-file.txt.bak}`|`file.txt.bak`|
-    |`${<var-name>+<default>}`|变量**设置**返回默认值|`${file-file.txt.bak}`|`fil.txt.bak`|
-    |`${<var-name>:+<default>}`|变量**非空**返回默认值|`${file-file.txt.bak}`|`file.txt.bak`|
-    |`${<var-name>=<default>}`|变量**未设置**，返回默认值、并设置变量为默认值|`${invalid=file.txt.bak}`|`file.txt.bak`|
-    |`${<var-name>:=<default>}`|变量**未设置、空值**返回默认值、并设置变量为默认值|`${null=file.txt.bak}`|`file.txt.bak`|
-    |`{$<var-name>?<default>}`|变量**未设置**输出默认值至 `stderr`|`{invalid?file.txt.bak}`|`file.txt.bak`输出至stderr|
-    |`{$<var-name>:?<default>}`|变量**未设置、空值**输出默认值至 `stderr`|`{$null:?file.txt.bak}`|`file.txt.bak`输出至stderr|
+    | 命令                       | 解释                                               | 示例                      | 结果                       |
+    |----------------------------|----------------------------------------------------|---------------------------|----------------------------|
+    | `${<var-name>-<default>}`  | 变量**未设置**返回默认值                           | `${invalid-file.txt.bak}` | `file.txt.bak`             |
+    | `${<var-name>:-<default>}` | 变量**未设置、空值**返回默认值                     | `${null-file.txt.bak}`    | `file.txt.bak`             |
+    | `${<var-name>+<default>}`  | 变量**设置**返回默认值                             | `${file-file.txt.bak}`    | `fil.txt.bak`              |
+    | `${<var-name>:+<default>}` | 变量**非空**返回默认值                             | `${file-file.txt.bak}`    | `file.txt.bak`             |
+    | `${<var-name>=<default>}`  | 变量**未设置**，返回默认值、并设置变量为默认值     | `${invalid=file.txt.bak}` | `file.txt.bak`             |
+    | `${<var-name>:=<default>}` | 变量**未设置、空值**返回默认值、并设置变量为默认值 | `${null=file.txt.bak}`    | `file.txt.bak`             |
+    | `{$<var-name>?<default>}`  | 变量**未设置**输出默认值至 `stderr`                | `{invalid?file.txt.bak}`  | `file.txt.bak`输出至stderr |
+    | `{$<var-name>:?<default>}` | 变量**未设置、空值**输出默认值至 `stderr`          | `{$null:?file.txt.bak}`   | `file.txt.bak`输出至stderr |
 
 ####    模式匹配
 
@@ -613,16 +612,16 @@ $ null=
         -   不改变原变量值
         -   仅在 `ptn` 中包含（模式扩展）通配符时，最短、最长匹配才有区别
 
-    |命令|解释|结果|
-    |------|------|------|
-    |`${file#*/}`|去除首个`/`及其左边|`dir2/dir3/file.txt.bak`|
-    |`${file##*/}`|仅保留最后`/`右边|`file.txt.bak`|
-    |`${file#*.}`|去除首个`.`及其左边|`txt.bak`|
-    |`${file##*.}`|仅保留最后`.`右边|`bak`|
-    |`${file%/*}`|去除最后`/`及其右边|`/dir1/dir2/dir3`|
-    |`${file%%*/}`|去除首个`/`及其右边|空值|
-    |`${file%*.}`|去除最后`.`及其右边|`/dir1/dir2/dir3/file.txt`|
-    |`${file%%*.}`|去除首个`.`及其右边|`/dir1/dir2/dir3/file.txt`|
+    | 命令          | 解释                | 结果                       |
+    |---------------|---------------------|----------------------------|
+    | `${file#*/}`  | 去除首个`/`及其左边 | `dir2/dir3/file.txt.bak`   |
+    | `${file##*/}` | 仅保留最后`/`右边   | `file.txt.bak`             |
+    | `${file#*.}`  | 去除首个`.`及其左边 | `txt.bak`                  |
+    | `${file##*.}` | 仅保留最后`.`右边   | `bak`                      |
+    | `${file%/*}`  | 去除最后`/`及其右边 | `/dir1/dir2/dir3`          |
+    | `${file%%*/}` | 去除首个`/`及其右边 | 空值                       |
+    | `${file%*.}`  | 去除最后`.`及其右边 | `/dir1/dir2/dir3/file.txt` |
+    | `${file%%*.}` | 去除首个`.`及其右边 | `/dir1/dir2/dir3/file.txt` |
 
 -   模式匹配替换：`${<param>/<from-ptn>/<to-ptn>}`
     -   匹配替换模式（`to-ptn` 为空时即删除）
@@ -633,17 +632,17 @@ $ null=
     -   `param` 为 `<arr>[@]`、`<arr>[*]` 时，依次对数组各元素匹配替换
         -   特别的 `param` 为 `@`、`*` 时，对位置参数匹配替换
 
-    |命令|解释|结果|
-    |-----|-----|-----|
-    |`${file/dir/path}`|替换首个`dir`为`path`|`/path1/dir2/dir3/file.txt.bak`|
-    |`${file/dir/path}`|替换全部`dir`为`path`|`/path1/path2/path3/file.txt.bak`|
+    | 命令               | 解释                  | 结果                              |
+    |--------------------|-----------------------|-----------------------------------|
+    | `${file/dir/path}` | 替换首个`dir`为`path` | `/path1/dir2/dir3/file.txt.bak`   |
+    | `${file/dir/path}` | 替换全部`dir`为`path` | `/path1/path2/path3/file.txt.bak` |
 
 -   模式匹配大小写转换：`${<param>^<char>}`
     -   大小写转换模式
         -   `^<char>`：首个 `char` 被转换为大写
-        -   `^^<char>`：全部 `char` 被转换为大写 
+        -   `^^<char>`：全部 `char` 被转换为大写
         -   `,<char>`：首个 `char` 被转换为小写
-        -   `,,<char>`：全部 `char` 被转换为小写 
+        -   `,,<char>`：全部 `char` 被转换为小写
     -   `char` 缺省即为 `?`，匹配所有字符
     -   `param` 为 `<arr>[@]`、`<arr>[*]` 时，依次对数组各元素匹配转换
         -   特别的 `param` 为 `@`、`*` 时，对位置参数匹配转换
@@ -734,7 +733,7 @@ $ null=
         -   `.`、`..` 总是被忽略
         -   需要将 `.*` 添加至其中，否则相当于 `dotglob` 被设置
 
-####  模式匹配
+####    模式匹配
 
 -   模式匹配基本规则
     -   普通字符匹配自身
@@ -874,7 +873,6 @@ $ null=
     -   `WORD` 执行 *Tilde* 扩展、变量扩展、命令替换、算术扩展、标记移除
         -   结果作为字符串，末尾添加换行符
 
-
 ##  命令执行
 
 ### 命令执行环境
@@ -918,7 +916,7 @@ $ null=
     -   任何在该shell设置环境变量后，启动的（子）进程都会
         继承该变量
     -   对于常用、许多进程需要的环境变量应该这样设置
-    
+
 -   `<ENV_NAME>=... cmd`：设置临时环境变量
     -   `<ENV_NAME>=...`不能被子进程继承，所以必须在其后立刻接命令
     -   只对当前语句有效，**不覆盖** 同名变量
@@ -932,7 +930,7 @@ $ null=
     -   系统在登陆时读取第一个文件
     -   用于所有为所有进程设置环境变量
 
-#### `/usr/bin/env`
+####    `/usr/bin/env`
 
 -   `env`：在修改过的环境中执行命令
     -   `$ env <op> <name>=<value> <cmd>`：在设置变量 `name` 的环境中执行 `cmd`
@@ -949,7 +947,7 @@ $ null=
 
 #   *Bash Builtin Commands*
 
-## *Builtin*
+##  *Builtin*
 
 -   *builtin* 内建命令包含在 *Bash* 工具集中
     -   可通过 `$ compgen -b` 获取内建命令
@@ -1164,7 +1162,7 @@ $ null=
     -   `-B`：执行括号扩展
     -   `-C`：重定向所产生的文件无法覆盖已存在文件
     -   `-d`： Shell 默认使用 hash 表记忆已使用过的命令以加速执行，此设置取消该行为
-    -   `-e`：若指令回传值不为 0，立即退出 Shell 
+    -   `-e`：若指令回传值不为 0，立即退出 Shell
     -   `-f`：取消模式扩展
     -   `-h`：寻找命令时记录其位置???
     -   `-H`：（默认）允许使用 `!` 加 *<编号>*方式执行 `history` 中记录的命令
@@ -1465,7 +1463,6 @@ done <<< $string
 
 -   `--`：配置项终止符，指示气配置项结束，之后 `-` 当作实体参数解释
 
-
 #   *Bash* 特性
 
 ##  条件表达式
@@ -1625,7 +1622,7 @@ done <<< $string
 -   `${<arr>[*]}`：数组元素列表
     -   被 `"` 括起时不分词，返回单个字符串，各参数值使用 `IFS` 值的首个字符分隔
 
-## *Prompt* 控制
+##  *Prompt* 控制
 
 -   `$PROMPT_COMMANDS`：*Bash* 输出 prompt 前按顺序执行其中命令
 
@@ -1669,7 +1666,6 @@ done <<< $string
     -   `\]`：不可打印字符序列结束
 
 > - <https://runebook.dev/en/docs/bash/controlling-the-prompt>
-
 
 #   Bash 变量
 
@@ -1796,4 +1792,3 @@ Shell 变量：Shell 自行管理、分配值的变量
         -   在 `second` 输出之前终止，会同时终止两个进程
     -   `$ source test.sh` / `$ . test.sh`：产生一个新进程 `sleep`
         -   在 `second` 输出之前终止，只有 `sleep` 进程被终止，剩余内容继续执行
-

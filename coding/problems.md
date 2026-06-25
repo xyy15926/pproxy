@@ -10,7 +10,7 @@ date: 2024-01-06 18:32:01
 updated: 2025-08-05 16:19:27
 toc: true
 mathjax: true
-description: 
+description:
 ---
 
 ##  排序
@@ -297,7 +297,6 @@ DistributionCountingSort(A[0..n-1], l, u):
         -   不是基于比较的排序， 不受 $nlogn$ 限制
         -   空间换时间，可视为哈希表输入增强
 
-
 ##  查找
 
 -   查找问题：在给定的集合、多重集（允许多个元素具有相同的值）中找给定值
@@ -538,7 +537,7 @@ LongestSubParlidrome(nums[0..n-1]):
             max_shift, center = shift, i
 
     left = (center - max_shift + 1) // 2
-    right = (center + max_shift) // 2
+    right = (center + max_shift)    // 2
     return nums[left : right]
 ```
 
@@ -589,7 +588,7 @@ LongestSubParlidrome(nums[0..n-1]):
             max_shift, center = shift, i
 
     left = (center - max_shift + 1) // 2
-    right = (center + max_shift) // 2
+    right = (center + max_shift)    // 2
     return nums[left: right]
 ```
 
@@ -633,7 +632,7 @@ LongestSubParlidrome(nums[0..n-1]):
 
 > - 从抽象的角度看，旅行商问题、图填色问题也是组合问题的特例
 
-###    背包问题
+### 背包问题
 
 -   问题：给定 n 个重量为 $w_1, w_2, \cdots, w_n$ 价值为 $v_1, v_2, ..., vn$ 的物品和承重为 $W$ 的背包，求能够装进背包的最有价值物品子集
 
@@ -762,7 +761,7 @@ ChangeMaking(D[1..m], n)
     return F[n]
 ```
 
-###    硬币收集问题
+### 硬币收集问题
 
 -   硬币收集问题：在 $n * m$ 格木板中存放有硬币，每格硬币最多一个，寻找左上角 $(1,1)$ 到右下角 $(n, m)$ 路径，使得能够收集尽可能多硬币，每次只能向下、向右移动
 
@@ -1200,7 +1199,7 @@ bfs(v)
 
 > - 问题：统计 `unsinged` 二进制表示中 `1` 数量
 
-####   仅遍历 `1`
+####    仅遍历 `1`
 
 ```cpp
 int population(unsigned int bits){
@@ -1218,7 +1217,7 @@ int population(unsigned int bits){
     -   遍历减少：仅仅遍历无符号整形二进制表示中 `1` 次数
         -   `bits &= bits - 1` 将末尾 `1` 消除
 
-####   分治+查表
+####    分治+查表
 
 ```cpp
 int * initialization(){
@@ -1241,7 +1240,7 @@ int population(int bits, int * table){
         -   递推建立：`f(n) = f(n >> 1) + last_bit(n)`
     -   分治：将无符号整型分4块查表、加和结果
 
-####   分治
+####    分治
 
 ```cpp
 int population(unsigned int bits){
@@ -1282,7 +1281,7 @@ int population(unsigned int bits){
     return bits & 0x3f
 }
 ```
- 
+
 ### 整形中 `1` 数量奇偶性
 
 -   问题：统计 `unsigned` 中 `1` 数量奇偶性
@@ -1574,7 +1573,7 @@ a_n = & (ba_{n-1} + c) % m, & n=1,2,\cdots
 
 > - *Box-Muller* 变换生成正态分布随机数：<https://fengchao.pro/blog/box-muller-transformation/>
 
-## *Monte Carlo*
+##  *Monte Carlo*
 
 -   蒙特卡罗方法（统计模拟方法）：通过随机抽样的方法，以随机事件出现的频率估计其概率，得到随机变量的数字特征
     -   适用场景
@@ -1809,7 +1808,7 @@ Bisection(f(x), a, b, eps, N)
     return a, b
 ```
 
-#### 试位法
+####    试位法
 
 -   试位法：类似于连续版差值查找，但使用端点拟合线性函数 0 点作迭代点
     -   类似平分法，考虑 $[a, b]$ 包含连续函数的 0 点，函数在端点取值符号相反
@@ -1888,7 +1887,7 @@ BetterForwardElimination(A[1..n, 1..n], b[1..n])
     -   最内层乘法（加法）执行次数为 $\frac {n(n-1)(2n+5) 6 \approx \frac n^3 3 \in \Theta(n^3)$
     -   始终能保证比例因子绝对值不大于 1
 
-###    *Strassen* 矩阵乘法
+### *Strassen* 矩阵乘法
 
 $$\begin{align}
 \begin{bmatrix}
@@ -1931,5 +1930,3 @@ M_7 & = (A_{01} + A_{11}) · (B_{10} + B_{11}) \\
 -   说明
     -   部分算法时间效率有 $\in \Theta(n^\alpha)$，最小能达到 2.376，但是这些算法乘法常量很大、算法复杂，没有实用价值
     -   矩阵乘法效率下界为 $n^2$，目前得到的最优效率和其还有很大距离
-
-
