@@ -119,8 +119,8 @@ description: 数据模型--基本数据类型
 
 ```python
 infty = float("inf")
-neg_infty = float("-inf")        # 正/负无穷大
-nan = float("nan")                # Not a Number
+neg_infty = float("-inf") # 正/负无穷大
+nan = float("nan")        # Not a Number
 ```
 
 -    特殊取值根据定义 `==`、`is` 肯定返回 `False`

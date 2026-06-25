@@ -61,13 +61,13 @@ description: Python 包、模块及导入机制
 
 ```conf
 // 若 `dir1`、`dir2` 均在导入路径中，则 `foo` 即可导入为命名空间包
-|  |
-|--|
-|  |
-|  |
-|  |
-|  |
-|  |
+|-- dir1/
+|   |-- foo/
+|       |-- mod1.py
+|
+|-- dir2/
+|   |-- foo/
+|       |-- mod2.py
 ```
 
 > - 利用命名空间包导入目录分散的代码：<https://python3-cookbook.readthedocs.io/zh_CN/latest/c10/p05_separate_directories_import_by_namespace.html>

@@ -51,7 +51,6 @@ description:
 | `mssql`        | `pyodbc`、`pymssql`  |
 | `sqlite`       |                      |
 
-
 > - 创建 *Engine*：<https://www.osgeo.cn/sqlalchemy/tutorial/engine.html>
 > - *Establishing Connectivity*：<https://docs.sqlalchemy.org/en/14/tutorial/engine.html>
 
@@ -565,7 +564,6 @@ with engine.connect() as conn:
 
 ### 约束、索引
 
-
 | 约束、索引                         | 描述                        |
 |------------------------------------|-----------------------------|
 | `ForeignKey(key_name)`             | 外键关系                    |
@@ -588,7 +586,6 @@ with engine.connect() as conn:
 > - *SQLALchemy 1.4 Core* 约束和索引：<https://www.osgeo.cn/sqlalchemy/core/constraints.html>
 
 ### *DDL*
-
 
 ##  *Core* 数据类型
 

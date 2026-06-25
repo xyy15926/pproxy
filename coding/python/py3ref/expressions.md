@@ -374,7 +374,7 @@ power ::= (await_expr | primary) ["**" u_expr]
 
 ```python
 -1 ** 2 == -1
-0 ** 0 == 1                        # 编程语言普遍做法
+0 ** 0 == 1 # 编程语言普遍做法
 ```
 
 ### 一元算术、位运算
@@ -517,7 +517,7 @@ comp_operator ::=  "<" | ">" | "==" | ">=" | "<=" | "!="
 nan = float("NaN")
 (nan is nan) == True
 (nan == nan) == False
-([nan] == [nan]) == True            # 集合比较中，强制规定元素的自反射性
+([nan] == [nan]) == True # 集合比较中，强制规定元素的自反射性
 ```
 
 -    映射：`dict`

@@ -346,7 +346,6 @@ description:
 | 表格 | `components.Table(page_title,js_host)` |
 | 图像 | `components.Image(page_title,js_host)` |
 
-
 > - 当前 `Table`、`Image` 与 `Page` 不兼容
 > - *PyEcharts* 网页组件：<https://pyecharts.org/#/zh-cn/html_components>
 

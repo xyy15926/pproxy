@@ -204,13 +204,13 @@ description: 数据模型--函数决定对象
 ```python
 def iter_N(N: int=3):
     for i in range(N):
-        print((yield))                # 被委托生成器即可打印协程 `.send` 传入值
+        print((yield))      # 被委托生成器即可打印协程 `.send` 传入值
     return N
 class Awaitable:
     def __await__(self):
         return iter_N()
 async def gen_co():
-    ret = await Awaitable()            # 包含 `yield` 将变为异步生成器，故利用可等待对象
+    ret = await Awaitable() # 包含 `yield` 将变为异步生成器，故利用可等待对象
     return ret
 ```
 

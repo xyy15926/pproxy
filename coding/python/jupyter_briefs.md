@@ -68,8 +68,8 @@ description: Jupyter常用基础
             -    `/etc/jupyter`
 
 ```sh
-$ jupyter --paths                    # 列出全部文件目录
-$ jupyter --data-dir                # 列出数据文件目录
+$ jupyter --paths    # 列出全部文件目录
+$ jupyter --data-dir # 列出数据文件目录
 $ jupyter --runtime-dir
 $ jupyter --config-dir
 ```
@@ -84,8 +84,8 @@ $ jupyter --config-dir
 ####    Python 配置文件
 
 ```sh
-$ jupyter <APP> --generate-config            # 生成默认 Python 配置文件，默认为 `jupyter_<APP>_config.py`
-$ jupyter <APP> --<ITEM>=<VALUE>            # 命令行传参配置
+$ jupyter <APP> --generate-config # 生成默认 Python 配置文件，默认为 `jupyter_<APP>_config.py`
+$ jupyter <APP> --<ITEM>=<VALUE>  # 命令行传参配置
 ```
 
 -    可通过配置文件、命令行传参方式配置选项
@@ -96,12 +96,12 @@ $ jupyter <APP> --<ITEM>=<VALUE>            # 命令行传参配置
         -    配置文件为 Python 脚本，遵循 Python 语法
 
 ```python
-c.NotebookApp.password = u'sha1:xxxxxxxx'            # 配置sha1格式密文，需要自己手动生成
-c.NotebookApp.ip = "*"                                # 配置运行访问ip地址
-c.NotebookApp.open_brower = False                    # 默认启动时不开启浏览器
-c.NotebookApp.port = 8888                            # 监听端口，默认
-c.NotebookApp.notebook_dir = u"/path/to/dir"        # Jupyter 默认显示目录路径
-c.NotebookApp.certfile = u"/path/to/ssl_cert_file"    # SSL 证书
+c.NotebookApp.password = u'sha1:xxxxxxxx'          # 配置sha1格式密文，需要自己手动生成
+c.NotebookApp.ip = "*"                             # 配置运行访问ip地址
+c.NotebookApp.open_brower = False                  # 默认启动时不开启浏览器
+c.NotebookApp.port = 8888                          # 监听端口，默认
+c.NotebookApp.notebook_dir = u"/path/to/dir"       # Jupyter 默认显示目录路径
+c.NotebookApp.certfile = u"/path/to/ssl_cert_file" # SSL 证书
 c.NotebookApp.keyfile = u"/path/to/ssl_keyfile"
 ```
 
@@ -114,4 +114,3 @@ c.NotebookApp.keyfile = u"/path/to/ssl_keyfile"
 ```shell
 $ openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout key_name.key -out cert_name.pem
 ```
-

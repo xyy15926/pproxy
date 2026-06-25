@@ -294,7 +294,6 @@ description:
 | `Tree.value`                   | （实际训练时）节点各类样本（加权）数量 | `(node_count, n_output, max_n_classes)` |
 | `Tree.weighted_n_node_samples` | 各节点加权样本数量                     | `(node_count,)`                         |
 
-
 -   `sklearn.tree._tree.Tree`：通过数组存储、组织节点信息，存储决策树的树结构
     -   常作为 `DecisionTree.tree_` 属性
 
@@ -1139,28 +1138,28 @@ description:
 | `datasets.load_sample_image(image_name)`                  |                                  |
 | `datasets.load_sample_images()`                           |                                  |
 
-| 数据生成器                                               | 描述                         |
-|----------------------------------------------------------|------------------------------|
-| `datasets.make_classification(n_samples,...)`            | 分类问题数据                 |
-| `datasets.make_regression(n_samples,...)`                | 回归问题数据                 |
-| `datasets.make_multilabel_classification(...)`           | 多标签分类数据               |
-| `datasets.make_blobs(n_samples,n_features,*,...)`        | 各向同性高斯分布             |
-| `datasets.make_gaussian_quantiles(*,mean,...)`           | 各向同性高斯分布，分位数标注 |
-| `datasets.make_checkerboard(shape,n_clusters,*,...)`     | 棋盘格结构数组               |
-| `datasets.make_circles(n_samples,shuffle,...)`           | 圆环                         |
-| `datasets.make_moons(n_samples,shuffle,...)`             | 交错半环                     |
-| `datasets.make_s_curve(n_samples,noise,...)`             | *S* 曲线数据                 |
-| `datasets.make_s_swiss_roll(n_samples,noise,...)`        | 瑞士卷数据                   |
-| `datasets.make_friedman1(n_samples,...)`                 |                              |
-| `datasets.make_friedman2(n_samples,...)`                 |                              |
-| `datasets.make_friedman3(n_samples,...)`                 |                              |
-| `datasets.make_hastie_10_2(n_samples,...)`               |                              |
-| `datasets.make_make_biclusters(shape,n_clusters,*,...)`  |                              |
-| `datasets.make_low_rank_matrix(n_samples,...)`           | 钟形奇异值低秩矩阵           |
-| `datasets.make_spd_matrix(dim,...)`                      | 对称正定矩阵                 |
-| `datasets.make_sparse_spd_matrix(dim,...)`               | 稀疏对称正定矩阵             |
-| `datasets.make_sparse_uncorrelated(dim,...)`             | 稀疏不相关回归数据           |
-| `datasets.make_sparse_coded_signal(n_sample,...)`        |                              |
+| 数据生成器                                              | 描述                         |
+|---------------------------------------------------------|------------------------------|
+| `datasets.make_classification(n_samples,...)`           | 分类问题数据                 |
+| `datasets.make_regression(n_samples,...)`               | 回归问题数据                 |
+| `datasets.make_multilabel_classification(...)`          | 多标签分类数据               |
+| `datasets.make_blobs(n_samples,n_features,*,...)`       | 各向同性高斯分布             |
+| `datasets.make_gaussian_quantiles(*,mean,...)`          | 各向同性高斯分布，分位数标注 |
+| `datasets.make_checkerboard(shape,n_clusters,*,...)`    | 棋盘格结构数组               |
+| `datasets.make_circles(n_samples,shuffle,...)`          | 圆环                         |
+| `datasets.make_moons(n_samples,shuffle,...)`            | 交错半环                     |
+| `datasets.make_s_curve(n_samples,noise,...)`            | *S* 曲线数据                 |
+| `datasets.make_s_swiss_roll(n_samples,noise,...)`       | 瑞士卷数据                   |
+| `datasets.make_friedman1(n_samples,...)`                |                              |
+| `datasets.make_friedman2(n_samples,...)`                |                              |
+| `datasets.make_friedman3(n_samples,...)`                |                              |
+| `datasets.make_hastie_10_2(n_samples,...)`              |                              |
+| `datasets.make_make_biclusters(shape,n_clusters,*,...)` |                              |
+| `datasets.make_low_rank_matrix(n_samples,...)`          | 钟形奇异值低秩矩阵           |
+| `datasets.make_spd_matrix(dim,...)`                     | 对称正定矩阵                 |
+| `datasets.make_sparse_spd_matrix(dim,...)`              | 稀疏对称正定矩阵             |
+| `datasets.make_sparse_uncorrelated(dim,...)`            | 稀疏不相关回归数据           |
+| `datasets.make_sparse_coded_signal(n_sample,...)`       |                              |
 
 ### `sklearn.covariance`
 
@@ -1263,4 +1262,3 @@ description:
 | `utils.check_consistent_length(*arrays)`                               | 检验数组第一维度是否一致 |
 | `utils.class_weight.compute_class_weight(class_weight,*,classes,y)`    | 估计类别权重             |
 | `utils.class_weight.compute_sample_weight(class_weight,y,*[,indices])` | 估计样本权重             |
-

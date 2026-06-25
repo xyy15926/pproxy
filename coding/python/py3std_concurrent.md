@@ -21,24 +21,24 @@ description:
 class Thread:
     def __init__(
         self,
-        group=None,                 # 为后续 `ThreadGroup` 扩展保留，应始终为 `None`
-        target=None,                # `run` 调用、线程执行目标函数
-        name=None,                  # 线程名
-        args=(),                    # `target` 函数参数
-        kwargs={}                   # `target` 函数参数
+        group=None,   # 为后续 `ThreadGroup` 扩展保留，应始终为 `None`
+        target=None,  # `run` 调用、线程执行目标函数
+        name=None,    # 线程名
+        args=(),      # `target` 函数参数
+        kwargs={}     # `target` 函数参数
         *,
-        daemon=None,                # 守护线程，缺省继承当前线程该配置
-        context=None,               # 启动线程时的 `contextvars.Context`
+        daemon=None,  # 守护线程，缺省继承当前线程该配置
+        context=None, # 启动线程时的 `contextvars.Context`
     ):
         pass
 
-    def run(self):                  # 执行函数体
+    def run(self):    # 执行函数体
         pass
 
-    def start(self):                # 启动线程
+    def start(self):  # 启动线程
         pass
 
-    def join(self):                 # 等待线程完成
+    def join(self):   # 等待线程完成
         pass
 ```
 
@@ -90,15 +90,15 @@ class Thread:
 ####    `threading.Lock` 实现
 
 ```c
-typedef void *PyThread_type_lock;       // `pythread.h` 中对不同平台底层锁的屏蔽
+typedef void *PyThread_type_lock; // `pythread.h` 中对不同平台底层锁的屏蔽
 
-typedef struct {                        // `_threadmodule.c` 中的锁对象封装
+typedef struct {                  // `_threadmodule.c` 中的锁对象封装
     PyObject_HEAD
-    PyThread_type_lock lock_lock;       // 底层 C 锁
-    PyObject *lock_lock;                // 拥有者线程 ID (用于 RLock)
-    unsigned long lock_count;           // 重入计数 (用于 RLock)
-    char locked;                        // 状态标志
-    char in_weakreflist;                // 弱引用支持
+    PyThread_type_lock lock_lock; // 底层 C 锁
+    PyObject *lock_lock;          // 拥有者线程 ID (用于 RLock)
+    unsigned long lock_count;     // 重入计数 (用于 RLock)
+    char locked;                  // 状态标志
+    char in_weakreflist;          // 弱引用支持
 } lockobject;
 ```
 
@@ -212,7 +212,7 @@ def hello():
     print("hello, world")
 
 t = Timer(30.0, hello)
-t.start()                       # 30 秒后执行
+t.start() # 30 秒后执行
 ```
 
 > - `threading` 线程：<https://docs.python.org/zh-cn/3.14/library/threading.html>
@@ -237,23 +237,23 @@ t.start()                       # 30 秒后执行
 class Process:
     def __init__(
         self,
-        group=None,                 # 必须为 `None`
-        target=None,                # 进程执行函数
+        group=None,           # 必须为 `None`
+        target=None,          # 进程执行函数
         name=None,
-        args=(),                    # `target` 函数参数
+        args=(),              # `target` 函数参数
         kwargs={}
         *,
-        daemon: bool = False,       # 守护线程，置位时：主线程结束时不等待此线程结束
+        daemon: bool = False, # 守护线程，置位时：主线程结束时不等待此线程结束
     ):
         pass
 
-    def run(self):                  # 执行函数体
+    def run(self):            # 执行函数体
         pass
 
-    def start(self):                # 启动线程
+    def start(self):          # 启动线程
         pass
 
-    def join(self):                 # 等待线程完成
+    def join(self):           # 等待线程完成
         pass
 ```
 
@@ -416,11 +416,11 @@ class Process:
 import multiprocessing as mp
 import time
 
-_lock = None                        # 全局变量，进程池进程继承得到
+_lock = None     # 全局变量，进程池进程继承得到
 
 def init_worker(lock):
     global _lock
-    _lock = lock                    # 初始化时设置全局锁
+    _lock = lock # 初始化时设置全局锁
 
 def worker(x):
     with _lock:
@@ -468,11 +468,11 @@ if __name__ == '__main__':
 class Pool:
     def __init__(
         self,
-        processes: int = None,              # 工作进程数，默认 `os.cpu_count()`
-        initializer: callable = None,       # 每个工作进程启动时调用的初始化函数
-        initargs: tuple = (),               # 初始化函数的参数
-        maxtasksperchild: int = None,       # 每个工作进程最大任务数，达到后重启（防内存泄漏）
-        context: Context = None             # 指定启动上下文（spawn/fork/forkserver）
+        processes: int = None,        # 工作进程数，默认 `os.cpu_count()`
+        initializer: callable = None, # 每个工作进程启动时调用的初始化函数
+        initargs: tuple = (),         # 初始化函数的参数
+        maxtasksperchild: int = None, # 每个工作进程最大任务数，达到后重启（防内存泄漏）
+        context: Context = None       # 指定启动上下文（spawn/fork/forkserver）
     ):
         pass
 
@@ -550,11 +550,11 @@ def worker(inqueue, outqueue):
 class ThreadPoolExecutor:
     def __init__(
         self,
-        max_workers: int = None,            # 最大线程数
-        thread_name_prefix: str = "",       # 线程名前缀
-        initializer: callable = None,       # 线程初始化函数，初始化线程上下文
-        initargs: tuple = (),               # 线程初始化函数参数
-        **ctxkwargs,                        # 看源码，不应传参
+        max_workers: int = None,         # 最大线程数
+        thread_name_prefix: str = "",    # 线程名前缀
+        initializer: callable = None,    # 线程初始化函数，初始化线程上下文
+        initargs: tuple = (),            # 线程初始化函数参数
+        **ctxkwargs,                     # 看源码，不应传参
     ):
         pass
 
@@ -564,10 +564,10 @@ class ThreadPoolExecutor:
     def map(
         self,
         fn: callable,
-        *iterable: Any,                     # 位置参数迭代器，分别迭代各位置参数
-        timeout: int = None,                # 超时时间
-        chunksize: int = 1,                 # 序列化批大小，仅对进程池有意义
-        buffersize: int = None,             # 最大未处理、迭代任务数
+        *iterable: Any,                  # 位置参数迭代器，分别迭代各位置参数
+        timeout: int = None,             # 超时时间
+        chunksize: int = 1,              # 序列化批大小，仅对进程池有意义
+        buffersize: int = None,          # 最大未处理、迭代任务数
     ):
         pass
 
@@ -575,12 +575,12 @@ class ThreadPoolExecutor:
 class ProcessPoolExecutor:
     def __init__(
         self,
-        max_workers: int = None,            # 最大进程数
-        mp_context: Context = None,         # 进程上下文
-        initializer: callable = None,       # 进程初始化函数，初始化进程上下文
-        initargs: tuple = (),               # 进程初始化函数参数
+        max_workers: int = None,         # 最大进程数
+        mp_context: Context = None,      # 进程上下文
+        initializer: callable = None,    # 进程初始化函数，初始化进程上下文
+        initargs: tuple = (),            # 进程初始化函数参数
         *,
-        max_tasks_per_child: int = None,    # 每个进程最多处理任务数
+        max_tasks_per_child: int = None, # 每个进程最多处理任务数
     ):
         pass
 
@@ -588,7 +588,7 @@ def worker(a, b):
     print(a, b)
 
 with ProcessPoolExecutor(4) as ppe:
-    ppe.map(worker, range(4), range(4))      # `map` 与 `starmap` 参数传递逻辑不同
+    ppe.map(worker, range(4), range(4))  # `map` 与 `starmap` 参数传递逻辑不同
 
 with Pool(4) as p:
     p.starmap(worker, [range(4), range(4)])

@@ -95,8 +95,8 @@ description:
 df = pd.DataFrame(np.random.rand(5,4),
     columns = list("ABCD"),
     index = pd.date_range("20220101", periods=5))
-df.loc["20220101": "20220103"]                    # 可转换为标签的字符串作为切片
-df.loc(axis=1)["A": "C"]                        # 切换轴向
+df.loc["20220101": "20220103"] # 可转换为标签的字符串作为切片
+df.loc(axis=1)["A": "C"]       # 切换轴向
 ```
 
 ####    `[]`、`.`
@@ -563,9 +563,9 @@ df.loc(axis=1)["A": "C"]                        # 切换轴向
     -    `stack`、`unstack`：轴方向的转换
 
 ```python
-melted.pivot(<KEYS>, <ATTR_NAME>, <ATTR_VAL>).reset_index()        # 可还原 `melt` 结果
-pivoted.reset_index().melt(<KEYS>)                                # 可还原 `pivot` 已聚集结果
-pivoted.stack().reset_index()                                    # 同
+melted.pivot(<KEYS>, <ATTR_NAME>, <ATTR_VAL>).reset_index() # 可还原 `melt` 结果
+pivoted.reset_index().melt(<KEYS>)                          # 可还原 `pivot` 已聚集结果
+pivoted.stack().reset_index()                               # 同
 ```
 
 > - *Pivot* 形状变换：<https://pandas.pydata.org/pandas-docs/stable/user_guide/reshaping.html>
@@ -1272,7 +1272,3 @@ pivoted.stack().reset_index()                                    # 同
         -   其中数据均以文本存储，即无法整列转换为数值型时，所有元素将保持为字符串
         -    `thousands` 分隔符仅在数据列可整体转换为数值型时被应用
         -    不支持 `skipfooter` 参数（非 0 时，文本解析引擎被隐式设置为 `python`）
-
-
-
-

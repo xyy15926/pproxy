@@ -89,9 +89,9 @@ description:
 
 ```python
 import logging
-logging.basicConfig(                                        # 创建、配置日志记录器
-    filename="app.log",                                        # 输出至文件
-    format="%(asctime)s: %(levelname)s: %(message)s",        # 配置记录格式
+logging.basicConfig(                                  # 创建、配置日志记录器
+    filename="app.log",                               # 输出至文件
+    format="%(asctime)s: %(levelname)s: %(message)s", # 配置记录格式
     level=logging.INFO)
 logging.warning("A warning")
 ```
@@ -107,13 +107,13 @@ logging.warning("A warning")
 
 ```python
 import logging
-logger = logging.getLogger("example")                                        # 获取指定名称日志记录器
+logger = logging.getLogger("example")                                # 获取指定名称日志记录器
 logger.setLevel(logging.INFO)
-sh = logging.StreamHandler()                                                # 创建流日志处理器
+sh = logging.StreamHandler()                                         # 创建流日志处理器
 sh.setLevel(logging.DEBUG)
-fmter = logging.Formatter("%(asctime)s: %(levelname)s: %(message)s")        # 配置记录格式
-sh.setFormatter(fmter)                                                        # 日志处理器管理格式器
-logger.addHandler(sh)                                                        # 日志记录器添加处理器
+fmter = logging.Formatter("%(asctime)s: %(levelname)s: %(message)s") # 配置记录格式
+sh.setFormatter(fmter)                                               # 日志处理器管理格式器
+logger.addHandler(sh)                                                # 日志记录器添加处理器
 logger.warning("A warning")
 ```
 
@@ -124,4 +124,3 @@ logger.warning("A warning")
         -    以支持 *YAML*、*JSON* 等其他格式的配置文件，甚至是 `pickle` 序列化的配置
 
 > - *Logging* 常用指引：<https://docs.python.org/zh-cn/3/howto/logging.html>
-

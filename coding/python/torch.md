@@ -67,7 +67,6 @@ description:
 > - 计算图捕获：<https://zhuanlan.zhihu.com/p/644590863>
 > - *Double Backward with Custom Functions*：<https://pytorch.org/tutorials/intermediate/custom_function_double_backward_tutorial.html>
 
-
 ##  `torch.Tensor` 张量
 
 -   `torch.Tensor` 张量：类似 `np.ndarray` 记录模型输入、输出、参数的数据结构，支持包括 GPU 在内的硬件加速
@@ -426,7 +425,6 @@ def my_cube(x):
         -   `nn.modules` 包、子包中定义的常用模块类
         -   `nn.parameter` 中参数类
     -   `nn.functional` 中函数未被引入 `nn` 命名空间
-
 
 > - *What is `torch.nn` really*：<https://pytorch.org/tutorials/beginner/nn_tutorial.html>
 > - `torch.nn` *API*：<https://pytorch.org/docs/stable/nn.html>
@@ -937,7 +935,7 @@ class Module:
                     load(child, prefix + name + '.')
 
         load(self)
-        load = None  # break load-&gt;load reference cycle
+        load = None # break load-&gt;load reference cycle
         if strict:
             if len(unexpected_keys) &gt; 0:
                 error_msgs.insert(

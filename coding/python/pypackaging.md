@@ -29,9 +29,9 @@ description:
 -   自动补全
     ```python
     import readline
-    import rlcompleter                          # 为自动补全`rlcompleter`不能省略
+    import rlcompleter                      # 为自动补全`rlcompleter`不能省略
     import atexit
-    readline.parse_and_bind("tab:complete")     # 绑定`<tab>`为自动补全
+    readline.parse_and_bind("tab:complete") # 绑定`<tab>`为自动补全
     try:
         # 读取上次存储输入历史
         readline.read_history("/path/to/python_history")
@@ -217,7 +217,6 @@ recursive-include templates *
 
 -   *PYthon Package Index*：最大的包索引仓库，*Pip* 默认的包搜索仓库
     -   可供开发者自行上传、维护 *Python* 包
-
 
 ####    *PyPI* 包名约定
 
@@ -497,7 +496,6 @@ namespaces = true
 | `channels`                    | 包源通道，可添加 `priority` 项避免覆盖 |
 | `target`                      | 目标平台子项                           |
 | `tasks`                       | 任务                                   |
-
 
 -   *Pixi* 通过配置 `feature`、`environment` 管理多环境
     -   每个 `feature` 可以包含完整的环境描述

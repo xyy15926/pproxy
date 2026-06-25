@@ -542,7 +542,6 @@ description:
 | `lsq_linear(A,b[,bounds,method,tol,...])` | 带限制线性最小二乘   |
 | `curve_fit(f,xdata,ydata[,p0,sigma,...])` | 非线性最小二乘拟合   |
 
-
 | 优化方法       | 描述 |
 |----------------|------|
 | `brent`        |      |

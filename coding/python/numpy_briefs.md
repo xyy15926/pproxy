@@ -445,7 +445,6 @@ Tuple[np.nditer] = np.nested_iters(
 | `datetime64`          | 无            | 无                    | `M`        | `M8`                         | 64 位整形存储               |            |
 | `timedelta64`         | 无            | 无                    | `m`        | `m8`                         | 64 位整形存储               |            |
 
-
 -   数组标量类型说明
     -   所有的数值数组标量类型都均有使用 `<TYPE><LEN>` 位长表示的别名
         -   位长别名取值范围与平台无关
@@ -528,9 +527,9 @@ class dtype(obj[,align,copy])
 ####    结构化数据类型
 
 ```python
-np.dtype([('x', 'f4'), ('y', np.float32), ('z', 'f4', (2, 2))])         // 按元组创建结构化类型
-np.dtype('i8, f4, S3')                                                  // 按 `,` 分隔的字符串
-np.dtype({                                                              // 按字典
+np.dtype([('x', 'f4'), ('y', np.float32), ('z', 'f4', (2, 2))]) // 按元组创建结构化类型
+np.dtype('i8, f4, S3')                                          // 按 `,` 分隔的字符串
+np.dtype({                                                      // 按字典
     "names": ["col1", col2"],
     "formats": ["i4", "f4"],
     "offsets": [0, 4],
@@ -2042,8 +2041,5 @@ def np.ufunc.__callable__(
 
 ##  `np.random`
 
-
 > - *NumPy 1.18* 随机抽样 - 中文参考：<https://www.numpy.org.cn/reference/routines/random.html>
 > - *NumPy 1.24 Random*：<https://numpy.org/1.24/reference/random/index.html>
-
-

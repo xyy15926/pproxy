@@ -361,14 +361,14 @@ literal_char      ::=  <any code point except "{", "}" or NULL>
 ```python
 name = "Fred"
 print(f"he said his name is {name!r}")
-print("he said his name is {repr(name)}")                # 二者等价
+print("he said his name is {repr(name)}")      # 二者等价
 number = 1024
-print(f"{number: #0x}")                                    # 数值类型格式说明符
+print(f"{number: #0x}")                        # 数值类型格式说明符
 today = datetime(year=2017, month=1, day=27)
-print(f"{today: %B %d, %Y}")                            # 日期类型格式说明符
+print(f"{today: %B %d, %Y}")                   # 日期类型格式说明符
 width, precision = 4, 10
 value = decimal.Decimal("12.345")
-print(f"result: {value: {width}.{precision}}")            # 顶层格式说明符嵌套替换字段
+print(f"result: {value: {width}.{precision}}") # 顶层格式说明符嵌套替换字段
 ```
 
 ### 数字字面值
