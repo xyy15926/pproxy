@@ -6,7 +6,7 @@ categories:
 tags:
   - Tool
   - Windows
-  - Netword
+  - Network
   - NAT
   - Bridged
   - Virtual Machine
@@ -124,4 +124,3 @@ description: 网络设置
     -   共享宿主机网卡可能会要强制修改虚拟网卡 *VMAV1* 的 IP 地址，需要根据提示在虚拟网络编辑中修改虚拟网络的 *DHCP* 参数
         ![host_only_network_sharing](imgs/host_only_network_sharing.png)
     -   然后修改虚拟网卡 Gateway、DNS 为 *VMAV1* 的 IP 地址
-

@@ -9,7 +9,7 @@ date: 2025-09-15 15:05:54
 updated: 2025-11-12 10:03:42
 toc: true
 mathjax: true
-description: 
+description: FRM 风险管理与公司治理
 ---
 
 #   风险管理与公司治理
@@ -397,7 +397,6 @@ description:
             -   低估问题的复杂性及由此带来的兼容工作量
             -   *AI* 科技应用、数据量的指数增长
             -   费用支出
-
 
 ##  银行、保险
 
@@ -958,7 +957,7 @@ $$\begin{align*}
         -   应转换为百分比变化的风险因子：价格（股票价格、大宗商品价格）
         -   可取原值的风险因子：利率
 
-###  风险度量指标
+### 风险度量指标
 
 -   *Risk Measure* 风险度量指标
     -   *Coherent Risk Measures* 一致性风险度量：可以用作风险指标优劣评判标准
@@ -978,7 +977,7 @@ $$\begin{align*}
                 -   故，*VaR* 不是一致性风险度量指标
             -   $ES$：所有分位数等权重
 
-###  *VaR*
+### *VaR*
 
 -   *Value at Risk* 在险价值：在一定期间内 *Time Horizon* 和一定置信水平下 *Confidence Level*，投资组合发生的最大损失
     -   货币在险价值、百分比在险价值
@@ -1306,7 +1305,7 @@ E(\sigma_{T+n}^2) &= V_L + (\alpha + \beta)^t (\sigma_T^2 - V_L) \\
     -   *Ratings Momentum Effect* 评级趋势效应：债券评级某年上升、下降，则下一年更有可能继续上升、下降
         -   即，连续年份的信用评级转移矩阵不独立
 
-###  信用风险计量
+### 信用风险计量
 
 ####    违约概率
 
@@ -2258,7 +2257,7 @@ $$ E(R_i) = R_f + \beta_i (E(R_M) - R_f) $$
         -   **合约价值** 随时间发生变化
             -   到期时，$S_T > K$ 则合约对多头价值 $> 0$、对空头价值 $< 0$
 
-###  期货市场
+### 期货市场
 
 -   期货交易所
     -   10 大期货交易所
@@ -2440,7 +2439,7 @@ V_t(T) &= \begin{cases}
 
 > - 期货合约的定义：<https://www.cmegroup.cn/education/318.htm>：价格是期货合约唯一的变动因素
 
-#### 金融期货、金融远期
+####    金融期货、金融远期
 
 #TODO
 -   金融远期与金融期货
@@ -2457,7 +2456,7 @@ V_t(T) &= \begin{cases}
 
 ![frm_example_forward_pricing](imgs/frm_examples/frm_example_forward_pricing.png)
 
-###  大宗商品远期与期货
+### 大宗商品远期与期货
 
 -   大部分大宗商品属于 *Comsumption Asset* 消费资产
     -   *Comsumption Asset* 消费资产、非投资资产：不以投资为目的资产
@@ -2690,7 +2689,7 @@ $$\begin{align*}
         -   面临信用风险的一方是在互换合约中有正收益的一方
         -   大型金融机构间的利率互换和指数 *CDS* 必须采用 *CCP*
 
-###  外汇市场
+### 外汇市场
 
 -   *Foreign Exchange Market/Forex/FX/Currency Market* 外汇市场：买卖外汇的场所
     -   汇率标价方式：首字母缩写
@@ -2779,7 +2778,7 @@ $$ F = \begin{cases}
 > - 如何用通俗的语言解释抛补和非抛补利率平价：<https://www.zhihu.com/question/26048327/answer/2739668103>
 > - 理论平价理论：<https://baike.eastmoney.com/item/%E5%88%A9%E7%8E%87%E5%B9%B3%E4%BB%B7%E7%90%86%E8%AE%BA>
 
-#### FRM 例题
+####    FRM 例题
 
 ![frm_example_swap_fx](imgs/frm_examples/frm_example_swap_fx.png)
 
@@ -2809,7 +2808,7 @@ V_t(T) &= \begin{cases}
             -   即，利率互换定价即为对应期限的平价利率
     -   利率互换估值：利率互换合约在 $t$ 时刻的价值是浮动利率债券和固定利率债券在 $t$ 时刻价值的差
         -   固定利率债券价值：根据市场利率将未来现金流贴现至 $t$ 时刻求和
-        -   浮动利率债券价值有 *Pull to Par* 特征：每个结算日付息后，浮动债券利率的票息率被重置为市场利率、价值回归到面值 
+        -   浮动利率债券价值有 *Pull to Par* 特征：每个结算日付息后，浮动债券利率的票息率被重置为市场利率、价值回归到面值
             -   结算日时，浮点利率债券刚刚支付完票息，价值等于面值
             -   非结算日，计算下个结算日 `票息 = 上个结算日利率 * 时间` 贴现回当前时点
             -   债券的票息即现金流延迟支付、贴现的补偿
@@ -2894,7 +2893,7 @@ V_t(T) &= \begin{cases}
                 L(\sigma_k^2 - \sigma^2) &, 收取固定方 \\
             \end{cases}$$
 
-#  期权
+#   期权
 
 ##  期权
 
@@ -2962,7 +2961,7 @@ V_t(T) &= \begin{cases}
             -   3、6、9、12 月
         -   期限
             -   当月、次月、周期段内后 2 个月：每个月第 3 个周五前可以交易当月期权
-            -   *Weeklys* 
+            -   *Weeklys*
             -   *Long-Term Equity Anticipation Securities*：*CBOE* 交易所交易的、期限可长达 3 年的长期期权
     -   期权的行权价：通常最接近资产价格的 3 个行权价被列出
         -   底层资产价格 `5-25USD`：行权价为 `2.5USD` 倍数
@@ -3316,7 +3315,7 @@ C - P &= (\pi_u C_u + \pi_d C_d) - (\pi_u P_u + \pi_d P_d) \\
     -   *Multi-Step Trees* 多步二叉树：单步二叉树模型基础上，考虑股票经过多步波动价格、期权价值
         -   实际中，估计期权价值时，需要 30-50 步二叉树模型
 
-#### FRM 例题
+####    FRM 例题
 
 ![frm_example_option_price_bitree](imgs/frm_examples/frm_example_option_price_bitree.png)
 ![frm_example_option_price_bitree_2](imgs/frm_examples/frm_example_option_price_bitree_2.png)
@@ -3344,7 +3343,7 @@ C - P &= (\pi_u C_u + \pi_d C_d) - (\pi_u P_u + \pi_d P_d) \\
             &= \frac {1 - d} {u - d} \\
         \end{align*}$$
 
-###  期权定价：*BSM* 模型
+### 期权定价：*BSM* 模型
 
 $$\begin{align*}
 ln S_t &\sim N(\mu + ln S_{t-1}, \sigma^2) \\
@@ -3672,7 +3671,7 @@ $$\begin{align*}
 -   *Box Spread* 盒式价差：判断市场是否存在套利机会
     -   *Long Box Spread*：同时做多 *Bull Call Spread* 和 *Bear Put Spread*
         -   盒式价差的期末收益恒为 $X_H - X_L > 0$
-        -   则，期权费在期初应有 $C_H - C_L + P_L - P_H < 0$ 
+        -   则，期权费在期初应有 $C_H - C_L + P_L - P_H < 0$
         -   故，期权费作为策略成本应有 $C_L - C_H + P_H - P_L = PV(X_H - X_L) = \frac {X_H - X_L} {(1 + R_f)^T}$，否则可以无风险套利
     -   *Short Box Spread*：同时做多 *Bull Put Spread* 和 *Bear Call Spread*（即，同时做空 *Bull Call Spread* 和 *Bear Put Spread*）
         -   盒式价差的期末收益恒为 $X_L - X_H < 0$
@@ -3750,7 +3749,6 @@ $$\begin{align*}
 
 -   *Combination* 组合策略：由不同类型期权混合
 
-
 > - 期权策略：<https://www.cmegroup.cn/education/Optionsstrategies/>
 > - *CFA* 三级知识点：<https://www.zhihu.com/column/c_1482914325425344512>
 
@@ -3815,11 +3813,11 @@ $$\begin{align*}
 
 > - 若 *Strangle* 中看涨行权价低于看跌行权价 $X_C < X_P$，被称为 *Guts*，与 *Strangle* 其实类似
 
-#  债券
+#   债券
 
 ##  公司债券、国债、剥离债券
 
-###  公司债券
+### 公司债券
 
 -   *Corporate Bonds* 公司债券：发行人在指定日期支付事先约定比例的利息，并在到期日 **以面值偿还本金**
     -   债券发行
@@ -4260,7 +4258,7 @@ P &= \sum_{t=1}^{mT} \frac {CF_t} {(1+r)^t} = \begin{cases}
 
 > - 债券价值与期限没有任何关系，**长期限债券的额外票息就是对后续现金流延迟支付、贴现的补偿**
 
-###    利差、*G-Spread*、*Z-Spread*
+### 利差、*G-Spread*、*Z-Spread*
 
 -   *Spread* 利差：债券收益率之差
     -   债券收益率可以分解为两部分：基准收益率和（基准）利差

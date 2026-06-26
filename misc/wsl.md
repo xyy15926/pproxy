@@ -162,7 +162,7 @@ appendWindowsPath = true
 
 ### 其他
 
-#### Terminal 推荐
+####    Terminal 推荐
 
 -   WSL 默认终端是 *CMD*，功能较差
     -   [wsl-terminal](https://github.com/goreliu/wsl-terminal)：专为 WSL 开发的终端模拟器，基于 *mintty*、*wslbridge*，稳定易用
@@ -187,11 +187,10 @@ appendWindowsPath = true
 > - <https://www.zhihu.com/question/36344262/answer/67191917>、
 > - <https://www.zhihu.com/question/38752831>
 
-#### 其他参考
+####    其他参考
 
 -   子系统可以替换为其他非官方支持发行版，如 [archlinux](https://wiki.archlinux.org/index.php/Install_on_WSL_(简体中文))
 -   WSL 可以可以通过 *X Server* 执行 GUI 应用程序 <https://news.ycombinator.com/item?id=13603451>
 -   WSL 官博
     -   <https://blogs.msdn.microsoft.com/wsl/>
     -   <https://blogs.msdn.microsoft.com/commandline/tag/wsl/>
-

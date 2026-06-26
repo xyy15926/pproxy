@@ -89,7 +89,7 @@ description: 字体杂记
 -   *cursive*：手写字体
     -   举例
         -   *Caflisch Script*、*Adobe Poetica*
-        -   xx手写体、xx行草 
+        -   xx手写体、xx行草
 
 -   *fantasy*：梦幻字体（艺术字）
     -   举例
@@ -99,4 +99,3 @@ description: 字体杂记
 > - *serif*、*san-serif* 是西文字体的两大分类
 > - 而后应该是计算机的出现带来的*monospace*的兴起
 > - 最后面两种在正式场合中不常用
-

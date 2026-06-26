@@ -235,4 +235,3 @@ description: VSCode基础
 -   Git 配置
     -   `git.path` 除可为一般 `git.exe` 外，也可以是 “伪装” Git
         -   工具[wslgit](https://github.com/andy-5/wslgit) 可让 VSCode 直接使用 WSL 内的 Git
-

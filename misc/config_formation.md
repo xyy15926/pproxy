@@ -239,10 +239,10 @@ type.name = "pug"
 ```toml
 [[fruits]]
 name = "apple"
-[fruits.physical]       # 子表
+[fruits.physical]    # 子表
 color = "red"
 shape = "round"
-[[fruits.varieties]]    # 嵌套表数组
+[[fruits.varieties]] # 嵌套表数组
 name = "red delicious"
 [[fruits.varieties]]
 name = "granny smith"
@@ -289,7 +289,6 @@ points = [ { x = 1, y = 2, z = 3 },
            { x = 7, y = 8, z = 9 },
            { x = 2, y = 4, z = 8 } ]
 ```
-
 
 ##  Yaml
 
@@ -365,28 +364,28 @@ pkey:
 
 ```yaml
 boolean: 
-    - TRUE              # true, True均可
-    - FALSE             # false, False均可
+    - TRUE                      # true, True均可
+    - FALSE                     # false, False均可
 
 float: 
     - 3.14
-    - 3.14e+2           # 科学计数法
+    - 3.14e+2                   # 科学计数法
 
 int: 
     - 13
     - 0b1010_1010_1010_1010         #二进制
 
 null: 
-    key: ~              # `~`表示null
+    key: ~                      # `~`表示null
 
 string:
-    - 'hello world'     # 单、双引号包括特殊字符
+    - 'hello world'             # 单、双引号包括特殊字符
     - line1
-      line2             # 字符串可以拆成多行，换行转换为空格
+      line2                     # 字符串可以拆成多行，换行转换为空格
 
 datetime:
-    - 2019-07-10                        # ISO 8601格式，`yyyy-MM-dd`
-    - 2019-07-10T17:53:23+08:00         # ISO 8601格式，`<date>T<time>+<timezone>`
+    - 2019-07-10                # ISO 8601格式，`yyyy-MM-dd`
+    - 2019-07-10T17:53:23+08:00 # ISO 8601格式，`<date>T<time>+<timezone>`
 ```
 
 ### 特殊符号
@@ -408,23 +407,23 @@ datetime:
         -   相当于unlist解构
 
 ```yaml
----                         # 文档开始
+---                    # 文档开始
 string: 
     - !!str 13
     - !!str true
-...                         # 文档结束
+...                    # 文档结束
 
----!!set                    # 强转为set
-- A1: &A1 {x: 1, y: 2}      # 定义名称为`A1`锚点
-- A2: &A2 {a: 3, b: 4}      # 定义名称为`A2`锚点
-- B: >                      # 折叠换行符
+---!!set               # 强转为set
+- A1: &A1 {x: 1, y: 2} # 定义名称为`A1`锚点
+- A2: &A2 {a: 3, b: 4} # 定义名称为`A2`锚点
+- B: >                 # 折叠换行符
     this line
     will collapse
-- C: |                      # 保留换行符
+- C: |                 # 保留换行符
     this paragraph
     keeps the <CR>
-- D: *A`                    # 引用名为`SS`的锚点
-- E:                        # E等价于`{x:1, y:2, a:34, b:4}`
+- D: *A`               # 引用名为`SS`的锚点
+- E:                   # E等价于`{x:1, y:2, a:34, b:4}`
     <<: [*A1, *A2]
     a: 34
 ...
@@ -439,4 +438,3 @@ string:
         -   `PyYaml`：`import yaml`
 
 ##  Xml
-

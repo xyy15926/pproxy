@@ -8,7 +8,7 @@ tags:
   - Markup Language
   - Markdown
 date: 2019-03-21 17:27:37
-updated: 2024-08-09 17:13:59
+updated: 2026-06-26 14:33:14
 toc: true
 mathjax: true
 comments: true
@@ -38,7 +38,7 @@ description: MarkDown Basics
 > - *Github Flavored Markdown Spec*：<https://github.github.com/gfm/>
 > - *Markdown* 语法中文：<https://markdown.com.cn/basic-syntax/>
 
-###    字符与行
+### 字符与行
 
 -   *CommonMark Spec* 不指定编码，行由字符而不是字节组成（编码处理依赖具体解析器）
     -   字符：*Unicode* 代码点
@@ -270,7 +270,7 @@ description: MarkDown Basics
     -   转义：任意 *ASCII* 符号可用反斜杠转义
     -   实体：所有有效 *HTML* 实体（除代码块、内联代码外）原样识别
         -   命名实体：`&NAME;`
-        -   十进制实体：`&#DIGIT;` 
+        -   十进制实体：`&#DIGIT;`
         -   十六进制实体：`&#XDIGIT;`
 
 ####    内联代码
@@ -302,7 +302,7 @@ description: MarkDown Basics
         -   符号包裹内测若有空格则会当作普通符号
         -   可 `\*`、`\_` 转义的方式输出普通符号
 
-#### 链接
+####    链接
 
 -   链接格式要求：包含链接描述、链接目标、可选的链接标题
     -   链接描述：`[]` 包裹的内联元素
@@ -400,9 +400,10 @@ description: MarkDown Basics
     -   [x] 已完成事项[^gfm]
     -   [ ] 未完成事项
 
-|TH1    |TH2    |TH3    |Th4    |
-|-----|:----|:---:|----:|
-|默认   |靠左   |居中   |靠右   |
+| TH1      | TH2      |    TH3   |      Th4 |
+|----------|:---------|:--------:|---------:|
+| `------` | `:-----` | `:----:` | `-----:` |
+| 默认     | 靠左     |   居中   |     靠右 |
 
 [^gfm]: Github Flavored Markdown 任务项列表
 ``````
@@ -455,7 +456,7 @@ description: MarkDown Basics
             -   脚注引用定义会作为独立块在页面底部独立被渲染
             -   脚注将被自动使用右上角数字脚本标注
 
-## *Mermaid*
+##  *Mermaid*
 
 -   *Mermaid*：受 *GFM* 启发，通过文字、代码实现图解
     -   语法结构
@@ -482,27 +483,26 @@ description: MarkDown Basics
         -   `RL`：由右至左
         -   `LR`：由左至右（默认）
 
-|符号|节点形状|
-|-----|-----|
-|`()`       |圆角矩形（默认）|
-|`[]`       |直角矩形（默认）|
-|`([])`     |半圆矩形|
-|`[[]]`     |嵌套矩形|
-|`[()]`     |圆柱体|
-|`(())`     |圆形|
-|`((()))`   |嵌套圆形|
-|`>]`       |缺角矩形|
-|`{}`       |菱形|
-|`{{}}`     |矮六边形|
-|`[//]`     |平行四边形|
-|`[\\]`     |平行四边形|
-|`[/\]`     |上窄梯形|
-|`[\/]`     |下窄梯形|
-
+| 符号     | 节点形状         |
+|----------|------------------|
+| `()`     | 圆角矩形（默认） |
+| `[]`     | 直角矩形（默认） |
+| `([])`   | 半圆矩形         |
+| `[[]]`   | 嵌套矩形         |
+| `[()]`   | 圆柱体           |
+| `(())`   | 圆形             |
+| `((()))` | 嵌套圆形         |
+| `>]`     | 缺角矩形         |
+| `{}`     | 菱形             |
+| `{{}}`   | 矮六边形         |
+| `[//]`   | 平行四边形       |
+| `[\\]`   | 平行四边形       |
+| `[/\]`   | 上窄梯形         |
+| `[\/]`   | 下窄梯形         |
 
 > - <https://mermaid.js.org/intro/>
 
-###    *Flowchart*
+### *Flowchart*
 
 -   *Flowchart* 流程图：`flowchart DIRECTION` 指定
     -   `DIRECTION` 流程图布局方向
@@ -535,7 +535,7 @@ click B href "https://baidu.com" _top
 
 > - *Flowchart*：<https://mermaid.js.org/syntax/flowchart.html>
 
-####   流程图节点
+####    流程图节点
 
 -   节点包含三种配置
     -   *id*：节点标识符
@@ -566,7 +566,7 @@ click B href "https://baidu.com" _top
         -   支持链式连接
         -   `&` 可用于声明可析取连接关系
 
-####   流程子图
+####    流程子图
 
 -   `subgraph` 开启流程子图段、`end` 显式结束
     -   类似节可设置 *id*、描述 `[]`，但无法设置形状
@@ -782,4 +782,3 @@ xychart-beta
 ```
 
 > - *XYChart*：<https://mermaid.js.org/syntax/xyChart.html>
-
