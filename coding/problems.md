@@ -1,9 +1,9 @@
 ---
 title: 经典问题
 categories:
-  - Alogrithm
+  - Algorithm
 tags:
-  - Alogrithm
+  - Algorithm
   - Data Structure
   - Problems
 date: 2024-01-06 18:32:01

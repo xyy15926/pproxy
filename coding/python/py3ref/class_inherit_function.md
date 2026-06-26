@@ -1456,22 +1456,22 @@ def object.__call__(self[,args...]):
     -    不应支持的运算应保持未定义状态
     -    不受支持参数类型应返回 `NotImplemented`
 
-| 方法名                           | 钩子          | 说明                                     |  |
-|----------------------------------|---------------|------------------------------------------|--|
-| `__add__(self,other)`            | `+`           |                                          |  |
-| `__sub__(self,other)`            | `-`           |                                          |  |
-| `__mul__(self,other)`            | `*`           |                                          |  |
-| `__matmul__(self,other)`         | `@`           | 无内置类型实现                           |  |
-| `__truediv__(self,other)`        | `/`           |                                          |  |
-| `__floordiv__(self,other)`       | `//`          |                                          |  |
-| `__mod__(self,other)`            | `%`           |                                          |  |
-| `__divmod__(self,other)`         | `divmod()`    |                                          |  |
-| `__pow__(self,other[,modulo=1])` | `pow()`、`**` | 若需支持三元版本 `pow`，应实现可选三参数 |  |
-| `__lshift__(self,other)`         | `<<`          |                                          |  |
-| `__rshift__(self,other)`         | `>>`          |                                          |  |
-| `__and__(self,other)`            | `&`           |                                          |  |
-| `__xor__(self,other)`            | `^`           |                                          |  |
-| `__or__(self,other)`             | `             | `                                        |  |
+| 方法名                           | 钩子          | 说明                                     |
+|----------------------------------|---------------|------------------------------------------|
+| `__add__(self,other)`            | `+`           |                                          |
+| `__sub__(self,other)`            | `-`           |                                          |
+| `__mul__(self,other)`            | `*`           |                                          |
+| `__matmul__(self,other)`         | `@`           | 无内置类型实现                           |
+| `__truediv__(self,other)`        | `/`           |                                          |
+| `__floordiv__(self,other)`       | `//`          |                                          |
+| `__mod__(self,other)`            | `%`           |                                          |
+| `__divmod__(self,other)`         | `divmod()`    |                                          |
+| `__pow__(self,other[,modulo=1])` | `pow()`、`**` | 若需支持三元版本 `pow`，应实现可选三参数 |
+| `__lshift__(self,other)`         | `<<`          |                                          |
+| `__rshift__(self,other)`         | `>>`          |                                          |
+| `__and__(self,other)`            | `&`           |                                          |
+| `__xor__(self,other)`            | `^`           |                                          |
+| `__or__(self,other)`             | `\|`          |                                          |
 
 ####    反射二进制算术运算
 
@@ -1481,22 +1481,22 @@ def object.__call__(self[,args...]):
         -    右操作数反射方法优先于左操作数非反射方法被调用
         -    此即，允许子类覆盖祖先类运算符
 
-| 方法名                            | 钩子          | 说明                                    |  |
-|-----------------------------------|---------------|-----------------------------------------|--|
-| `__radd__(self,other)`            | `+`           |                                         |  |
-| `__rsub__(self,other)`            | `-`           |                                         |  |
-| `__rmul__(self,other)`            | `*`           |                                         |  |
-| `__rmatmul__(self,other)`         | `@`           | 无内置类型实现                          |  |
-| `__rtruediv__(self,other)`        | `/`           |                                         |  |
-| `__rfloordiv__(self,other)`       | `//`          |                                         |  |
-| `__rmod__(self,other)`            | `%`           |                                         |  |
-| `__rdivmod__(self,other)`         | `divmod()`    |                                         |  |
-| `__rpow__(self,other[,modulo=1])` | `pow()`、`**` | 三元版本 `pow` 不支持调用，转换规则复杂 |  |
-| `__rlshift__(self,other)`         | `<<`          |                                         |  |
-| `__rrshift__(self,other)`         | `>>`          |                                         |  |
-| `__rand__(self,other)`            | `&`           |                                         |  |
-| `__rxor__(self,other)`            | `^`           |                                         |  |
-| `__ror__(self,other)`             | `             | `                                       |  |
+| 方法名                            | 钩子          | 说明                                    |
+|-----------------------------------|---------------|-----------------------------------------|
+| `__radd__(self,other)`            | `+`           |                                         |
+| `__rsub__(self,other)`            | `-`           |                                         |
+| `__rmul__(self,other)`            | `*`           |                                         |
+| `__rmatmul__(self,other)`         | `@`           | 无内置类型实现                          |
+| `__rtruediv__(self,other)`        | `/`           |                                         |
+| `__rfloordiv__(self,other)`       | `//`          |                                         |
+| `__rmod__(self,other)`            | `%`           |                                         |
+| `__rdivmod__(self,other)`         | `divmod()`    |                                         |
+| `__rpow__(self,other[,modulo=1])` | `pow()`、`**` | 三元版本 `pow` 不支持调用，转换规则复杂 |
+| `__rlshift__(self,other)`         | `<<`          |                                         |
+| `__rrshift__(self,other)`         | `>>`          |                                         |
+| `__rand__(self,other)`            | `&`           |                                         |
+| `__rxor__(self,other)`            | `^`           |                                         |
+| `__ror__(self,other)`             | `\|`          |                                         |
 
 ####    扩展算数赋值
 
@@ -1504,21 +1504,21 @@ def object.__call__(self[,args...]):
     -    若方法未定义，相应扩展算数赋值将回退到普通方法中
     -    某些情况下，扩展赋值可导致未预期错误
 
-| 方法名                            | 钩子  | 说明           |  |
-|-----------------------------------|-------|----------------|--|
-| `__iadd__(self,other)`            | `+=`  |                |  |
-| `__isub__(self,other)`            | `-=`  |                |  |
-| `__imul__(self,other)`            | `*=`  |                |  |
-| `__imatmul__(self,other)`         | `@=`  | 无内置类型实现 |  |
-| `__itruediv__(self,other)`        | `/=`  |                |  |
-| `__ifloordiv__(self,other)`       | `//=` |                |  |
-| `__imod__(self,other)`            | `%=`  |                |  |
-| `__ipow__(self,other[,modulo=1])` | `**=` |                |  |
-| `__ilshift__(self,other)`         | `<<=` |                |  |
-| `__irshift__(self,other)`         | `>>=` |                |  |
-| `__iand__(self,other)`            | `&=`  |                |  |
-| `__ixor__(self,other)`            | `^=`  |                |  |
-| `__ior__(self,other)`             | `     | =`             |  |
+| 方法名                            | 钩子  | 说明           |
+|-----------------------------------|-------|----------------|
+| `__iadd__(self,other)`            | `+=`  |                |
+| `__isub__(self,other)`            | `-=`  |                |
+| `__imul__(self,other)`            | `*=`  |                |
+| `__imatmul__(self,other)`         | `@=`  | 无内置类型实现 |
+| `__itruediv__(self,other)`        | `/=`  |                |
+| `__ifloordiv__(self,other)`       | `//=` |                |
+| `__imod__(self,other)`            | `%=`  |                |
+| `__ipow__(self,other[,modulo=1])` | `**=` |                |
+| `__ilshift__(self,other)`         | `<<=` |                |
+| `__irshift__(self,other)`         | `>>=` |                |
+| `__iand__(self,other)`            | `&=`  |                |
+| `__ixor__(self,other)`            | `^=`  |                |
+| `__ior__(self,other)`             | `\|=` |                |
 
 ####    一元算术运算
 

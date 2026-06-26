@@ -231,7 +231,7 @@ yield_stmt ::= yield_expression
 ```
 -    `yield` 语句：语义上等于 `yield` 表达式
     -    可用于省略在使用等效yield表达式必须的圆括号
-    -    `yeild` 表达式、语句仅在定义（异步）生成器函数时使用，且仅用于函数体内部，且函数体包含 `yield` 就使得该定义创建生成器函数而非普通函数
+    -    `yield` 表达式、语句仅在定义（异步）生成器函数时使用，且仅用于函数体内部，且函数体包含 `yield` 就使得该定义创建生成器函数而非普通函数
 
 ```python
 yield <expr>
@@ -436,7 +436,7 @@ global_stmt ::= "global" identifier ("," identifier)*
 ### `nonlocal`
 
 ```bnf
-nonlocal_stmt ::= "nonlocal" indentifier ("," identifier)*
+nonlocal_stmt ::= "nonlocal" identifier ("," identifier)*
 ```
 
 -    `nonlocal` 语句：使得列出的名称指向之前最近的包含作用域中绑定的、除全局变量外的变量

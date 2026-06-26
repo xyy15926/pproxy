@@ -729,7 +729,7 @@ $ null=
 
 -   `$GLOBIGNORE`：文件名扩展结果中匹配其中模式的将被移除
     -   `nocaseglob` 被设置时，匹配时不考虑大小写
-    -   `GLOBINGNORE` 有非空值时
+    -   `GLOBIGNORE` 有非空值时
         -   `.`、`..` 总是被忽略
         -   需要将 `.*` 添加至其中，否则相当于 `dotglob` 被设置
 

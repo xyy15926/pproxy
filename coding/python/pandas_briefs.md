@@ -42,14 +42,14 @@ description: Pandas DataFrame 与 Series 操作速查
 
 ### 索引抽取、赋值
 
-| `DF` 访问            | 描述                         | 返回值 | 说明                      |  |
-|----------------------|------------------------------|--------|---------------------------|--|
-| `loc([axis])[]`      | 行优先、基于标签的索引、赋值 |        |                           |  |
-| `iloc([axis])[]`     | 行优先、基于位置的索引       |        |                           |  |
-| `at[]`               | 行优先、基于标签的索引       |        | `D=0`                     |  |
-| `iat[]`              | 行优先、基于位置的索引       | `D=0`  |                           |  |
-| `[]`                 | 基于标签的索引、赋值         |        |                           |  |
-| `get(key[,default])` | 基于列、标签的索引           |        | 类似 `[]`，但可设置默认值 |  |
+| `DF` 访问            | 描述                         | 返回值 | 说明                      |
+|----------------------|------------------------------|--------|---------------------------|
+| `loc([axis])[]`      | 行优先、基于标签的索引、赋值 |        |                           |
+| `iloc([axis])[]`     | 行优先、基于位置的索引       |        |                           |
+| `at[]`               | 行优先、基于标签的索引       | `D=0`  |                           |
+| `iat[]`              | 行优先、基于位置的索引       | `D=0`  |                           |
+| `[]`                 | 基于标签的索引、赋值         |        |                           |
+| `get(key[,default])` | 基于列、标签的索引           |        | 类似 `[]`，但可设置默认值 |
 
 > - 数据抽取：<https://www.pypandas.cn/docs/user_guide/indexing.html>
 > - 数据抽取：<https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html>
@@ -325,18 +325,18 @@ df.loc(axis=1)["A": "C"]       # 切换轴向
 
 ### `DataFrameGroupBy` 应用
 
-| `DataFrameGroupBy` 属性、方法         | 描述                                 | 返回值                       | 说明                           |  |
-|---------------------------------------|--------------------------------------|------------------------------|--------------------------------|--|
-| `pd.Grouper(key,level,freq,axis,...)` | 创建分组指示器                       | `Grouper`                    |                                |  |
-| `__iter__()`                          | 迭代                                 | `(<GROUP_KEY>, <GROUP>),...` |                                |  |
-| `__getitem__()`                       | `SeriesGroupBy`，即列 `groupby` 结果 |                              |                                |  |
-| `groups`                              | 分组、标签                           | `{<GROUP>:[LABELS]}`         |                                |  |
-| `indices`                             | 分组、位序                           | `{GROUP>:<POS>}`             |                                |  |
-| `get_group(name[,obj])`               | 获取指定组别                         | `S`                          |                                |  |
-| `apply(func,*args[,engine,...])`      | 逐组（整个子 `DF`）转换              | `R,C`                        | 返回结果需与原子 `DF` 广播兼容 |  |
-| `transform(func,*args,**kwargs)`      | 逐组、逐列应用                       | `R,C`                        | 返回标量时被广播               |  |
-| `aggregate(func,*args[,engine,...])`  | 逐组、按列聚集                       | `R-,C*len(func)`             |                                |  |
-| `agg(func,*args,**kwargs)`            | 同 `aggregate`                       |                              |                                |  |
+| `DataFrameGroupBy` 属性、方法         | 描述                                 | 返回值                       | 说明                           |
+|---------------------------------------|--------------------------------------|------------------------------|--------------------------------|
+| `pd.Grouper(key,level,freq,axis,...)` | 创建分组指示器                       | `Grouper`                    |                                |
+| `__iter__()`                          | 迭代                                 | `(<GROUP_KEY>, <GROUP>),...` |                                |
+| `__getitem__()`                       | `SeriesGroupBy`，即列 `groupby` 结果 |                              |                                |
+| `groups`                              | 分组、标签                           | `{<GROUP>:[LABELS]}`         |                                |
+| `indices`                             | 分组、位序                           | `{GROUP>:<POS>}`             |                                |
+| `get_group(name[,obj])`               | 获取指定组别                         | `S`                          |                                |
+| `apply(func,*args[,engine,...])`      | 逐组（整个子 `DF`）转换              | `R,C`                        | 返回结果需与原子 `DF` 广播兼容 |
+| `transform(func,*args,**kwargs)`      | 逐组、逐列应用                       | `R,C`                        | 返回标量时被广播               |
+| `aggregate(func,*args[,engine,...])`  | 逐组、按列聚集                       | `R-,C*len(func)`             |                                |
+| `agg(func,*args,**kwargs)`            | 同 `aggregate`                       |                              |                                |
 
 -    `pd.core.groupby.generic.DataFrameGroupBy` 说明
     -    其中 `aggregate`、`transform` 方法支持设置列名
@@ -676,17 +676,17 @@ pivoted.stack().reset_index()                               # 同
 
 ### `Index` 运算
 
-| `Index` 运算                          | 描述         | 返回值       | 说明                           |                      |
-|---------------------------------------|--------------|--------------|--------------------------------|----------------------|
-| `argsort(*args,**kwargs)`             | 索引排序     | `np.ndarray` | 参数被传递给 `ndarray.argsort` |                      |
-| `searchedsorted(value[,side,sorter])` | 查找插入位置 |              |                                |                      |
-| `sort_values([return_indexer,...])`   | 排序         | `S`          |                                |                      |
-| `append(other)`                       | 合并 `Index` | `R+`         |                                |                      |
-| `join(other[,how,level,...])`         | 连接         | `R+/-`       |                                |                      |
-| `union(other[,sort])`                 | `\           | ` 并         |                                | 需转换为公共 `dtype` |
-| `intersection(other[,sort])`          | `&` 交       |              |                                |                      |
-| `difference(other[,sort])`            | 差           |              |                                |                      |
-| `symmetric_difference(other[,...])`   | `^` 对称差   |              |                                |                      |
+| `Index` 运算                          | 描述         | 返回值       | 说明                           |
+|---------------------------------------|--------------|--------------|--------------------------------|
+| `argsort(*args,**kwargs)`             | 索引排序     | `np.ndarray` | 参数被传递给 `ndarray.argsort` |
+| `searchedsorted(value[,side,sorter])` | 查找插入位置 |              |                                |
+| `sort_values([return_indexer,...])`   | 排序         | `S`          |                                |
+| `append(other)`                       | 合并 `Index` | `R+`         |                                |
+| `join(other[,how,level,...])`         | 连接         | `R+/-`       |                                |
+| `union(other[,sort])`                 | `\|` 并      |              | 需转换为公共 `dtype`           |
+| `intersection(other[,sort])`          | `&` 交       |              |                                |
+| `difference(other[,sort])`            | 差           |              |                                |
+| `symmetric_difference(other[,...])`   | `^` 对称差   |              |                                |
 
 ### `Index` 筛选
 
@@ -818,23 +818,23 @@ pivoted.stack().reset_index()                               # 同
 
 ### `MultiIndex`
 
-| `MultiIndex` 类、方法、属性                      | 描述               | 返回值        | 说明                                       |  |
-|--------------------------------------------------|--------------------|---------------|--------------------------------------------|--|
-| `MultiIndex([levels,codes,sortorder,...])`       | 按层次构造         |               | 类似 `from_arrays`                         |  |
-| `IndexSlice[]`                                   | 包装索引以方便使用 |               |                                            |  |
-| `MultiIndex.from_arrays(arrays[,sortorder,...])` | 按层次构造         |               | 每项作为索引层（级）                       |  |
-| `MultiIndex.from_tuples(tuples[,sortorder,...])` | 按元素构造         |               | 每项作为索引项                             |  |
-| `MultiIndex.from_product(iterables[,...])`       | 按笛卡尔积创建     |               | 各项创建笛卡尔积作为索引项                 |  |
-| `MultiIndex.from_frame(df[,sortorder,names])`    | 从 `DF` 创建       |               | 类似 `from_tuples`                         |  |
-| `names`                                          | 各层级名           |               |                                            |  |
-| `dtypes`                                         | 各层级数据类型     |               |                                            |  |
-| `nlevels`                                        | 层级数             | `int`         |                                            |  |
-| `levshape`                                       | 各层级因子数       |               |                                            |  |
-| `levels`                                         | 各层因子           | `FrozenList`  |                                            |  |
-| `codes`                                          | 各层编码           | `FronzenList` |                                            |  |
-| `to_frame`                                       | 转换为 `DataFrame` |               | `pd.DF`                                    |  |
-| `remove_unused_level`                            | 移除未使用级别     |               |                                            |  |
-| `is_lexsorted`                                   | 索引是否词法排序   |               | `lexsort_depth` 属性可获取已词法排序层级数 |  |
+| `MultiIndex` 类、方法、属性                      | 描述               | 返回值        | 说明                                       |
+|--------------------------------------------------|--------------------|---------------|--------------------------------------------|
+| `MultiIndex([levels,codes,sortorder,...])`       | 按层次构造         |               | 类似 `from_arrays`                         |
+| `IndexSlice[]`                                   | 包装索引以方便使用 |               |                                            |
+| `MultiIndex.from_arrays(arrays[,sortorder,...])` | 按层次构造         |               | 每项作为索引层（级）                       |
+| `MultiIndex.from_tuples(tuples[,sortorder,...])` | 按元素构造         |               | 每项作为索引项                             |
+| `MultiIndex.from_product(iterables[,...])`       | 按笛卡尔积创建     |               | 各项创建笛卡尔积作为索引项                 |
+| `MultiIndex.from_frame(df[,sortorder,names])`    | 从 `DF` 创建       |               | 类似 `from_tuples`                         |
+| `names`                                          | 各层级名           |               |                                            |
+| `dtypes`                                         | 各层级数据类型     |               |                                            |
+| `nlevels`                                        | 层级数             | `int`         |                                            |
+| `levshape`                                       | 各层级因子数       |               |                                            |
+| `levels`                                         | 各层因子           | `FrozenList`  |                                            |
+| `codes`                                          | 各层编码           | `FronzenList` |                                            |
+| `to_frame`                                       | 转换为 `DataFrame` |               | `pd.DF`                                    |
+| `remove_unused_level`                            | 移除未使用级别     |               |                                            |
+| `is_lexsorted`                                   | 索引是否词法排序   |               | `lexsort_depth` 属性可获取已词法排序层级数 |
 
 -    `MultiIndex` 是
     -    可视为元组数组，其中每个元组唯一
@@ -873,28 +873,28 @@ pivoted.stack().reset_index()                               # 同
 
 ### *DatetimeIndex*
 
-| `DatetimeIndex` 类、属性、方法                | 描述                        | 返回值                   | 说明            |  |
-|-----------------------------------------------|-----------------------------|--------------------------|-----------------|--|
-| `DatatimeIndex([data,freq,tz,normalize,...])` | 不可变 `datatime64` 数据    |                          |                 |  |
-| `year`、`month`、`day`                        | 年、月、日                  |                          |                 |  |
-| `hour`、`miniute`、`second`                   | 时、分、秒                  |                          |                 |  |
-| `microsecond`、`nanosecond`                   | 微秒、毫秒                  |                          |                 |  |
-| `date`                                        | `datetime.date` 序列        | `ndarray(datetime.date)` |                 |  |
-| `time`                                        | `datetime.time` 序列        | `ndarray(datetime.time)` |                 |  |
-| `timez`                                       | 带时区 `datetime.time` 序列 | `ndarray(datetime.time)` |                 |  |
-| `dayofyear`、`day_of_year`                    | 年中日                      |                          |                 |  |
-| `dayofweek`、`day_of_week`、`weekday`         | 周中日                      |                          | 周一为 0        |  |
-| `quarter`                                     | 季度                        |                          |                 |  |
-| `tz`                                          | 时区                        |                          |                 |  |
-| `freq`                                        | `freq` 对象                 |                          | 未设置则 `None` |  |
-| `freqstr`                                     | `freq` 对象字符串           |                          | 同上            |  |
-| `inferred_freq`                               | 推测的频率                  |                          |                 |  |
-| `is_month_start`、`is_month_end`              | 月初、月末                  |                          |                 |  |
-| `is_quarter_start`、`is_quarter_end`          | 季度初、季度j末             |                          |                 |  |
-| `is_year_start`、`is_year_end`                | 年初、年末                  |                          |                 |  |
-| `is_month_start`、`is_month_end`              | 月初、月末                  |                          |                 |  |
-| `is_month_start`、`is_month_end`              | 月初、月末                  |                          |                 |  |
-| `is_leap_year`                                | 闰年                        |                          |                 |  |
+| `DatetimeIndex` 类、属性、方法                | 描述                        | 返回值                   | 说明            |
+|-----------------------------------------------|-----------------------------|--------------------------|-----------------|
+| `DatatimeIndex([data,freq,tz,normalize,...])` | 不可变 `datatime64` 数据    |                          |                 |
+| `year`、`month`、`day`                        | 年、月、日                  |                          |                 |
+| `hour`、`miniute`、`second`                   | 时、分、秒                  |                          |                 |
+| `microsecond`、`nanosecond`                   | 微秒、毫秒                  |                          |                 |
+| `date`                                        | `datetime.date` 序列        | `ndarray(datetime.date)` |                 |
+| `time`                                        | `datetime.time` 序列        | `ndarray(datetime.time)` |                 |
+| `timez`                                       | 带时区 `datetime.time` 序列 | `ndarray(datetime.time)` |                 |
+| `dayofyear`、`day_of_year`                    | 年中日                      |                          |                 |
+| `dayofweek`、`day_of_week`、`weekday`         | 周中日                      |                          | 周一为 0        |
+| `quarter`                                     | 季度                        |                          |                 |
+| `tz`                                          | 时区                        |                          |                 |
+| `freq`                                        | `freq` 对象                 |                          | 未设置则 `None` |
+| `freqstr`                                     | `freq` 对象字符串           |                          | 同上            |
+| `inferred_freq`                               | 推测的频率                  |                          |                 |
+| `is_month_start`、`is_month_end`              | 月初、月末                  |                          |                 |
+| `is_quarter_start`、`is_quarter_end`          | 季度初、季度j末             |                          |                 |
+| `is_year_start`、`is_year_end`                | 年初、年末                  |                          |                 |
+| `is_month_start`、`is_month_end`              | 月初、月末                  |                          |                 |
+| `is_month_start`、`is_month_end`              | 月初、月末                  |                          |                 |
+| `is_leap_year`                                | 闰年                        |                          |                 |
 
 -    `DatetimeIndex` 说明
     -    继承有有 `Int64Index`，支持一定算数运算

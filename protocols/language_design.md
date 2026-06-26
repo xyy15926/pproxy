@@ -29,7 +29,7 @@ description: 语言设计
 
 > - *reference transparency*：引用透明，表达式可以用其结果取代而不改变程序含义
 
-##  *Abstarct Syntax Tree*
+##  *Abstract Syntax Tree*
 
 ![js_parser_ast](imgs/js_parser_ast.png)
 ![js_parser_ast_seq](imgs/js_parser_ast_seq.png)
@@ -88,7 +88,7 @@ description: 语言设计
 
 ### *Subtyping*
 
--   *Subtyping/Inclsion Polymorphism*：子类多态，使用基类实例表示派生类
+-   *Subtyping/Inclusion Polymorphism*：子类多态，使用基类实例表示派生类
     -   子类多态可以用于限制多态适用范围
     -   子类多态一般是动态解析的，即函数地址绑定时间
         -   非多态：编译期间绑定
@@ -108,7 +108,7 @@ description: 语言设计
             -   左值声明后，地址不会改变，地址中存储的内容可能发生改变
             -   左值的地址是一个指针值，可以被存储在内存中的、像数据一样被修改
     -   *Readable value* 可读取、右值：非左值表达式
-        -   右值常为字面常量、表达式求职过程中创建的临时对象，强调值、作为对象内容
+        -   右值常为字面常量、表达式求值过程中创建的临时对象，强调值、作为对象内容
         -   右值在内存中没有固定地址，无法持久存在
         -   多数情况下，需要右值处可使用左值替代，反之不可
 
@@ -175,7 +175,7 @@ int get_next_random_value(){
 int main(){
     int array[10];
     // 这里 `get_next_random_value` 就是钩子函数
-    poppulate_array(array, 10, get_next_random_value);
+    populate_array(array, 10, get_next_random_value);
     for(int i=0; i<10; i++){
         printf("%d\n", array[i]);
     }

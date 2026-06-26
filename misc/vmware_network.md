@@ -86,7 +86,7 @@ description: 网络设置
 -   *NAT* 模式网络配置
     -   宿主机服务设置
         -   检查宿主机 *VMware DHCP Service*、*VMware NAT Service* 服务是否启动（VMware 安装一般默认启动此服务）
-    -   *Virtual Network Eidtor* 配置
+    -   *Virtual Network Editor* 配置
         -   *VMnet8* 虚拟交换机默认为 *NAT* 模式
         -   配置 `VMnet8 -> 子网IP`、`VMnet8 -> 子网掩码`
         -   配置 `VMnet8 -> NAT设置`、`VMnet8 -> DHCP` 参数
@@ -115,7 +115,7 @@ description: 网络设置
 -   *Host-Only* 模式网络设置
     -   虚拟机网络设置
         -   `编辑虚拟机设置 -> 网络适配器 -> Host-only/仅主机模式`
-    -   *Virtual Network Eidtor* 配置：类似于 *NAT* 模式
+    -   *Virtual Network Editor* 配置：类似于 *NAT* 模式
         -   但，*VMnet1* 虚拟交换机才默认为 *Host-only* 模式
     -   虚拟机网卡配置：类似 *NAT* 模式
 

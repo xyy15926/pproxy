@@ -330,7 +330,7 @@ where: & y^* = \begin{pmatrix} y \\
     -   先验概率贝叶斯估计
         $$ P_{\lambda}(Y=c_k) = \frac {\sum_{i=1}^N I(y_i = c_i) + \lambda} {N + K\lambda} $$
 
-> - 贝叶斯估计能够避免出现估计概率为 0 情况，影响计算后延概率
+> - 贝叶斯估计能够避免出现估计概率为 0 情况，影响计算后验概率
 
 ### *Semi-Naive Bayes Classifier*
 
@@ -492,7 +492,7 @@ P(Y=0|\hat x) & = \frac 1 {1+exp(\hat w \hat x)}
 > - $\hat x = (x^T|1)^T$
 > - $\hat w = (w^T|b)^T$
 
--   *BiLR* 二项逻辑回归：形式为参数化 *Logisitic* 分布的二分类生成模型
+-   *BiLR* 二项逻辑回归：形式为参数化 *Logistic* 分布的二分类生成模型
     -   利用逻辑函数，将线性函数 $wx$ 转换为概率，将实例 $x$ 归于条件概率较大类
         -   线性函数值越接近正无穷，概率值越接近1
         -   线性函数值越接近负无穷，概率值越接近0
@@ -578,7 +578,7 @@ s.t. & E_P(f_i) - E_{\tilde P}(f_i) = 0, i=1,2,\cdots,M \\
         $$ \mathcal{C} = \{P | E_{P(f_i)} = E_{\tilde P (f_i)}, i=1,2,\cdots,n \} $$
         定义在条件概率分布 $P(Y|X)$ 上的条件熵为
         $$ H(P) = -\sum_{x,y} \tilde P(x) P(y|x) logP(y|x) $$
-        则，模型集合 $\mathcal{C}$ 中条件熵最大者即为最大是模型
+        则，模型集合 $\mathcal{C}$ 中条件熵最大者即为最大熵模型
 
 ### 拉格朗日对偶
 

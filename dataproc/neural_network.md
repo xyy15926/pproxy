@@ -8,7 +8,7 @@ tags:
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
-updated: 2025-12-13 20:14:39
+updated: 2026-06-26 15:08:16
 toc: true
 mathjax: true
 description: 深度学习模型与架构
@@ -119,7 +119,7 @@ f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
             -   即，需要上下文暂存输入、中间结果（用于简化计算）
             -   而，函数输出对当前函数中参数梯度计算往往无意义，而作为下层函数输入
             -   事实上，计算图根节点绝对值无意义，仅因其作为极小化目标（损失）而在正向传播中被计算
-    -   *Back Propogation* 反向传播算法：基于反向自动微分，输入沿网络前向传播计算损失、反向传播计算梯度，调整网络参数
+    -   *Back Propagation* 反向传播算法：基于反向自动微分，输入沿网络前向传播计算损失、反向传播计算梯度，调整网络参数
         ![back_propagation_procedure](imgs/back_propagation_procedure.png)
 
 > - 深度学习利器之自动微分2：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
@@ -156,7 +156,7 @@ f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
         -   可变卷积核通过训练学习参数，以得到效果更好卷积核
         -   传统卷积核参数人为确定，用于提取确定的信息
             -   *Sobel* 算子：获取图像边缘信息
-            -   *Guassian Convolutional Kernel* 高斯卷积核：高斯模糊，是实现尺度变换的唯一线性核
+            -   *Gaussian Convolutional Kernel* 高斯卷积核：高斯模糊，是实现尺度变换的唯一线性核
                 $$\begin{align*}
                 L(x, y, \sigma) & = G(x, y, \sigma) * I(x, y) \\
                 G(x, y, \sigma) & = \frac 1 {2\pi\sigma^2}
@@ -584,7 +584,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
             -   虽然神经元的激活函数值并非 $\{0, 1\}$，但依然直接使用激活函数值均值替代
     -   *K-SAE*：只保留最高的 `K` 个最高激活神经元
 
-##  *Varitional AE*
+##  *Variational AE*
 
 ![vae_variational_ae_structure](imgs/vae_variational_ae_structure.png)
 
@@ -744,7 +744,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 
 #   *Regularization*
 
-##  *Normlization*
+##  *Normalization*
 
 ![normalizations_comparison](imgs/normalizations_comparison.png)
 
@@ -950,12 +950,12 @@ relu(z, \alpha, max) = \left \{ \begin {array} {l}
     z & 0 < z < max \\
     max & z \geq max \\
 \end {array} \right. $$                                                                   |             |
-| *Peramatric ReLU*         | $$
+| *Parametric ReLU*         | $$
 prelu(z) = \left \{ \begin{array} {l}
     \alpha z & z < 0 \\
     z & z> 0 \\
 \end{array} \right. $$                                                                    |             |
-| *Threshhold ReLU*         | $$
+| *Threshold ReLU*          | $$
 trelu(z, theta)= \left \{ \begin{array} {l}
     z & z > theta \\
     0 & otherwise \\
@@ -1046,7 +1046,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 ### *ReLU* 激活
 
--   *Rectfied Linear Units* 修正线性单元：单侧抑制
+-   *Rectified Linear Units* 修正线性单元：单侧抑制
     $$ relu(z, max) = \left \{ \begin{array} {l}
         0 & z \leq 0 \\
         z & 0 < x < max \\
@@ -1180,7 +1180,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
     -   预训练模型
         -   *Word2Vec*
         -   *CoVE*
-        -   *BERT*、*XLNet*、*ReBERTa*
+        -   *BERT*、*XLNet*、*RoBERTa*
         -   *GPT*、*GPT-2*
 
 > - *NLP* 预训练模型综述：<https://zhuanlan.zhihu.com/p/139015428>

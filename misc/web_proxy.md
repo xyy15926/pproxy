@@ -123,7 +123,7 @@ function FindProxyForUrl(url, host){ }
             -   `host`：*URL* 地中的 *host* 部分，即如：`bing.com`
         -   返回值：字符串表示的“代理”，可使用 `;` 分隔多个代理（浏览器将依次尝试）
             -   `DIRECT`：不使用代理，直接连接
-            -   `PORXY host:post`：同原请求类型的代理类型
+            -   `PROXY host:post`：同原请求类型的代理类型
             -   `HTTP host:post`：使用指定 `http` 代理
             -   `HTTPS host:post`：使用指定 `https` 代理
             -   `SOCKS host:post`：使用指定 `socks` 代理
@@ -142,7 +142,7 @@ function FindProxyForUrl(url, host){ }
 | `myIpAddress()`                      | 本机 *IP*             | `string` |                                 |
 | `dnsDomainLevels(host)`              | 域名级别              | `int`    | `0` 开始                        |
 | `shExpMatch(str, shexp)`             | Shell 正则匹配        | `bool`   |                                 |
-| `weekdayRnage(wd1[, wd2[, gmt]])`    | 星期归属指定范围      | `bool`   | 3B 字符串指定范围               |
+| `weekdayRange(wd1[, wd2[, gmt]])`    | 星期归属指定范围      | `bool`   | 3B 字符串指定范围               |
 | `dateRange(d[,M,y][,d[,M,y]][,gmt])` | 日期归属指定范围      | `bool`   | 数字指定日、年，3B 字符串指定月 |
 | `timeRange(h[,m,s][,h[,m,s]][,gmt])` | 时间归属指定范围      | `bool`   |                                 |
 

@@ -112,7 +112,7 @@ description: Rust 标准库 API 速查
 |------------------|---------------------------|----------------|--------------------|-------|
 | `assert_matches` | `assert_matches` 宏       |                |                    | *Exp* |
 | `autodiff`       | `autodiff` 宏             |                |                    | *Exp* |
-| `constracts`     | 语言保证宏                |                |                    | *Exp* |
+| `contracts`      | 语言保证宏                |                |                    | *Exp* |
 | `hint`           | 编译器优化提示            |                |                    |       |
 | `arch`           | *SIMD*、*Vendor* 内部函数 |                |                    |       |
 | `ffi`            | 平台相关类型（*C* 定义）  | *FFI* 绑定工具 |                    |       |
@@ -463,7 +463,7 @@ pub trait FromIterator<A>: Sized { // 可从迭代器转换，即 `Vec`、`HashM
 | `next(&mut self)`                       | `Option<Self::Item>`                               |                                              |       |
 | `next_chunk<const N: usize>(&mut self)` | `Result<[Self::Item; N], IntoIter<Self::Item, N>>` | 迭代为 `N` 长数组                            | *Exp* |
 | `last(self)`                            | `Option<Self::Item>`                               | 返回最后                                     |       |
-| `advance_by(&mut self, n: usize)`       | `Result<(), NoneZeroUsize>`                        | 跳过 `n` 个                                  | *Exp* |
+| `advance_by(&mut self, n: usize)`       | `Result<(), NonZeroUsize>`                         | 跳过 `n` 个                                  | *Exp* |
 | `nth(&mut self, n: usize)`              | `Option<Self::Item>`                               | 返回后第 `n` 个                              |       |
 | `find<P>(&mut self, predicate: P)`      | `Option<Self::Item>`                               | `P(&Self::Item) -> bool` 首个 `true` 元素    |       |
 | `find_map<B, F>(&mut self, f: F)`       | `Option<B>`                                        | `P(&Self::Item) -> Option<B>` 首个 `Some<B>` |       |
@@ -592,7 +592,7 @@ pub trait FromIterator<A>: Sized { // 可从迭代器转换，即 `Vec`、`HashM
 | `ge<I>(self, other: I)`                        | `bool`             | 字典序不小于                                                    |       |
 | `is_sorted(self)`                              | `bool`             | 是否已排序                                                      | *Exp* |
 | `is_sorted_by<F>(self, compare: F)`            | `bool`             | 是否按 `F(&Self::Item, &Self::Item) -> Option<Ordering>` 已排序 | *Exp* |
-| `is_sorted_by_key<K, F>(self, f: F)`           | `boool`            | 是否按 `F(Self::Item) -> K` 作键已排序                          | *Exp* |
+| `is_sorted_by_key<K, F>(self, f: F)`           | `bool`             | 是否按 `F(Self::Item) -> K` 作键已排序                          | *Exp* |
 
 ### `std::ops`
 

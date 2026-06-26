@@ -144,7 +144,7 @@ spark.conf.set("spark.executor.memory", "2g")
 
 ### Directed Asycled Graph
 
-![spark_dag_wide_narrow_dependencies](imgs/spark_dag_wide_narrow_dependecies.png)
+![spark_dag_wide_narrow_dependencies](imgs/spark_dag_wide_narrow_dependencies.png)
 
 -   Spark 同样使用 *DAG* 表示计算流程、维护 `RDD` 之间依赖关系
     -   窄依赖：每个父 `RDD` 最多被一个子 `RDD` 分区使用

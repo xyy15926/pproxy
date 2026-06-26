@@ -234,7 +234,7 @@ description: Vim 编辑器功能与配置
     -   `default.vim`：缺省用户初始化文件
 
 -   初始 `runtimepath` 中 *runtime* 目录结构
-    -   `vimrc`：用户初始化温婉
+    -   `vimrc`：用户初始化文件
     -   `plugin/`：插件脚本目录，初始化时自动载入
     -   `autoload/`：自动载入脚本
     -   `colors/`：颜色配置脚本

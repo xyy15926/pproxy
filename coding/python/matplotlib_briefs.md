@@ -321,15 +321,15 @@ description: Matplotlib配置
 
 ####    列表属性
 
-| `Figure` 列表属性 | 描述                   | 返回值   | 说明                   |  |
-|-------------------|------------------------|----------|------------------------|--|
-| `artists`         | 包含的组件列表         |          |                        |  |
-| `axes`            | `Axes` 实例列表        | 包括子图 |                        |  |
-| `legends`         | `Legend` 实例列表      |          | 与 `Axes.legends` 不同 |  |
-| `lines`           | `Line2D` 实例列表      |          |                        |  |
-| `images`          | `FigureImage` 实例列表 |          |                        |  |
-| `patches`         | `Patch` 实例列表       |          | 少见                   |  |
-| `texts`           | `text` 实例列表        |          |                        |  |
+| `Figure` 列表属性 | 描述                   | 返回值   | 说明                   |
+|-------------------|------------------------|----------|------------------------|
+| `artists`         | 包含的组件列表         |          |                        |
+| `axes`            | `Axes` 实例列表        | 包括子图 |                        |
+| `legends`         | `Legend` 实例列表      |          | 与 `Axes.legends` 不同 |
+| `lines`           | `Line2D` 实例列表      |          |                        |
+| `images`          | `FigureImage` 实例列表 |          |                        |
+| `patches`         | `Patch` 实例列表       |          | 少见                   |
+| `texts`           | `text` 实例列表        |          |                        |
 
 -    不建议直接修改 `Figure` 各列表属性，行为较复杂
     -    `Figure` 按照 `children` 属性绘制结果

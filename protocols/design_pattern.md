@@ -1719,7 +1719,7 @@ public class Originator{
         this.state = state;
     }
     public String getState(){
-        reutrn state;
+        return state;
     }
     public Memento saveStateToMemento(){
         return new Memento(state);

@@ -618,7 +618,7 @@ $$\begin{align*}
 
 > - 两不等式可用绝对值合并，但将不够精确
 
-####    *Bretagnolle-Huber-Carol Inequility*
+####    *Bretagnolle-Huber-Carol Inequality*
 
 -   *Bretagnolle-Huber-Carol* 不等式：${X_i: i=1,2,\cdots,N} i.i.d. M(p1, p_2, \cdots, p_k)$ 服从类别为 $k$ 的多项分布
     $$ p{\sum_{i=1}^k |N_i - Np_i| \geq \epsilon} \leq

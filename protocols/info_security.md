@@ -1,5 +1,5 @@
 ---
-title: Infomation Security
+title: Information Security
 categories:
   - Algorithm
   - Specification
@@ -14,7 +14,7 @@ updated: 2021-10-22 11:21:26
 toc: true
 mathjax: true
 comments: true
-description: Infomation Security
+description: Information Security
 ---
 
 ##  *Hash* 摘要方法

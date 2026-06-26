@@ -1291,12 +1291,12 @@ np.choose(a,choices) == np.array([choices[a[I]][I] for I in np.ndindex(a.shape)]
 
 ####    逻辑与、或
 
-| 逻辑运算                                          | 描述 |   |
-|---------------------------------------------------|------|---|
-| `np.logical_and(x1,x2,/[,out,where,casting,...])` | `&`  |   |
-| `np.logical_or(x1,x2,/[,out,where,casting,...])`  | `    | ` |
-| `np.logical_xor(x1,x2,/[,out,where,casting,...])` | `^`  |   |
-| `np.logical_not(x1,x2,/[,out,where,casting,...])` | `~`  |   |
+| 逻辑运算                                          | 描述 |
+|---------------------------------------------------|------|
+| `np.logical_and(x1,x2,/[,out,where,casting,...])` | `&`  |
+| `np.logical_or(x1,x2,/[,out,where,casting,...])`  | `\|` |
+| `np.logical_xor(x1,x2,/[,out,where,casting,...])` | `^`  |
+| `np.logical_not(x1,x2,/[,out,where,casting,...])` | `~`  |
 
 -   逻辑运算符说明
     -   `&`、`|`、`~`：逐元素逻辑运算

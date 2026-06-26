@@ -132,7 +132,7 @@ description: Parallel
 
 ####    内核线程
 
--   *Kernel-Level Thread*、*Lighted Weighted Process* 内核级线程：系统内核支持的线程，通过内核完成线程切换
+-   *Kernel-Level Thread*、*Lightweight Process* 内核级线程：系统内核支持的线程，通过内核完成线程切换
     -   系统负责线程的创建、销毁、调度、维护
         -   内核通过操纵调度器对线程进行调度，并负责将线程的任务映射到各个处理器上
         -   程序可以直接使用系统调用已实现线程，无需实现线程调度、对 CPU 资源抢占使用
@@ -402,8 +402,8 @@ description: Parallel
         -   内存由所有线程共享，对其中数据修改对所有线程可见
         -   但因速度差异，*CPU* 不直接从 *RAM* 读取数据，而是将数据从 *RAM* 中拷贝至 *Cache*、再读取
         -   而，线程对高速缓存中的数据修改可能未刷回内存，对其他线程不可见
-    -   可见性保证依赖 *Memory Barrior* 内存屏障
-        -   *Memory Barrior* 内存屏障（指令）：内存屏障前内存读写操作、必然在内存屏障之后读写操作之前完成
+    -   可见性保证依赖 *Memory Barrier* 内存屏障
+        -   *Memory Barrier* 内存屏障（指令）：内存屏障前内存读写操作、必然在内存屏障之后读写操作之前完成
             -   阻止屏障两侧指令重排序
             -   强制要求 *Cache* 中脏数据写回 *RAM*、失效 *Cache*
         -   `volatile` 标记值即显式的内存屏障机制
@@ -468,7 +468,7 @@ description: Parallel
         -   即，**确保原子变量 `Store` 存储前，前序逻辑均已完成**
             -   即，原子变量作为信号量、被 `Acquire + Load` 前，`Release + Store` **前的整体逻辑已完成**
             -   即多线程同步时，不会出现 `Release + Store` 信号已置位，但实际逻辑条件未执行
-        -   特别的，（同一）原子变量所有 `Store` 存储操作（需）对所有 `Aqcuire + Load` 相关线程可见
+        -   特别的，（同一）原子变量所有 `Store` 存储操作（需）对所有 `Acquire + Load` 相关线程可见
         -   `Release` 约束只应用于可执行 `Store` 操作的指令
     -   `Acquire(+ Load)` 约束：配合的 `Load` 操作后指令不可重排序至当前 `Load` 操作前
         -   即，**确保原子变量 `Load` 载入前，后续逻辑不可执行**

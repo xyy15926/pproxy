@@ -21,7 +21,7 @@ description: MarkDown Basics
     -   排版语法简洁，易读易写
     -   同时，*Markdown* 语法没有统一标准，如：
         -   子列表缩进数量
-        -   块级引用、标题钱是否需要空行
+        -   块级引用、标题前是否需要空行
         -   缩进式代码块前是否有空行
         -   列表项在在何种情况下包含在 `<p>` 标签内
     -   即，存在各种方言
@@ -29,8 +29,8 @@ description: MarkDown Basics
         -   *Vfmd*
         -   *CommonMark*：强定义的 *Markdown* 规范，定义许多 *Markdown* 细节
             -   *CommonMark Spec*：*CommonMark* 规范
-        -   *Github Flavored Markdown*：*CommmonMark* 的严格超集
-            -   所有未在 *CommmonMark Spec* 中指定的特性均视为扩展
+        -   *Github Flavored Markdown*：*CommonMark* 的严格超集
+            -   所有未在 *CommonMark Spec* 中指定的特性均视为扩展
 
 > - *Markdown: Syntax*：<https://daringfireball.net/projects/markdown/syntax>
 > - *CommonMark Spec*：<https://spec.commonmark.org/current/>
@@ -392,8 +392,8 @@ description: MarkDown Basics
 ##  *Github Flavored Markdown*
 
 -   *GFM* 是由 *Github* 支持的 *Markdown* 方言
-    -   *Github Flavored Markdown*：*CommmonMark* 的严格超集
-        -   所有未在 *CommmonMark Spec* 中指定的特性均视为扩展
+    -   *Github Flavored Markdown*：*CommonMark* 的严格超集
+        -   所有未在 *CommonMark Spec* 中指定的特性均视为扩展
 
 ``````md
 -   *GFM* 任务项列表

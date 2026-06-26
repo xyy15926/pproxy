@@ -142,7 +142,7 @@ description: VSCode基础
                         "${workspaceRoot}"
                     ],
                     "pattern": {
-                        "regexp": "^(.*):(\\d+):(\\d+):\\s+(warining|error):\\s+(.*)$",
+                        "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
                         "file": 1,
                         "line": 2,
                         "column": 3,

@@ -1309,7 +1309,7 @@ E(\sigma_{T+n}^2) &= V_L + (\alpha + \beta)^t (\sigma_T^2 - V_L) \\
 
 ####    违约概率
 
--   *Probability of Defualt* 违约概率
+-   *Probability of Default* 违约概率
     -   发行人发行的债券违约概率（每年）
         -   *Issuer Default Rate* 发行人违约概率：发行人发行的债券中违约债券数量占比
             -   衡量发行人的无法偿付情况，反馈整体经济水平
@@ -1946,7 +1946,7 @@ $$ E(R_i) = R_f + \beta_i (E(R_M) - R_f) $$
         > - $R_P, R_B$：积极管理的组合收益率、基准组合的收益率
         -   度量资产组合与基准组合的风险差异
             -   跟踪指数的基金要求被要求将 *TE* 维持在固定水平之下
-    -   *Infomation Ratio* 信息比率：资产组合 **相对于特定指数的超额风险** 带来的超额收益
+    -   *Information Ratio* 信息比率：资产组合 **相对于特定指数的超额风险** 带来的超额收益
         $$ IR = \frac {E(E_P) - E(R_B)} {\sigma_{R_P - R_B}} = \frac {E(R_P) - E(R_B)} {TE} $$
         -   可视为主动管理的超额收益
             -   配合 *TE* 用于基准管理
