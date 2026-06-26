@@ -1,7 +1,7 @@
 ---
 title: Data Science
 categories:
-  - ML Theory
+  - DataProc
 tags:
   - Machine Learning
   - Supervised Learning
@@ -9,16 +9,16 @@ tags:
   - Semi-Supervised Learning
   - Reinforcement Learning
 date: 2019-07-14 20:02:42
-updated: 2025-08-28 18:38:59
+updated: 2026-06-26 12:04:15
 toc: true
 mathjax: true
 comments: true
-description: 机器学习范畴
+description: 机器学习理论与方法
 ---
 
 ##  *Data Science*
 
-###  数据科学范畴
+### 数据科学范畴
 
 -   *Statistic - Frequentist and Bayesian* 统计：数学分支，概率论和优化的交集，是数据科学其他分支的理论基础
     -   分析方法：验证式分析
@@ -108,7 +108,7 @@ description: 机器学习范畴
 
 > - *Credit Assignment Problem*：贡献度分配问题，系统中不同组件、参数对最终系统输出结果的贡献、影响
 
-#### *End-to-End Learning*
+####    *End-to-End Learning*
 
 -   *End-to-End Learning* 端到端学习/训练：学习过程中不进行分模块、分阶段训练，直接优化任务的总体目标
     -   不需要给出不同模块、阶段功能，中间过程不需要认为干预
@@ -116,7 +116,7 @@ description: 机器学习范畴
     -   和深度学习一样，都是要解决“贡献度分配”问题
         -   大部分神经网络模型的深度学习可以看作是端到端学习
 
-###  *ML Components*
+### *ML Components*
 
 -   *ML* 包括 3 个组成部分
     -   *Model* 模型：问题的抽象描述、刻画
@@ -160,7 +160,7 @@ description: 机器学习范畴
 
 > - 模型也被称为 *Hypothesis* 假设、*Opimizee* 优化对象、*Learner* 学习器
 
-#####    *Over-Fitting*
+#####   *Over-Fitting*
 
 -   过拟合：学习时选择的所包含的模型复杂度大（参数过多），导致模型对已知数据预测很好，对未知数据预测效果很差
     -   若在假设空间中存在 “真模型”，则选择的模型应该逼近真模型（参数个数相近）
@@ -258,7 +258,7 @@ description: 机器学习范畴
             -   生成方法学习收敛速度快，样本容量增加时，学习到的模型可以快速收敛到真实模型
             -   存在隐变量时，仍可以使用生成方法学习
     -   *Discriminative Approach(Classifier)* 判别方法：直接学习决策函数 $f(x)$、条件概率分布 $P(Y|X)$ 作为 *Discriminative Model(Classifier)*
-        -  即，对给定输入 $X$ 预测输出$Y$
+        -   即，对给定输入 $X$ 预测输出$Y$
         -   *Discriminative Model*：判别模型
             -   *KNN*
             -   感知机
@@ -318,7 +318,7 @@ description: 机器学习范畴
 > - *On Discriminative vs. Generative Classfiers: A comparison of LR and naive Bayes*：<https://papers.nips.cc/paper/2001/file/7b7a53e239400a13bd6be6c91c4f6c4e-Paper.pdf>
 > - *Generative Model* 与 *Discriminative Model* 的区别：<https://zhuanlan.zhihu.com/p/146503132>
 
-#####  二分类到多分类
+#####   二分类到多分类
 
 -   部分模型原生仅支持二分类任务，可通过一定策略扩展至多分类任务
     -   *1 vs n-1*：对类 $k=1,...,n$ 分别训练当前类对剩余类分类器
@@ -332,7 +332,7 @@ description: 机器学习范畴
             -   但是错误率可控
             -   设计 *DAG* 时可以每次选择相差最大的类别优先判别
 
-#####    *Self-Supervised Learning*
+#####   *Self-Supervised Learning*
 
 -   *Self-Supervised Learning* 自监督学习：从数据本身生成、无人工标注的标签进行学习
     -   目标：学习 **通用的特征表示，用于下游任务**
@@ -354,7 +354,7 @@ description: 机器学习范畴
 > - *NLP* 预训练模型综述：<https://zhuanlan.zhihu.com/p/139015428>
 > - *Pre-trained Models for NLP: A Survey*：<https://arxiv.org/abs/2003.08271>
 
-####  *Unsupervised Learning*
+####    *Unsupervised Learning*
 
 -   *Unsupervised Learning* 无监督学习：自动对无标记的数据进行分类、分群
     -   无监督模型一般比有监督模型表现差
@@ -433,9 +433,9 @@ description: 机器学习范畴
 > - 预训练模型的技术发展：<https://zhuanlan.zhihu.com/p/254821426>
 > - 预训练模型综述：<https://tqnwhz.github.io/blog/2022/01/22/PTM-Study/>
 
-## 模型策略
+##  模型策略
 
-###    *Expected Risk* / *Expected Loss* / *Generalization Loss*
+### *Expected Risk* / *Expected Loss* / *Generalization Loss*
 
 $$ R_{exp}(f) = E_p[L(Y, f(X))] = \int_{x*y} L(y,f(x))P(x,y) dxdy $$
 > - $P(X, Y)$：随机变量 $(X, Y)$ 遵循的联合分布，未知
@@ -475,7 +475,7 @@ $$ R_{exp}(f) = E_p[L(Y, f(X))] = \int_{x*y} L(y,f(x))P(x,y) dxdy $$
 
 > - 二分类泛化误差上界：<https://www.cnblogs.com/aichemistar/p/13720564.html>
 
-####   *Probably Approximate Correct* 可学习
+####    *Probably Approximate Correct* 可学习
 
 -   *PAC* 可学习：在短时间内利用少量（多项式级别）样本能够找到模型 $h^{'}$，满足
     $$ P(E(h^{'}) \leq \epsilon) \geq 1 - \sigma, 0 < \epsilon, \sigma < 1 $$
@@ -485,7 +485,7 @@ $$ R_{exp}(f) = E_p[L(Y, f(X))] = \int_{x*y} L(y,f(x))P(x,y) dxdy $$
     -   *PAC* 学习理论关心能否从假设空间 $H$ 中学习到好的假设 $h$
     -   对二分类问题，取 $\sigma = 2|H|e^{-2N\epsilon^2}$，则样本量满足 $N = \frac {ln \frac {2|H|} \sigma} {2 \epsilon^2}$ 时，模型是 *PAC* 可学习的
 
-###    *Empirical Risk* / *Empirical Loss*
+### *Empirical Risk* / *Empirical Loss*
 
 $$\begin{align*}
 R_{emp}(f) & = \sum_{i=1}^N D_i L(y_i, f(x_i;\theta)) \\
@@ -527,7 +527,7 @@ E(R_{emp}(f)) & = R_{exp}(f)
         -   偏差降低程度小于方差增加程度，测试误差增大
     -   训练误差小但测试误差大表明模型过拟合，使测试误差最小的模型为理想模型
 
-###    *Structual Risk* / *Structual Loss*
+### *Structual Risk* / *Structual Loss*
 
 $$ R_{srm} = \frac 1 N \sum_{i=1}^N L(y_i, f(x_i)) + \lambda J(f) $$
 > - $J(f)$：模型复杂度，定义在假设空间$F$上的泛函
@@ -549,7 +549,7 @@ $$ R_{srm} = \frac 1 N \sum_{i=1}^N L(y_i, f(x_i)) + \lambda J(f) $$
         -   *LASSO*：平方损失 + $L_1$ 正则化
             $\mathop{\arg\min}_{\beta} \sum_{i=1}^N (y_i - f(x_i, \beta))^2 + \|\beta\|_1$
 
-####  模型复杂度
+####    模型复杂度
 
 -   简单模型低方差高偏差，复杂模型低偏差高方差
     -   模型复杂度越高对问题的刻画能力越强
@@ -621,42 +621,43 @@ $$ R_{srm} = \frac 1 N \sum_{i=1}^N L(y_i, f(x_i)) + \lambda J(f) $$
         -   *Surrogate Loss* 代理损失函数：用优化方便的损失函数代替难以优化的损失函数，间接达到优化原损失函数的目标
             -   如 0-1 损失难以优化，考虑使用二次损失、交叉熵损失替代
 
-| 损失函数           | 逻辑                             | 适用场合             |
-|--------------------|----------------------------------|----------------------|
-|*0-1 Loss*          | $$
+| 损失函数             | 逻辑                             | 适用场合             |
+|----------------------|----------------------------------|----------------------|
+| *0-1 Loss*           | $$
 L(y, f(x)) = \left \{ \begin{array}{l}
     1, & y \neq f(x) \\
     0, & y = f(x)
-\end{array} \right. $$                                  | 分类                 |
-|*Squared Error Loss*| $$
-L(y, f(x)) = \frac 1 2 (y - f(x))^2 $$                  | 回归、二分类         |
-|*Logistic SE*       | $$
-L(y, f(x)) = \frac 1 2 (y - \sigma(f(x)))^2 $$          | 二分类               |
-|*Cross Entropy*     | $$\begin{align*}
+\end{array} \right. $$                                    | 分类                 |
+| *Squared Error Loss* | $$
+L(y, f(x)) = \frac 1 2 (y - f(x))^2 $$                    | 回归、二分类         |
+| *Logistic SE*        | $$
+L(y, f(x)) = \frac 1 2 (y - \sigma(f(x)))^2 $$            | 二分类               |
+| *Cross Entropy*      | $$\begin{align*}
 L(y, f(x)) & = -ylog(f(x)) \\
 & = - \sum_{k=1}^K y_k log f(x)_k
-\end{align*}$$                                          | 分类、标签           |
-|*Hinge Loss*        | $$\begin{align*}
+\end{align*}$$                                            | 分类、标签           |
+| *Hinge Loss*         | $$\begin{align*}
 L(y, f(x)) & = [1 - yf(x)]_{+} \\
 [z]_{+} & = \left \{ \begin{array}{l}
     z, & z > 0 \\
     0, & z \leq 0
 \end{array} \right.
-\end{align*}$$                                          | *SVM*                |
-|*Pseudo Loss*       | $$
-L(y, f(x)) = \frac 1 2 \sum_{y^{(j)} \neq f(x)} w_j (1 - f(x, y) + f(x, y^{(j)})) $$ | *Adaboost.M2*|
-| *Absolute Loss*    | $$ L(y, f(x)) = |y-f(x)| $$      | 回归                 |
-| *Logarithmic Loss* | $$ L(y, P(y|x)) = -logP(y|x) $$  | 贝叶斯生成、逻辑回归 |
-| *Exponential Loss* | $$ L(y, f(x)) = exp\{-yf(x)\} $$ | 前向分步算法         |
-| *Absolute Loss*    | $$ L(y, f(x)) = |y - f(x)| $$    |                      |
-| *Huber Loss*       | $$
+\end{align*}$$                                            | *SVM*                |
+| *Pseudo Loss*        | $$
+L(y, f(x)) = \frac 1 2 \sum_{y^{(j)}
+    \neq f(x)} w_j (1 - f(x, y) + f(x, y^{(j)})) $$       | *Adaboost.M2*        |
+| *Absolute Loss*      | $$ L(y, f(x)) = |y-f(x)| $$      | 回归                 |
+| *Logarithmic Loss*   | $$ L(y, P(y|x)) = -logP(y|x) $$  | 贝叶斯生成、逻辑回归 |
+| *Exponential Loss*   | $$ L(y, f(x)) = exp\{-yf(x)\} $$ | 前向分步算法         |
+| *Absolute Loss*      | $$ L(y, f(x)) = |y - f(x)| $$    |                      |
+| *Huber Loss*         | $$
 L(y, f(x)) = \left \{ \begin{array}{l}
     \frac 1 2 (y - f(x))^2, & |y - f(x)| \leq \sigma \\
     \sigma (|y - f(x)| - \frac 2 {\sigma}), & |y - f(x)| > \sigma \\
-\end{array} \right.$$                                   |                      |
-| 分位数损失         | $$ L(y, f(x)) = \sum_{y \geq f(x)} \theta|y - f(x)|
-+ \sum_{y < f(x)} (1-\theta)|y - f(x)| $$               | 分位数回归           |
-
+\end{array} \right.$$                                     |                      |
+| 分位数损失           | $$
+L(y, f(x)) = \sum_{y \geq f(x)} \theta|y - f(x)|
+    + \sum_{y < f(x)} (1-\theta)|y - f(x)| $$             | 分位数回归           |
 
 ![01_se_ce_hinge_loss](imgs/01_se_ce_hinge_loss.png)
 
@@ -973,7 +974,6 @@ $$ D(x, y) = \Phi(x) - \Phi(y) - <\nabla \Phi(y), (x - y)> $$
         -   *SVM* 中正定核能保证优化问题为凸二次规划，即二次规划中矩阵 $G$ 为正定矩阵
     -   检验具体函数是否为正定核函数不容易，*Mercer* 定理可用于指导构造核函数
 
-
 -   *Mercer* 定理（正定核函数充要条件）：设 $K: \mathcal{X * X} \rightarrow R$ 是对称函数，则 $K(x,z)$ 为正定核函数的充要条件是 $\forall x_i \in \mathcal{X}, i=1,2,...,m$，$K(x,z)$ 对应的 *Gram* 矩阵 $K = [K(x_i, x_j)]_{m*m} $ 是半正定矩阵
     -   必要性证明
         -   由于 $K(x,z)$ 是 $\mathcal{X * X}$ 上的正定核，所以存在从 $\mathcal{X}$ 到 *Hilbert* 空间 $\mathcal{H}$ 的映射，使得
@@ -1073,7 +1073,6 @@ $$ D(x, y) = \Phi(x) - \Phi(y) - <\nabla \Phi(y), (x - y)> $$
 -   *Wave Kernel* 波动核：适用于语音处理场景
     $$ k(x, y) = \frac \theta {\|x - y\|} sin(\frac {\|x - y\|} \theta) $$
 
-
 -   *Triangular/Power Kernel* 三角核/幂核：量纲不变核，条件正定
     $$ k(x, y) = - \|x - y\|^d $$
 
@@ -1151,4 +1150,3 @@ $$ D(x, y) = \Phi(x) - \Phi(y) - <\nabla \Phi(y), (x - y)> $$
         -   文本分类
         -   信息检索
         -   信物信息学
-

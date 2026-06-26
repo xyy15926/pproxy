@@ -1,14 +1,15 @@
 ---
-title: 
+title: Graph Analysis
 categories:
-  - 
+  - DataProc
 tags:
-  - 
+  - DataProc
+  - Graph
 date: 2024-07-24 11:26:34
 updated: 2024-07-29 22:34:20
 toc: true
 mathjax: true
-description: 
+description: 图分析与网络科学
 ---
 
 ##  现实网络
@@ -19,7 +20,7 @@ description:
         -   *Link*、*Edge*：人与人之间的 *Relation*，可以有标签、权重、方向
         -   个体社会影响力：社交网络中节点中心性
     -   无标度性：现实网络大多为 *Scale-Free Network* 无标度网络，即网络中节点度服从幂律分布
-        -   幂次参数大多 $\gamma \in [2, 3]$ 
+        -   幂次参数大多 $\gamma \in [2, 3]$
             -   *Triangle Power Law*：网络中三角形数量服从幂律分布
             -   *Tigenvalue Power Law*：网络邻接矩阵的特征值服从幂律分布
         -   网络中大部分节点度很小，小部分 hub 节点有很大的度
@@ -345,4 +346,3 @@ description:
         -   *Graph Partitioning*：图像分割
         -   *Random Walk Hypothesis*：随机游走假设（经济学）
         -   *Pagerank Algorithm*：PageRank算法
-

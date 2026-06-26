@@ -1,17 +1,17 @@
 ---
-title: Nueral Network
+title: Neural Network
 categories:
-  - ML Theory
+  - DataProc
 tags:
   - Machine Learning
-  - Nueral Network
+  - Neural Network
   - ResNet
   - Transformer
 date: 2024-07-11 06:50:31
 updated: 2025-12-13 20:14:39
 toc: true
 mathjax: true
-description: 
+description: 深度学习模型与架构
 ---
 
 #   神经网络
@@ -75,7 +75,7 @@ $$ \frac {\partial z} {\partial x} = \frac {\partial z} {\partial t} \frac {\par
 > - 机器学习工具自动微分之：VJP、JVP和JAX：<https://zhuanlan.zhihu.com/p/570554452>
 > - *Jacobian* 矩阵与多元函数微分：<https://yan-blog.oss-cn-beijing.aliyuncs.com/files/Jacobi%E7%9F%A9%E9%98%B5%E4%B8%8E%E5%A4%9A%E5%85%83%E5%87%BD%E6%95%B0%E5%BE%AE%E5%88%86.pdf>
 
-### *Forward-mode Automatic Defferentiation*、*Backward-mode AD*
+### *Forward-mode Automatic Differentiation*、*Backward-mode AD*
 
 | 自动微分模式     | *FMAD*                                       | *BMAD*                                  |
 |------------------|----------------------------------------------|-----------------------------------------|
@@ -125,7 +125,7 @@ f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
 > - 深度学习利器之自动微分2：<https://www.cnblogs.com/rossiXYZ/p/15395775.html>
 > - AI 编译器和前端技术：自动微分：<https://openmlsys.github.io/chapter_frontend_and_ir/ad.html>
 
-###  梯度爆炸、梯度消失
+### 梯度爆炸、梯度消失
 
 -   反向传播过程中，梯度以指数形式传播，梯度消失（趋于 0）、梯度爆炸（过大）问题随网络深度增加而更加明显
     -   梯度消失、爆炸原因
@@ -142,7 +142,7 @@ f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
 
 > - 梯度消失和梯度爆炸及解决方法：<https://zhuanlan.zhihu.com/p/72589432>
 
-#   *Feed-forward Nueral Newtork*
+#   *Feed-forward Neural Network*
 
 ##  *Convolutional NN*
 
@@ -184,7 +184,7 @@ f(x_1, x_2) & = ln(x_1) + x_1x_2 - sin(x_2) \\
         -   卷积层的参数仅取决于：卷积核数量、卷积核大小
         -   参数量远小于全连接神经网络
 
-###  *Pooling*
+### *Pooling*
 
 -   *Pooling* 池化：在每个区域中选择只保留一个值
     -   **下采样** 以减小数据处理量同时保留有用的信息
@@ -222,7 +222,7 @@ X_{l+1} &= X_l + F(X_l, W_l) \\
 > - 网络退化问题与 *ResNet*：<https://zhuanlan.zhihu.com/p/492062028>
 > - *Transformer* 相关——残差模块：<https://ifwind.github.io/2021/08/17/Transformer%E7%9B%B8%E5%85%B3%E2%80%94%E2%80%94%EF%BC%885%EF%BC%89%E6%AE%8B%E5%B7%AE%E6%A8%A1%E5%9D%97/#%E6%AE%8B%E5%B7%AE%E6%A8%A1%E5%9D%97%E7%9A%84%E7%BB%93%E6%9E%84>
 
-#  *Recursive Nueral Network*
+#   *Recursive Neural Network*
 
 ##  *Recurrent NN*
 
@@ -292,7 +292,6 @@ o^{(t)} & = \sigma(W_o[x^{(t)}, h^{(t-1)}], b_o), & output-gate \\
 C^{(t)} & = f^{(t)} \odot c^{(t-1)} + i^{(t)} \odot c^{(t)}, & new-memory \\
 h^{(t)} & = o^{(t)} \odot tanh(c^{(t)}), & output
 \end{align*}$$
-
 
 > - $W_i, b_i, W_f, b_f, W_o, b_o$：输入门、遗忘门、输出门参数
 > - $\odot$：逐项乘积
@@ -533,7 +532,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 > - 自注意力机制：<https://0809zheng.github.io/2020/04/24/self-attention.html>
 > - *Self-Attention* 与 *Transformer*：<https://zhuanlan.zhihu.com/p/47282410>
 
-#  *AutoEncoder*
+#   *AutoEncoder*
 
 ##  *AutoEncoder*
 
@@ -585,7 +584,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
             -   虽然神经元的激活函数值并非 $\{0, 1\}$，但依然直接使用激活函数值均值替代
     -   *K-SAE*：只保留最高的 `K` 个最高激活神经元
 
-## *Varitional AE*
+##  *Varitional AE*
 
 ![vae_variational_ae_structure](imgs/vae_variational_ae_structure.png)
 
@@ -637,7 +636,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 > - *VAE* 模型简析和精要（原理和代码）：<https://www.cnblogs.com/myleaf/p/18682945>
 > - *Tutorial on Variational AutoEncoders*：<https://arxiv.org/abs/1606.05908>
 
-###    *Reparameterization*
+### *Reparameterization*
 
 -   *Reparameterization Trick* 重参数化：学习（采样）替代目标、通过变换得到原目标结果
     -   常见即，**从易得分布中采样、并训练变换参数**，通过变换得到满足给定分布的样本
@@ -657,7 +656,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 -   *CVAE* 条件变分自编码器：将标签信息融入 *VAE* 隐变量分布中的一类模型
     -   均值编码 *CVAE*：为各类样本训练标签均值 $\mu_d^{label}$，希望 *Encoder* 输出均值接近对应标签均值
         -   训练时仅需调整 *KL 散度* 损失
-            $$ 
+            $$
             loss_{\mu,\sigma^2} = \frac 1 2 \sum_{d=1}^D (\mu_d - \mu_d^{label})^2
                 + \frac 1 2 (\sigma_d^2 - log \sigma_d^2 - 1)
             $$
@@ -697,7 +696,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
             -   内积
             -   池化
 
-## *Position Encoding*
+##  *Position Encoding*
 
 -   *Position Encoding* 位置编码：用向量表示每个位置，再与序列向量相加
     -   位置编码由人工设计，最好满足
@@ -728,7 +727,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 > - 十分钟读懂旋转编码 *RoPE*：<https://www.zhihu.com/tardis/bd/art/647109286>
 > - 旋转式位置编码 *RoPE* 知识总结：<https://zhuanlan.zhihu.com/p/662790439>
 
-## *Mask* 机制
+##  *Mask* 机制
 
 -   *Mask* 机制：利用遮蔽矩阵标记不（应）参与计算的元素
     -   避免影响计算结果：遮蔽不定长序列中的 *padding* 元素
@@ -762,7 +761,7 @@ Z &= \begin{bmatrix} Z_i, \cdots, Z_I \end{bmatrix} W^O
 > - 常用 *Normalization* 方法：<https://www.cvmart.net/community/detail/1569>
 > - 深度学习中的五种归一化：<https://www.cnblogs.com/ariel-dreamland/p/13275897.html>
 
-###  *Batch Normalization*
+### *Batch Normalization*
 
 $$\begin{align*}
 y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
@@ -811,7 +810,7 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
 > - 模型优化之 *Batch Normalization*：<https://zhuanlan.zhihu.com/p/54171297>
 > - 常用 *Normalization* 方法：<https://www.cvmart.net/community/detail/1569>
 
-#### *Internal Covariate Shift*
+####    *Internal Covariate Shift*
 
 -   *ICS*：由于网络参数变化，引起内部节点（输入）数据分布发生变化的过程
     -   网络中层与层之间高度耦合，具有强关联性
@@ -836,7 +835,7 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
 > - 换用 *RELU* 等非饱和激活函数等也可避免陷入梯度饱和区
 > - *How Does Batch Normalization Help Optimization?*：<https://arxiv.org/abs/1805.11604>
 
-#### 训练、预测
+####    训练、预测
 
 -   *BN* 的训练、预测
     -   训练过程中，以 *Batch* 统计量作为整体训练样本均值、方差估计
@@ -852,7 +851,7 @@ y & = BN_{\gamma, \beta}(z) = \gamma \odot \hat z + \beta \\
             \end{align*}$$
         -   实现中会通过滑动均值、滑动方差替代，避免记录每个 *Batch* 均值、方差
 
-###  *Layer Normalization*
+### *Layer Normalization*
 
 $$\begin{align*}
 \mu^l & = \frac 1 H \sum_{i=1}^H h_i^l \\
@@ -921,53 +920,53 @@ x^l & = g(LN(h^l))
 
 ##  激活函数
 
-| 激活函数       | 公式                                                        | 输出范围     |
-|----------------|-------------------------------------------------------------|--------------|
-| *Sigmoid*      | $$ sigmoid(z) = \frac 1 {1+e^{-z}} $$                       | $(0,1)$      |
-| *Hard Sigmoid* | $$
+| 激活函数                  | 公式                                                        | 输出范围    |
+|---------------------------|-------------------------------------------------------------|-------------|
+| *Sigmoid*                 | $$ sigmoid(z) = \frac 1 {1+e^{-z}} $$                       | $(0,1)$     |
+| *Hard Sigmoid*            | $$
 hsigmoid(z) = \left \{ \begin {array} {l}
     0 & z < -2.5 \\
     1 & z > 2.5 \\
     0.2*z + 0.5 & -2.5 \leq z \leq 2.5 \\
-\end {array} \right.  $$                                                       | $(0,1)$      |
-| *Swish*        | $$ swish(z) = x * sigmoid(x) $$                             |              |
-| *Tanh*         | $$
+\end {array} \right.  $$                                                                  | $(0,1)$     |
+| *Swish*                   | $$ swish(z) = x * sigmoid(x) $$                             |             |
+| *Tanh*                    | $$
 \begin{align*}
 tanh(z) & = \frac {sinhz} {coshz} \\
     & = \frac {e^z - e^{-z}} {e^z + e^{-z}} \\
-\end{align*} $$                                                                | $(-1, 1)$    |
-| *Softmax*      | $$ softmax(z_i) = \frac {e^{z_i}} {\sum_{k=1}^K e^{z_k}} $$ | $(0,1)$      |
-| *Softplus*     | $$ softplus(z) = log(exp(z)+1) $$                           | $(0,+\inf)$  |
-| *Softsign*     | $$ softsign(z) = \frac z {abs(z) + 1} $$                    |              |
-| *ReLU*         | $$
+\end{align*} $$                                                                           | $(-1, 1)$   |
+| *Softmax*                 | $$ softmax(z_i) = \frac {e^{z_i}} {\sum_{k=1}^K e^{z_k}} $$ | $(0,1)$     |
+| *Softplus*                | $$ softplus(z) = log(exp(z)+1) $$                           | $(0,+\inf)$ |
+| *Softsign*                | $$ softsign(z) = \frac z {abs(z) + 1} $$                    |             |
+| *ReLU*                    | $$
 relu(z, max) = \left \{ \begin{array} {l}
     0 & z \leq 0 \\
     z & 0 < x < max \\
     max & z \geq max \\
-\end {array} \right. $$                                                        | $[0, +\inf)$ |
-| *Leaky ReLU*   | $$
+\end {array} \right. $$                                                                   | $[0, +\inf)$ |
+| *Leaky ReLU*              | $$
 relu(z, \alpha, max) = \left \{ \begin {array} {l}
     \alpha z & z \leq 0 \\
     z & 0 < z < max \\
     max & z \geq max \\
-\end {array} \right. $$                                                        |              |
-| *Peramatric ReLU* | $$
+\end {array} \right. $$                                                                   |             |
+| *Peramatric ReLU*         | $$
 prelu(z) = \left \{ \begin{array} {l}
     \alpha z & z < 0 \\
     z & z> 0 \\
-\end{array} \right. $$                                                         |              |
-| *Threshhold ReLU* | $$
+\end{array} \right. $$                                                                    |             |
+| *Threshhold ReLU*         | $$
 trelu(z, theta)= \left \{ \begin{array} {l}
     z & z > theta \\
     0 & otherwise \\
-\end{array} \right. $$                                                         |              |
+\end{array} \right. $$                                                                    |             |
 | *Exponential Linear Unit* | $$
 elu(z, \alpha) = \left \{ \begin{array} {l}
     z & z > 0 \\
     \alpha (e^z - 1) & x \leqslant 0 \\
-\end{array} \right. $$                                                         |              |
-| *Scaled ELU*   | $$ selu(z) = \lambda * elu(z, \alpha) $$                    |              |
-| *MaxOut*       | $$ maxout(X) = \|X\|_{\inf} $$                              |              |
+\end{array} \right. $$                                                                    |             |
+| *Scaled ELU*              | $$ selu(z) = \lambda * elu(z, \alpha) $$                    |             |
+| *MaxOut*                  | $$ maxout(X) = \|X\|_{\inf} $$                              |             |
 
 -   激活函数：根据输入内容最终决定神经元输出内容的函数
     -   非线性：激活函数通常为非线性函数，在网络中添加非线性
@@ -1096,7 +1095,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 ##  超参配置
 
-###  参数初始化
+### 参数初始化
 
 -   参数（权重）初始化
     -   权重 $w$ 初始化时需同时考虑前向、反向过程，加速模型训练
@@ -1187,7 +1186,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 > - *NLP* 预训练模型综述：<https://zhuanlan.zhihu.com/p/139015428>
 > - *Pre-trained Models for NLP: A Survey*：<https://arxiv.org/abs/2003.08271>
 
-## *Transformer*
+##  *Transformer*
 
 ![transformer_structure](imgs/transformer_structure.png)
 
@@ -1286,7 +1285,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 
 > - *Scheduled Sampling for Sampling*：<https://arxiv.org/abs/1906.07651>
 
-###  *BERT*
+### *BERT*
 
 ![bert_mlm_structure](imgs/bert_mlm_structure.png)
 
@@ -1366,7 +1365,7 @@ elu(z, \alpha) = \left \{ \begin{array} {l}
 > - 一文带你详细了解：大模型MoE架构（含DeepSeek MoE详解）：<https://zhuanlan.zhihu.com/p/31145348325>
 > - 主流 *LLM* 为何选用 *MoE* 架构，*MoE* 相较 *Dense* 的核心优点：<https://www.bilibili.com/video/BV1vThYz1Ef7/>
 
-# *CV*
+#   *CV*
 
 ##  *Diffusion Probabilistic Models*
 
@@ -1859,7 +1858,7 @@ x_{l+1} & = f(x_l, w_l, b_l) + x_l \\
         -   随输入向量维度、深度、线性增加
         -   受益于 $x_l^T w$ 为标量，由结合律无需存储中间过程矩阵
 
-##  *Nueral Factorization Machine*
+##  *Neural Factorization Machine*
 
 ![nfm_structure](imgs/nfm_structure.png)
 
@@ -1965,4 +1964,3 @@ $$\begin{align*}
 
 -   *DIEN*：引入序列模型 *AUGRU* 模拟行为进化过程
     -   *Interest Extractor Layer*：使用 *GRU* 单元建模历史行为依赖关系
-

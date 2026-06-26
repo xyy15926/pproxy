@@ -1,14 +1,15 @@
 ---
 title: 统计模型
 categories:
-  - 
+  - DataProc
 tags:
-  - 
+  - DataProc
+  - Statistics
 date: 2024-07-16 09:53:49
 updated: 2025-11-05 12:02:44
 toc: true
 mathjax: true
-description: 
+description: 统计模型与假设检验
 ---
 
 ##  *Hypothesis Test*
@@ -112,7 +113,6 @@ F &= \frac {SSA / (J - 1)} {SSE / (N - J)} \sim F(J-1, N-J) \\
         -   备择假设：至少有某一组别均值与其他组别均值不同
 
 ### 正态分布检验
-
 
 $$\begin{align*}
 JB &= \frac {n-1} 6 (S^2 + \frac {(k - 3)^2} 4) \sim \chi^2(2)
@@ -264,11 +264,11 @@ where: & y^* = \begin{pmatrix} y \\
 
 > - *Elastic Net*：<http://www.stat.purdue.edu/~tlzhang/mathstat/ElasticNet.pdf>
 
-##  *Naive Bayes Classifier* 
+##  *Naive Bayes Classifier*
 
 -   *Bayes Classifier* 贝叶斯分类：在训练数据集上学习联合概率分布 $P(X,Y)$，利用后验分布作为输出
 
-###  *Naive Bayes Classifier* 
+### *Naive Bayes Classifier*
 
 -   *Naive Bayes Classifier* 朴素贝叶斯
     -   朴素：条件概率分布有条件独立性假设，即特征在类别确定下条件独立
@@ -332,7 +332,7 @@ where: & y^* = \begin{pmatrix} y \\
 
 > - 贝叶斯估计能够避免出现估计概率为 0 情况，影响计算后延概率
 
-###  *Semi-Naive Bayes Classifier*
+### *Semi-Naive Bayes Classifier*
 
 -   *Semi-Naive Bayes Classifier* 半朴素贝叶斯分类器：适当考虑部分特征之间的相互依赖信息
     -   *Semi-Naive Bayes*可以视为是**利用规则对变量加权**，以此来体现相关变量的协同影响
@@ -402,7 +402,6 @@ $$
         (\sum_{f=1} \prod_{j=1}^l v_{i_j,f}^{(l)}) \\
     $$
 > > -   $V^{(l)} \in R^{n * k_l}, k_l \in N_0^{+}$
-
 
 ### 模型求解
 
@@ -849,7 +848,7 @@ $$\begin{align*}
 
 > - *Hard-margin Maximization*：硬间隔最大化，最大化超平面 $(w,b)$ 关于线性可分训练数据集的两类样本集几何间隔最大化
 
-#### 最大间隔分离平面存在性
+####    最大间隔分离平面存在性
 
 -   存在性
     -   训练数据集线性可分，所以以上中最优化问题一定存在可行解
@@ -879,10 +878,10 @@ $$\begin{align*}
         则有 $w^{*}(x_1^{+} - x_2^{+})=0$，同理有 $w^{*}(x_1^{-} - x_2^{-})=0$
     -   则 $b_1^{*} - b_2^{*} = 0$
 
-#### *Lagrange Duality*
+####    *Lagrange Duality*
 
 -   考虑拉格朗日函数 $L(w,b,\alpha)$ 是关于 $w,b$ 的凸函数，则原始问题、对偶问题解相同
-    $$ L(w,b,\alpha) = \frac 1 2 \|w\|^2 - 
+    $$ L(w,b,\alpha) = \frac 1 2 \|w\|^2 -
         \sum_{i=1}^N \alpha_i y_i (wx_i + b) + \sum_{i=1}^N \alpha_i $$
 
 -   考虑对偶问题 $\max_{\alpha} \min_{w,b} L(w,b,\alpha)$，求偏导置 0
@@ -914,7 +913,7 @@ $$\begin{align*}
     & \alpha_i > 0, i = 1,2,\cdots,N
     \end{align*}$$
 
-##### 原问题解
+#####   原问题解
 
 -   设 $\alpha^{*} = (\alpha_1^{*}, \cdots, \alpha_N^{*})$ 是上述对偶优化问题的解，可得原问题解 $w^{*}, b^{*}$
     -   由 *KKT* 条件成立有
@@ -943,7 +942,7 @@ $$\begin{align*}
             $$ y_i(w^{*} x_i + b^{*}) - 1 = 0 $$
             即$(x_i, y_i)$在间隔边界上，同原始问题中支持向量定义一致
 
-###  *Linear Support Vector Machine*
+### *Linear Support Vector Machine*
 
 $$\begin{array}{l}
 \min_{w,b,\xi} & \frac 1 2 \|w\|^2 + C \sum_{i=1}^N \xi_i \\
@@ -969,7 +968,7 @@ s.t. & y_i(w x_i + b) \geq 1 - \xi_i, i=1,2,\cdots,N \\
 
 > - *Soft-Margin Maximization*：软间隔最大化，最大化样本点几何间隔时，尽量减少误分类点数量
 
-#### *Lagrange Duality*
+####    *Lagrange Duality*
 
 -   类似的，拉格朗日对偶问题为
     $$ \begin{array}{l}
@@ -997,7 +996,7 @@ s.t. & y_i(w x_i + b) \geq 1 - \xi_i, i=1,2,\cdots,N \\
         -   $\alpha_i^{*} = C, \xi=1$：分离超平面上
         -   $\alpha_i^{*} = C, \xi>1$：分离超平面误分一侧
 
-#### *Hinge Loss*
+####    *Hinge Loss*
 
 -   线性支持向量机策略还可以视为最小化以下目标函数
     $$ \sum_{i=1}^N [1-y_i(w x_i + b)]_{+} + \lambda \|w\|^2 $$
@@ -1018,7 +1017,7 @@ s.t. & y_i(w x_i + b) \geq 1 - \xi_i, i=1,2,\cdots,N \\
         $$ \min_{w,b} \sum_{i=1}^N \xi_i + \lambda \|w\|^2 $$
     -   取 $\lambda = \frac 1 {2C}$，即同原问题
 
-###  *Non-Linear Support Vector Machine*
+### *Non-Linear Support Vector Machine*
 
 -   非线性支持向量机：通过非线性变换将输入空间对应一个特征空间，使得输入空间中超曲面对应于特征空间的超平面模型
     -   *Kernal Trick* 核技巧
@@ -1049,7 +1048,7 @@ s.t. & y_i(w x_i + b) \geq 1 - \xi_i, i=1,2,\cdots,N \\
     & = sgn(\sum_{i=1}^{N_s} \alpha_i^{*} y_i K(x_i, x) + b^{*})
     \end{align*}$$
 
-###  *Sequential Minimal Optimization*
+### *Sequential Minimal Optimization*
 
 $$\begin{array}{l}
 \min_\alpha & \frac 1 2 \sum_{i=1}^N \sum_{j=1}^N
@@ -1082,7 +1081,7 @@ s.t. & \sum_{i=1}^N \alpha_i y_i = 0 \\
 
 > - 凸二次规划有很多算法可以求得全局最优解，但是在训练样本容量较大时，算法会很低效
 
-#### 子问题求解
+####    子问题求解
 
 -   两变量二次规划取值范围
     -   由等式约束，$\alpha_1, \alpha_2$ 中仅一个自由变量，不妨设为 $\alpha_2$
@@ -1154,7 +1153,7 @@ s.t. & \sum_{i=1}^N \alpha_i y_i = 0 \\
         & = (K_11 + K_{22} - 2K_{12}) \alpha_2 + y_2 (E_1 - E_2)
         \end{align*}$$
 
-#### 子问题变量选择
+####    子问题变量选择
 
 -   *SMO* 算法每个子问题的两个优化变量中至少一个违反 *KKT* 条件
     -   外层循环选择首个变量：选择违反 *KKT* 条件最严重的样本点，将对应的变量作为第一个变量 $\alpha_1$
@@ -1176,9 +1175,9 @@ s.t. & \sum_{i=1}^N \alpha_i y_i = 0 \\
             -   遍历整个训练数据集
             -   放弃 $\alpha_1$
 
-####    更新阈值 
+####    更新阈值
 
--   更新阈值 
+-   更新阈值
     -   $0< \alpha_1^{*} < C$ 时，由 *KKT* 条件可知
         $$ \sum_{i=1}^N \alpha_i y_i K_{i1} + b = y_1 $$
         则有 $$ b_1^{*} = y_1 - \sum_{i=3}^N \alpha_i y_i K_{i1} - \alpha_1^{*} y_1 K_{11} - \alpha_2^{*} y_2 K_{21} $$
@@ -1195,7 +1194,7 @@ s.t. & \sum_{i=1}^N \alpha_i y_i = 0 \\
 ##  *Decision Tree*
 
 -   决策树：本质上是从训练数据中归纳出一组分类规则
-    - 决策树可以看作是 *if-then* 规则的集合：体现输入、输出变量逻辑关系
+    -   决策树可以看作是 *if-then* 规则的集合：体现输入、输出变量逻辑关系
         -   与训练数据不矛盾的分类规则（即能对训练数据正确分类）可能有多个、没有，需要找到矛盾较小、泛化能力较好的
         -   决策树根节点到叶节点每条路径构成一条规则
         -   路径上内部节点的特征对应规则的条件，叶节点对应规则结论
@@ -1495,7 +1494,7 @@ H_t(T) & = -\sum_k (\frac {N_{t,k}} {N_t} log \frac {N_{t,k}} {N_t})
 > - <http://www.mclover.cn/blog/index.php/archives/60.html>
 > - <http://www3.stat.sinica.edu.tw/statistica/oldpdf/A7n41.pdf>
 
-##  *Principal Component Analysis* 
+##  *Principal Component Analysis*
 
 ### 线性降维
 
@@ -1660,7 +1659,7 @@ Var(X - \mu) &= A^T Var(F) A + Var(\epsilon) \\
         -   分类损失函数为 *0-1* 损失函数，分类函数为 $f: \mathcal{R^n} \rightarrow \{c_1, c_2, \cdots\}$
         -   误分类概率 $P(Y \neq f(X)) = 1 - P(Y=f(X))$
         -   给定实例 $x \in \mathcal{X}$ 的误分率为
-            $$ \frac 1 k \sum_{x \in N_k(x)} I(y_i \neq c_j) = 
+            $$ \frac 1 k \sum_{x \in N_k(x)} I(y_i \neq c_j) =
                 1 - \frac 1 k \sum_{x \in N_k(x)} I(y_i = c_j) $$
             > - $N_k(x)$：最近邻k个实例构成集合
             > - $c_j$：涵盖$N_k(x)$区域的类别
@@ -1670,7 +1669,6 @@ Var(X - \mu) &= A^T Var(F) A + Var(\epsilon) \\
         -   $c_j$ 的选择、选择方法是模型选择的一部分，不同的 $c_j$ 会有不同的经验风险
 
 -   均值规则
-
 
 ### 实现算法
 
@@ -1787,7 +1785,7 @@ Var(X - \mu) &= A^T Var(F) A + Var(\epsilon) \\
         -   时间复杂度高 $O(N^2 log N)$（$N$ 为数据点数目）
         -   贪心算法无法取得最优解
 
-####    *AGENS 
+####    *AGENS
 
 -   AGENS：自下向上层次聚类
     -   组连接：组与组之间距离
@@ -2238,7 +2236,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
         -   基分类器足够简单时，boosting表现均显著好于bagging
             -   仅靠单次决策（单个属性、属性组合）分类
 
-#### 分类 *Boosting*
+####    分类 *Boosting*
 
 -   分类 *Boosting*
     -   构建逻辑
@@ -2257,7 +2255,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
     -   *AdaBoosting.M1*
     -   *AdaBoosting.M2*
 
-#### 回归 *Boosting*
+####    回归 *Boosting*
 
 -   *回归* Boosting
     -   构建逻辑
@@ -2285,7 +2283,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
     -   *XGB*
         -   牛顿方向优化基学习器损失
 
-#### *Additional Model*
+####    *Additional Model*
 
 -   加法模型：将模型 **视为** 多个基模型加和而来
     $$ f(x) = \sum_{m=1}^M \beta_m b(x,\theta_m) $$
@@ -2496,7 +2494,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
         即，*AdaBoost* 训练误差是**指数下降**的
     -   分类器下界 $\gamma$ 可以未知，*AdaBoost* 能适应弱分类器各自训练误差率，所以称为 *Adptive*
 
-###  *Adaboost.M1*
+### *Adaboost.M1*
 
 ![adaboostm1_steps](imgs/adaboostm1_steps.png)
 
@@ -2520,7 +2518,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
     > - $\epsilon_1,\cdots,\epsilon_t$：弱学习算法产生的伪损失
     > - $\gamma_t = 1/2 \epsilon_t$
 
-###  *Adaboost.M2*
+### *Adaboost.M2*
 
 ![adaboostm2_steps](imgs/adaboostm2_steps.png)
 
@@ -2685,7 +2683,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
     -   *XGB* 防止过拟合细节
         -   *Shrinkage*：对新学习的树设置学习率 $\eta$ 收缩权重，给后续基模型留下学习空间
         -   *Column Subsampling*：列（特征）抽样（XGB也支持行抽样）
-            -   效果较传统的行抽样防止过拟合效果更好 
+            -   效果较传统的行抽样防止过拟合效果更好
             -   加速计算速度
 
 -   *XGB* 本身作为工业实现，除理论设计外，更多是工程优化
@@ -2883,7 +2881,7 @@ s.t. & \sum_{j=1}^C u_{i,j} = 1
 > - *Stochastic Neighbor Embedding*：<https://papers.nips.cc/paper/2002/file/6150ccc6069bea6b5716254057a194ef-Paper.pdf>
 > - *Visualizing Data Using t-SNE*：<https://jmlr.org/papers/v9/vandermaaten08a.html>
 
-## 概率图模型
+##  概率图模型
 
 -   *Probabilistic Graph Model* 概率图模型：节点表示随机变量、边表示随机变量间概率依赖关系的图模型
     -   随机变量之间复杂相关关系将导致边缘分布等计算量过大，需要添加假设、简化模型
@@ -3107,7 +3105,7 @@ Z &= \sum_x \prod_{C \in e} P(x)
 
 > - 7.因子图：<https://www.zhangzhenhu.com/probability_model/6.%E5%9B%A0%E5%AD%90%E5%9B%BE_lecture_4.html>
 
-###    图模型评价
+### 图模型评价
 
 -   考虑概率分布 $D$、图模型 $G$，记 $CI(D)$ 为分布 $D$ 满足的条件独立性集合，$CI(G)$ 为图 $G$ 蕴含（实现）的条件独立性集合
     -   *Independence Map* 独立图：若 $CI(G) \subset CI(D)$，则说图 $G$ 是分布 $D$ 的独立图

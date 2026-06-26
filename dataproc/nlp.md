@@ -1,14 +1,15 @@
 ---
-title: 
+title: NLP
 categories:
-  - 
+  - DataProc
 tags:
-  - 
+  - DataProc
+  - NLP
 date: 2024-07-22 22:20:07
 updated: 2024-07-23 14:44:02
 toc: true
 mathjax: true
-description: 
+description: 自然语言处理
 ---
 
 #   文本特征工程
@@ -417,4 +418,3 @@ description:
         \frac {\partial L} {\partial w_j} & = (y_i - \sigma(x^T w_j)) x \\
         \frac {\partial L} {\partial x} & = \sum_{i=1}^{neg} (y_i - \sigma(x^T w_j)) w_j
         \end{align*}$$
-

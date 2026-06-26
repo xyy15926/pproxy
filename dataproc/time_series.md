@@ -1,14 +1,15 @@
 ---
 title: 时间序列分析
 categories:
-  - 
+  - DataProc
 tags:
-  - 
+  - DataProc
+  - Time Series
 date: 2024-07-22 15:48:34
 updated: 2025-11-04 22:58:31
 toc: true
 mathjax: true
-description: 
+description: 时间序列分析
 ---
 
 ##  *Time Series Analysis*
@@ -462,7 +463,7 @@ Y_t & = c + \Pi_1 Y_{t-1} + \Pi_2 Y_{t-2} + \cdots + \Pi_k Y_{t-k} + u_t + \Phi 
         & = \alpha ECM_{t-1} + \Gamma \Delta Y_{t-1}
         \end{align*}$$
 
-#### 协整关系、检验
+####    协整关系、检验
 
 -   *Spurious Regression* 伪回归
     -   多变量分析中，平稳性非常重要，忽略序列平稳性判断，容易出现伪回归现象
@@ -526,7 +527,7 @@ Y_t & = c + \Pi_1 Y_{t-1} + \Pi_2 Y_{t-2} + \cdots + \Pi_k Y_{t-k} + u_t + \Phi 
         -   现实意义上变量因果关系强调逻辑自洽
     -   *Granger* 检验可检验统计学意义上的 *Granger* 因果关系
 
-#####    *Granger* 因果检验
+#####   *Granger* 因果检验
 
 -   *Granger* 因果检验
     -   建立回归方程
@@ -625,7 +626,7 @@ B^k x_t &= x_{t-k} \\
 -   延迟算子：类似时间指针，将序列值乘以延迟算子相当于将序列值向过去拨去一个时刻（下标减 1）
     -   如上，延迟算子可以用于表示差分运算
 
-#### （齐次）线性差分方程
+####    （齐次）线性差分方程
 
 $$\begin{align*}
 & x_t + a_1 x_{t-1} + a_2 x_{t-2} + \cdots + a_p x_{t-p} = h(t) \equiv 0 \\
@@ -738,7 +739,6 @@ x^{''} &= \frac {\epsilon_t} {\Phi(B)} = \frac {\epsilon_t} {\prod_{i=1}^p (1 - 
     &= \sum_{i=1}^p \sum_{j=0}^{\inf} {k_i} (\lambda_i B)^j \epsilon_t \\
 \end{align*}$$
 
-
 $$\begin{align*}
 & x_t = \phi_1 x_{t-1} + \cdots + \phi_p x_{t-p} + \epsilon_t \\
 \Rightarrow & x_t - \phi_1 x_{t-1} - \cdots - \phi_p x_{t-p} = \epsilon_t \\
@@ -786,7 +786,7 @@ E(x_t) &= 0 \\
     \end{cases} \\
 \end{align*}$$
 
-###  *ARIMA* 模型
+### *ARIMA* 模型
 
 ####    建模流程
 
@@ -796,7 +796,7 @@ E(x_t) &= 0 \\
     -   至于零均值，可以在建模时通过拟合常数项解决
 
 -   方差齐性变换：如果已知异方差函数的具体形式，找到其转换函数，进行方差齐性变换
-    -   若异方差形式为：$\sigma_t^2 = h(\mu_t)$，寻找转换函数 $g(x)$ 满足 
+    -   若异方差形式为：$\sigma_t^2 = h(\mu_t)$，寻找转换函数 $g(x)$ 满足
         $$ g(x_t) \approx g(\mu_t) + (x_t - \mu_t)g'(\mu_t) $$
         则有
         $$\begin{align*}
