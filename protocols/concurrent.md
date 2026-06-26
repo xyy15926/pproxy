@@ -491,11 +491,11 @@ let y = AtomicBool::new(false);
 let z = AtomicI32::new(0);
 let write_x = thread::spawn(|| x.store(true, Ordering::SeqCst));
 let write_y = thread::spawn(|| y.store(true, Ordering::SeqCst));
-let write_x_then_y = thread::spawn(|| {                                 // 若实际 `x`、`y` 先后更新，此处 `z+1`
+let write_x_then_y = thread::spawn(|| { // 若实际 `x`、`y` 先后更新，此处 `z+1`
     while !x.load(Ordering::SeqCst) {}
     if y.load(Ordering::SeqCst) { z.fetch_add(1, Ordering::Relaxed); }
 })
-let write_y_then_x = thread::spawn(|| {                                 // 若实际 `y`、`x` 先后更新，此处 `z+1`
+let write_y_then_x = thread::spawn(|| { // 若实际 `y`、`x` 先后更新，此处 `z+1`
     while !y.load(Ordering::SeqCst) {}
     if x.load(Ordering::SeqCst) { z.fetch_add(1, Ordering::Relaxed); }
 })
@@ -503,7 +503,7 @@ write_x.join();
 write_y.join();
 write_x_then_y.join();
 write_y_then_x.join();
-assert_eq(z.load(Relaxed), 1);                                        // 但若无 `SeqCst` 保证，`z` 可能为 0、2
+assert_eq(z.load(Relaxed), 1);          // 但若无 `SeqCst` 保证，`z` 可能为 0、2
 ```
 
 > - `std::memory_order`：<https://en.cppreference.com/w/cpp/atomic/memory_order.html#Release-Acquire_ordering>

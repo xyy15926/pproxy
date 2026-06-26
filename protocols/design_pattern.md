@@ -1931,6 +1931,7 @@ public class StatePatternDemo{
     }
 }
 ```
+
 ### 空对象模式 Null Object Pattern
 
 -   空对象模式：创建一个指定各种要执行的操作的抽象类和扩展该类的实体类、一个未做人实现的空对象类，空对象类将用于需要检查空值的地方取代 `NULL` 对象实例的检查，也可以在数据不可用时提供默认的行为
@@ -2935,5 +2936,3 @@ public class StudentBO{
     }
 }
 ```
-
-

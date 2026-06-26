@@ -6,7 +6,7 @@ categories:
 tags:
   - Database
   - SQL DB
-  - Grammer
+  - Grammar
   - CUAD
 date: 2019-07-10 00:48:33
 updated: 2023-08-31 17:18:28
@@ -95,7 +95,6 @@ description: SQL语法
 | 枚举         | `ENUM(<val_list>)`  |                                             |       |      |
 | 集合         | `SET`               |                                             |       |      |
 
-
 -   MySQL 说明
     -   MYSQL 中各类 `CHAR`、`TEXT` 中语义单元为字符，各类 `BINARY`、`BLOB` 语义单元为字节
         -   各类 `CHAR`、`TEXT` 存储内容长度限制与编码类型有关（UTF-8 等变长编码会被限制为固定长度）
@@ -116,7 +115,7 @@ description: SQL语法
 > - Oracle 字符集：<https://www.cnblogs.com/rootq/articles/2049324.html>
 > - Oracle `NCHAR` 类型：<https://www.yiibai.com/oracle/oracle-nchar.html>
 
-## DDL
+##  DDL
 
 ```sql
 CREATE DATABASE <db_name>;
@@ -156,7 +155,7 @@ ALTER COLUMN <field> <dtype>;                           -- 修改列类型
         -   Oracle、MSSQL 中需使用 `column` 关键字引导列名
         -   MySQL 在添加、删除约束时常可省略 `constraint` 关键字
 
-####   `NOT NULL`
+####    `NOT NULL`
 
 ```sql
 <field> <dtype> NOT NULL                                    -- 建表
@@ -257,7 +256,7 @@ ALTER TABLE <tbl>
 DROP CONSTRAINT <cstrt_name>;                               -- MSSQL、ORACLE 删除
 ```
 
-## DML
+##  DML
 
 ```sql
 SELECT          <field>, DISTINCT <field>
@@ -335,7 +334,7 @@ TRUNCATE TABLE <tbl>;                                       -- 丢弃数据
 | `insert(s1,x,len,s2)`                 | 替换 `s1[x:x+len]` 为 `s2`  | `x` 从 1 开始 |
 | `locate(s1,s)`、`position(s1 in s)`   | 获取起始位置                |               |
 | `lcase(s)`、`lower`                   |                             |               |
-| `ucase(s)`、`upper`                   |
+| `ucase(s)`、`upper`                   |                             |               |
 | `left(s,n)`                           | 左截取                      |               |
 | `right(s,n)`                          | 右截取                      |               |
 | `mid(s,n,len)`、`substr`、`substring` | 中截取                      |               |
@@ -384,7 +383,6 @@ TRUNCATE TABLE <tbl>;                                       -- 丢弃数据
 | `bin(x)`             | 二进制编码     |      |
 | `conv(x,f1,f2)`      | 进制转换       |      |
 
-
 ### 聚集
 
 | MYSQL               | 描述     | 说明 |
@@ -416,7 +414,7 @@ TRUNCATE TABLE <tbl>;                                       -- 丢弃数据
 
 | MySQL                                                   | Oracle       | 描述                       | 说明           |
 |---------------------------------------------------------|--------------|----------------------------|----------------|
-| `now()`、`localtime()`、`localtimestamp()`、`sysdate()` |              |                            | 当前日期、时间 |  |
+| `now()`、`localtime()`、`localtimestamp()`、`sysdate()` |              |                            | 当前日期、时间 |
 | `curdate()`、`current_date`                             | `getdate()`  |                            |                |
 | `curtime()`                                             |              |                            |                |
 | `current_timestamp()`                                   |              |                            |                |
@@ -460,7 +458,6 @@ TRUNCATE TABLE <tbl>;                                       -- 丢弃数据
 | `addtime(t,n)`                                          |              | 按秒推迟                   |                |
 | `timestamp(expr,interval)`                              |              | 返回时间、加总时间         |                |
 | `timestampdiff(unit,datetime_expr1,datetime_expr2)`     |              | 时间差                     |                |
-|
 
 ### 逻辑判断
 
@@ -489,6 +486,3 @@ END
 | `current_user()`、`session_user`、`system_user`、`user` | 当前用户名               |      |
 | `datebase()`                                            | 当前用户名               |      |
 | `last_insert_id()`                                      | 最近 *AUTO_INCREMENT* 值 |      |
-
-
-

@@ -138,7 +138,7 @@ description: 语言设计
 
 ##  函数设计技巧
 
-###  *Hook/Callback*
+### *Hook/Callback*
 
 -   *Hook* 钩子：在执行流执行到挂载点时，挂起原执行流，转而执行的其他函数
     -   分离实现与调用：可在默认执行流外实现钩子函数影响默认执行流
@@ -209,14 +209,14 @@ def test():
         -   在函数定义内使用外部变量，如：Python 函数定义
         -   使用特定数据结构实现闭包，如：C++ 函数类
 
-###  *Cache*
+### *Cache*
 
 -   *Cache* 缓冲
     -   固定大小：存储空间有上限
     -   快速获取：插入、查找操作必须快速，最好 $\in O(1)$
     -   达到存储空间上限时可以替换已有缓冲项
 
-#### *Least Recently Used Cache*
+####    *Least Recently Used Cache*
 
 ![function_design_lru_cache](imgs/function_design_lru_cache.png)
 
@@ -284,12 +284,12 @@ class itf_cls implements itf, others{
 }
 ```
 
-###   实现继承
+### 实现继承
 
 -   实现继承：允许继承多个均包含方法、实现的父结构
     -   即，普遍意义上多重继承，有多重继承的所有问题
 
-####   *Mixin*
+####    *Mixin*
 
 -   *Mixin* 混入：每个类 **逻辑上** 继承自单个类，但混入多个 *Mixin 类*
     -   *Mixin* 类应满足
@@ -308,6 +308,3 @@ class MixinCls:
 class SubCls(SuperCls, MixinCls1, MixinCls2):
     pass
 ```
-
-
-

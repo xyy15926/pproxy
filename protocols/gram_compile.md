@@ -1,19 +1,22 @@
 ---
-title: 
+title: Grammar and Compilation
 categories:
-  - 
+  - Protocol
 tags:
-  - 
+  - Protocol
+  - Grammar
+  - Compiler
+  - Formal Language
 date: 2023-11-13 10:35:24
 updated: 2025-01-02 21:42:33
 toc: true
 mathjax: true
-description: 
+description: 形式文法与编译原理
 ---
 
 ##  语言、语法（文法）
 
--   *Formal Grammer* 形式文法：描述形式语言根据 *Syntax* 构造合法字符串的方式
+-   *Formal Grammar* 形式文法：描述形式语言根据 *Syntax* 构造合法字符串的方式
     -   *Formal Language* 形式语言：字母表 $\Sigma$ 上某些有限长字符串的集合
         -   形式语言只关注语言的语法，忽略语言的语义
         -   语言是字母表能构成的所有串的集合的一个子集
@@ -27,9 +30,9 @@ description:
             -   形式：`左部 -> 右部`、`头 -> 体`
 
 > - 下述使用小写字母表示终结符、大写字母表示非终结符、`S` 表示开始符号、希腊字母表示符号串
-> - *Grammer*、*Syntax* 区别：<https://www.zhihu.com/question/31370551>
+> - *Grammar*、*Syntax* 区别：<https://www.zhihu.com/question/31370551>
 > - *Formal Language*：<https://en.wikipedia.org/wiki/Formal_language>
-> - *Formal Grammer*：<https://en.wikipedia.org/wiki/Formal_language>
+> - *Formal Grammar*：<https://en.wikipedia.org/wiki/Formal_language>
 > - 形式语言：<https://zh.wikipedia.org/zh-hans/%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80>
 
 | *Chomsky* 层级 | 文法       | 语言                         | 极小识别器                 | 产生式               |
@@ -118,7 +121,7 @@ description:
     -   运算符：`+`、`-`、`*`、`/`、`<`、`>`
     -   界符：`,`、`;`、`()`
 
-#### 编译
+####    编译
 
 -   *Compiler* 编译器：读入源语言程序、输出目标语言程序（通常可执行）
     -   编译器结构
@@ -271,7 +274,7 @@ flowchart LR
 > - 词法分析、正规式、正规文法：<https://blog.csdn.net/star_of_science/article/details/106793275>
 > - *Finite State Machine*：<https://en.wikipedia.org/wiki/Finite-state_machine>
 
-###    *NFA* 转换 *DFA*
+### *NFA* 转换 *DFA*
 
 ```python
 DS = deque([e_closure(s_0), ])
@@ -293,8 +296,8 @@ while DS:
         -   将初态闭包 $\epsilon-closure(s_0)$ 加入待处理列表 `DS`
             -   多初态可考虑增加可无代价转换至原初态的新初态 $s_0$
         -   依次考虑 `DS` 中每个闭包集 `DC`
-            -    对每个输入 $a$，计算 $DC_a = \epsilon-cloure(move(DC, a))$，记录状态转换 $T[DC, a] = DC_a$
-            -    若 $DC_a$ 未处理过，加入待处理列表 `DS`
+            -   对每个输入 $a$，计算 $DC_a = \epsilon-cloure(move(DC, a))$，记录状态转换 $T[DC, a] = DC_a$
+            -   若 $DC_a$ 未处理过，加入待处理列表 `DS`
             -   重复直至所有 `DS` 处理完毕
         -   状态转换表 $T$ 确定化 *DFA*
 -   最小化 *DFA*：不含无关状态、等价状态的 *DFA*
@@ -336,7 +339,7 @@ while DS:
 
 ##  上下文无关文法、下推自动机
 
--   *Context-Free Grammer* 上下文无关文法：文法中非终结符总可以被产生式体替换，而无需考虑上下文
+-   *Context-Free Grammar* 上下文无关文法：文法中非终结符总可以被产生式体替换，而无需考虑上下文
     -   上下文无关文法可以描述程序设计语言大部分语法，部分规范需要使用语法分析器检查
         -   如：*标识符先声明后使用* 无法使用 *CFG* 文法描述
 
@@ -382,7 +385,7 @@ while DS:
 
 > - 下推自动机：<https://www.nosuchfield.com/2017/01/07/Pushdown-automata>
 
-## 自顶向下语法分析
+##  自顶向下语法分析
 
 -   自顶向下语法分析：从根节点开始创建语法分析树
     -   先序深度优先的创建各节点，对应最左推导
@@ -438,7 +441,7 @@ def recur_analyze(sym, sent, pos=0):
     -   *LL(1)* 文法可通过当前输入符号（即前看 1）唯一确定需应用产生式，*LL(1)* 文法必定不是二义的
         -   对 *LL(1)* 文法，通过前看 1 选择合适产生式，**递归自顶向下分析时不会产生回溯**
 
-#### *Lookahead*、*FIRST*、*FOLLOW*
+####    *Lookahead*、*FIRST*、*FOLLOW*
 
 -   *Leadahead* 前看（输入）符号确定产生式：通常只前看 1 个符号
     -   考虑当前句型为 $x A \beta$，输入为 `xa`，已经匹配 `x`、下个输入为 `a`
@@ -469,7 +472,7 @@ def recur_analyze(sym, sent, pos=0):
         -   若 $\epsilon \in FIRST(\alpha)$，对 $FOLLOW(A)$ 中每个非终结符 `b`，将 $A \rightarrow \alpha$ 也加入 `M[A, b]` 中
     -   剩余空白条目置 `error`
 
-#### *LL(1)* 非递归的预测分析
+####    *LL(1)* 非递归的预测分析
 
 ![gram_ll1_topdown_analysis_procedure](imgs/gram_ll1_topdown_analysis_procedure.png)
 
@@ -486,7 +489,7 @@ def recur_analyze(sym, sent, pos=0):
             -   根据当前输入符号、预测分析表选择合适产生式（唯一）展开
             -   即，在 **栈顶** 用产生式体（逆序）替换原非终结符
 
-## 自底向上语法分析
+##  自底向上语法分析
 
 -   自底向上语法分析：从叶子节点开始向上构造语法分析树
     -   自底向上语法分析过程：对输入从左至右扫描、自底向上的构造语法分析树的过程
@@ -522,7 +525,7 @@ def recur_analyze(sym, sent, pos=0):
         -   结束时刻：栈内包含 `S$`，输入为 `S`
         -   分析过程中不断移入符号时，识别到句柄时规约
 
-###  *LR* 语法分析
+### *LR* 语法分析
 
 ![gram_lr_bottomup_analysis_procedure](imgs/gram_lr_bottomup_analysis_procedure.png)
 
@@ -561,7 +564,7 @@ def recur_analyze(sym, sent, pos=0):
 -   *Item* 项 $[A \rightarrow \alpha \cdot \beta]$：文法产生式以及指示扫描、规约位置的点
     -   项表示已经扫描、规约到了 $\alpha$，并期望接下来输入经过扫描、规约得到 $\beta$
     -   产生式 $A \rightarrow \epsilon$ 只对应一个项 $A \rightarrow \cdot$
--   *Augmented Grammer* 增广文法 $G^{'}$：在文法 $G$ 中新增开始符号 $S^{'}$、产生式 $S^{'} \rightarrow S$ 得到
+-   *Augmented Grammar* 增广文法 $G^{'}$：在文法 $G$ 中新增开始符号 $S^{'}$、产生式 $S^{'} \rightarrow S$ 得到
     -   增广文法与原文法语言相同
     -   按 $S^{'} \rightarrow S$ 规约即将输入符号串规约为开始符号
 -   *Closure* 项集闭包 $CLOSURE(I)$：所有可接受输入相同的项的集合
@@ -605,7 +608,7 @@ def recur_analyze(sym, sent, pos=0):
     -   且，识别过程过程自动机状态序列与文法符号序列对应，无需额外存储文法符号
     -   纯（无前看）基于 *LR(0)* 自动机的文法分析 **总是（无条件）规约优先**，基本无实用价值
 
-###    *SLR* 文法分析
+### *SLR* 文法分析
 
 -   *SLR* 文法分析：根据前看 1 输入、*FOLLOW* 集减少 *规约-移入* 冲突
     -   以 *LR(0)* 自动机为基础构造 *SLR* 文法分析表
@@ -743,7 +746,7 @@ flowchart TB
     factor -> ( expr ) .")
 ```
 
-###    *LR(1)* 文法分析
+### *LR(1)* 文法分析
 
 -   规范 *LR(1)* 方法：将 **规约所需前看符号** 作为项一部分构造项集
     -   即相较于 *SLR*，将 *FOLLOW* 集按产生式拆分、并入项中
@@ -966,10 +969,6 @@ flowchart LR
 
 > - 实线为 *LALR(1)* 自动机中状态转移，虚线表示先规约而后可达的状态转移
 
-## *Earley* 算法
+##  *Earley* 算法
 
-## *CYK* 算法
-
-
-
-
+##  *CYK* 算法

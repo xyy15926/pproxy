@@ -56,14 +56,14 @@ description: Spark Core
 -   *Spark GraphX*：图数据的并行处理模块
     -   扩展 *RDD* 为*Resilient Distributed Property Graph*，将属性赋予各个节点、边的有向图
     -   支持对图数据进行 *ExploratoryAnalysis*、*Iterative Graph Computation*
-    -	提供包括子图、顶点连接、信息聚合等操作在内的基础原语，用于简化图形分析任务
-        -	提供了一系列操作
-            -	*Sub Graph*：子图
-            -	*Join Vertices*：顶点连接
-            -	*Aggregate Message*：消息聚集
-            -	*Pregel API* 变种
-        -	经典图处理算法
-            -	*PageRank*
+    -   提供包括子图、顶点连接、信息聚合等操作在内的基础原语，用于简化图形分析任务
+        -   提供了一系列操作
+            -   *Sub Graph*：子图
+            -   *Join Vertices*：顶点连接
+            -   *Aggregate Message*：消息聚集
+            -   *Pregel API* 变种
+        -   经典图处理算法
+            -   *PageRank*
 -   *Spark MLLib*：可扩展的机器学习模块
     -   大数据平台使得在全量数据上进行学习成为可能
     -   实现包括分类、回归、聚类、关联过滤、降维等算法
@@ -77,7 +77,7 @@ description: Spark Core
         -   支持不同的上层查询处理框架，可以以极高的速度对集群内存中的文件进行访问
     -   将 *workset* 文件缓存在内存中，避免对磁盘的存取
 
-###  Spark 实体
+### Spark 实体
 
 ![spark_entities](imgs/spark_entities.png)
 
@@ -122,11 +122,11 @@ spark.conf.set("spark.executor.memory", "2g")
 
 ### 数据源
 
-|数据源|描述|说明|
-|-----|-----|-----|
-|`sc.textFile(?fileName:String,?slices:Int): RDD[String]`|文本文件| |
-|`sc.wholeTextFile(?directoryName: String): Map[String, RDD[String]]`|目录| |
-|`sc.SequenceFiles(fileName: String)`|满足文件| |
+| 数据源                                                               | 描述     | 说明 |
+|----------------------------------------------------------------------|----------|------|
+| `sc.textFile(?fileName:String,?slices:Int): RDD[String]`             | 文本文件 |      |
+| `sc.wholeTextFile(?directoryName: String): Map[String, RDD[String]]` | 目录     |      |
+| `sc.SequenceFiles(fileName: String)`                                 | 满足文件 |      |
 
 > - `slices`：切片数目，缺省为每个文件块创建切片，不能设置小于文件块数目的切片值
 
@@ -134,29 +134,29 @@ spark.conf.set("spark.executor.memory", "2g")
     -   文件目录
     -   压缩文件：`gz`
     -   简单通配符
-        |通配符|含义|
-        |-----|-----|
-        |`[]`：范围|
-        |`[^]`|范围补集|
-        |`?`|单个字符|
-        |`*`|0、多个字符|
-        |`{}`|**整体或选择**|
+        | 通配符     | 含义           |
+        |------------|----------------|
+        | `[]`：范围 |                |
+        | `[^]`      | 范围补集       |
+        | `?`        | 单个字符       |
+        | `*`        | 0、多个字符    |
+        | `{}`       | **整体或选择** |
 
-###	Directed Asycled Graph
+### Directed Asycled Graph
 
 ![spark_dag_wide_narrow_dependencies](imgs/spark_dag_wide_narrow_dependecies.png)
 
 -   Spark 同样使用 *DAG* 表示计算流程、维护 `RDD` 之间依赖关系
-    -	窄依赖：每个父 `RDD` 最多被一个子 `RDD` 分区使用
-        -	即，父 `RDD` 分区经过转换操作进入子 `RDD` 同一分区
-        -	窄依赖可单节点完成，无需 *Data Shuffling* 在网络上进行数据传输
-    -	宽依赖：多个子 `RDD` 分区依赖同一个父 `RDD` 分区
-        -	即，父 `RDD` 分区经过转换操作进入子 `RDD` 不同分区
-        -	宽依赖一般涉及 *Data Shuffling*，无法单节点完成
-        -	涉及宽依赖操作
-            -	`groupByKey`
-            -	`reduceByKey`
-            -	`sortByKey`
+    -   窄依赖：每个父 `RDD` 最多被一个子 `RDD` 分区使用
+        -   即，父 `RDD` 分区经过转换操作进入子 `RDD` 同一分区
+        -   窄依赖可单节点完成，无需 *Data Shuffling* 在网络上进行数据传输
+    -   宽依赖：多个子 `RDD` 分区依赖同一个父 `RDD` 分区
+        -   即，父 `RDD` 分区经过转换操作进入子 `RDD` 不同分区
+        -   宽依赖一般涉及 *Data Shuffling*，无法单节点完成
+        -   涉及宽依赖操作
+            -   `groupByKey`
+            -   `reduceByKey`
+            -   `sortByKey`
     -   窄依赖可以在单节点内完成，在 *DAG* 优化中更有利
         -   节点数据丢失恢复时，重算数据利用率更高，没有冗余计算
         -   允许集群中节点以流水线方式执行运算
@@ -168,11 +168,11 @@ spark.conf.set("spark.executor.memory", "2g")
         -   阶段：可多节点并行的一组任务，每个任务对应一个 `RDD` 分区
         -   划分规则：从 *DAG* 起始节点开始的，遇到宽依赖即切分为 *Stage*
         -   考虑缓存、位置因素，阶段中任务以 *Task Set* 形式交由 *Task Scheduler* 执行
-    -	容错处理
-        -	*DAG Scheduler* 负责处理阶段间 *Shuffle* 数据丢失，重新执行前置阶段以重建数据
+    -   容错处理
+        -   *DAG Scheduler* 负责处理阶段间 *Shuffle* 数据丢失，重新执行前置阶段以重建数据
         -   *Task Scheduler* 处理阶段内失败
 
-###  SparkSQL
+### SparkSQL
 
 ####    *Catalyst* 优化器
 
@@ -189,10 +189,10 @@ spark.conf.set("spark.executor.memory", "2g")
         ![sparksql_catalyst_analyzer](imgs/sparksql_catalyst_analyzer.png)
     -   *Optimizer* 优化器：使用查询优化技术对生成 *Optimized Logical Plan*
     -   *Planner* 计划器：将 *OLP* 转换为 Spark 能执行执行的 *Physical Plan*
-        -	物理计划实际上是逻辑计划中耗时最小的算法实现
+        -   物理计划实际上是逻辑计划中耗时最小的算法实现
         ![sql_optimization_physical_plan](imgs/sql_optimization_physical_plan.png)
 
-###  Spark Streaming
+### Spark Streaming
 
 -   `StreamingContext` *Spark Streaming*：提供对实时数据流高吞吐、高容错、可扩展的流式处理系统
     -   可以对多种数据源（Kafka、Flume、Twitter、ZeroMQ），进行包括 *Map*、*Reduce*、*Join* 等复杂操作
@@ -217,32 +217,32 @@ val conf = new SparkConf().setAppName("app name").setMaster(master)
 val ssc = new StreamingContext(conf, Seconds(1))
 ```
 
-##	RDD
+##  RDD
 
 -   `RDD` *Resilient Distributed Dataset*：容错的、不可变、分布式、确定可重复计算的数据集
     -   `RDD` 实现更通用的迭代、并行计算框架
-        -	`RDD` 可分配在集群中的多个节点中以支持并行处理
+        -   `RDD` 可分配在集群中的多个节点中以支持并行处理
             -   `RDD` 会被分块分布至多个节点上
-        -	`RDD` 是无结构的数据表，可以存放任何数据类型
-        -	`RDD` 不可变，`RDD` 转换只是返回新 `RDD`（*Lineage* 容错机制要求）
-    -	`RDD` 采用基于 *Lineage* 的容错机制
-        -	每个 `RDD` 记住确定性操作的 *Lineage*，即从其他 `RDD` 转换而来的路径
-            -	`RDD` 损坏时，Spark 可以从上游 `RDD` 重新计算、创建其数据
-            -	若所有 `RDD` 的转换操作是确定的，则最终转换数据一致
-        -	容错语义
-            -	输入源文件：Spark 运行在 HDFS、S3 等容错文件系统上，从任何容错数据而来的 `RDD` 都是容错的
-            -	接收者：可靠接收者告知可靠数据源，保证所有数据总是会被恰好处理一次
-            -	输出：输出操作可能会使得数据被重复写出，但文件会被之后写入覆盖
+        -   `RDD` 是无结构的数据表，可以存放任何数据类型
+        -   `RDD` 不可变，`RDD` 转换只是返回新 `RDD`（*Lineage* 容错机制要求）
+    -   `RDD` 采用基于 *Lineage* 的容错机制
+        -   每个 `RDD` 记住确定性操作的 *Lineage*，即从其他 `RDD` 转换而来的路径
+            -   `RDD` 损坏时，Spark 可以从上游 `RDD` 重新计算、创建其数据
+            -   若所有 `RDD` 的转换操作是确定的，则最终转换数据一致
+        -   容错语义
+            -   输入源文件：Spark 运行在 HDFS、S3 等容错文件系统上，从任何容错数据而来的 `RDD` 都是容错的
+            -   接收者：可靠接收者告知可靠数据源，保证所有数据总是会被恰好处理一次
+            -   输出：输出操作可能会使得数据被重复写出，但文件会被之后写入覆盖
     -   `RDD` 操作可分为三类
         -   *Transformation* 转换：从已有数据集创建新数据集
-            -	返回新 *RDD*，原 *RDD* 保持不变
-            -	延迟执行：先记录相关数据集，仅当动作操作被执行时，相关前置转换操作才被启动
+            -   返回新 *RDD*，原 *RDD* 保持不变
+            -   延迟执行：先记录相关数据集，仅当动作操作被执行时，相关前置转换操作才被启动
         -   *Action* 动作：在数据集上进行计算后返回值到驱动程序
-            -	施加于一个 *RDD*，通过对 *RDD* 数据集的计算返回新的结果
-                -	默认每次执行动作时重新计算，可使用 `cache`、`persist` 持久化至内存、硬盘中
+            -   施加于一个 *RDD*，通过对 *RDD* 数据集的计算返回新的结果
+                -   默认每次执行动作时重新计算，可使用 `cache`、`persist` 持久化至内存、硬盘中
         -   *Manipulation* 控制
 
-###	RDD Transformation
+### RDD Transformation
 
 ![spark_rdd_transformation](imgs/spark_rdd_transformation.png)
 
@@ -251,81 +251,80 @@ val ssc = new StreamingContext(conf, Seconds(1))
 > - 黄色：重分区转换
 > - 蓝色：特例转换
 
-|*Transformation*|描述|说明|
-|-----|-----|-----|
-|`map(func)`|遍历转换| |
-|`flatMap(func)`|遍历转换，并展平结果| |
-|`mapPartitions(func)`|类似 `map`，但在分片上独立运行| |
-|`mapPartitionsWithIndex(func)`|类似 `mapPartitions`，但在分片上独立运行| |
-|`filter(func)`|过滤| |
-|`union(otherDataset)`|并集| |
-|`intersection(otherDataset)`|交集| |
-|`groupByKey([numTasks])`|按键分块再聚集| |
-|`reduceByKey(func[,numTasks])`|预聚合，按键分组再聚合| |
-|`sortByKey([ascending,numTasks])`| |
-|`sortBy(func[,ascending,numTasks])`| |
-|`join(otherDataSet[,numTasks])`|返回 `(K,(V,W))`| |
-|`cogroup(otherDataset[,numTasks])`|返回 `(K,(Seq(V),Seq(W))`| |
-|`coalesce(numPartions)`|指定 `RDD` 分区数| |
-|`repartition()`|重分区|
-|`repartitionAndSortWithinPartitions(partitioner)`|充分区并按键排序| |
-|`pipe()`| | |
-|`aggregateByKey()`| | |
+| *Transformation*                                  | 描述                                     | 说明 |
+|---------------------------------------------------|------------------------------------------|------|
+| `map(func)`                                       | 遍历转换                                 |      |
+| `flatMap(func)`                                   | 遍历转换，并展平结果                     |      |
+| `mapPartitions(func)`                             | 类似 `map`，但在分片上独立运行           |      |
+| `mapPartitionsWithIndex(func)`                    | 类似 `mapPartitions`，但在分片上独立运行 |      |
+| `filter(func)`                                    | 过滤                                     |      |
+| `union(otherDataset)`                             | 并集                                     |      |
+| `intersection(otherDataset)`                      | 交集                                     |      |
+| `groupByKey([numTasks])`                          | 按键分块再聚集                           |      |
+| `reduceByKey(func[,numTasks])`                    | 预聚合，按键分组再聚合                   |      |
+| `sortByKey([ascending,numTasks])`                 |                                          |      |
+| `sortBy(func[,ascending,numTasks])`               |                                          |      |
+| `join(otherDataSet[,numTasks])`                   | 返回 `(K,(V,W))`                         |      |
+| `cogroup(otherDataset[,numTasks])`                | 返回 `(K,(Seq(V),Seq(W))`                |      |
+| `coalesce(numPartions)`                           | 指定 `RDD` 分区数                        |      |
+| `repartition()`                                   | 重分区                                   |      |
+| `repartitionAndSortWithinPartitions(partitioner)` | 充分区并按键排序                         |      |
+| `pipe()`                                          |                                          |      |
+| `aggregateByKey()`                                |                                          |      |
 
-|*Action*|描述|说明|
-|-----|-----|-----|
-|`count()`|计算元素个数| |
-|`countByKey()`|键计数，返回 `(K,int)`| |
-|`countByValue()`|值计数，返回 `(V,int)`| |
-|`collect()`|数组形式返回所有元素| |
-|`reduce(func)`|逐对聚合| |
-|`first()`|首个元素| |
-|`take(n)`|前 `n` 个元素| |
-|`takeOrdered(n[,ordering])`|排序后前 `n`| |
-|`foreach(func)`|逐元素执行 `func`| |
-|`foreachPartition(func)`|逐分区执行 `func`| |
-|`saveAsTextFile(path)`|持久化为 textfile| |
-|`saveAsSequenceFile(path)`|持久化为 sequencefile| |
-|`saveAsObjectFile(prefix[,suffix])`|以 Java 序列化方式保存| |
-|`saveAsHadoopFile(prefix[,suffix])`|保存为 Hadoop 文件| |
-|`print`|打印（各） `RDD` 前 10 条元素|
+| *Action*                            | 描述                          | 说明 |
+|-------------------------------------|-------------------------------|------|
+| `count()`                           | 计算元素个数                  |      |
+| `countByKey()`                      | 键计数，返回 `(K,int)`        |      |
+| `countByValue()`                    | 值计数，返回 `(V,int)`        |      |
+| `collect()`                         | 数组形式返回所有元素          |      |
+| `reduce(func)`                      | 逐对聚合                      |      |
+| `first()`                           | 首个元素                      |      |
+| `take(n)`                           | 前 `n` 个元素                 |      |
+| `takeOrdered(n[,ordering])`         | 排序后前 `n`                  |      |
+| `foreach(func)`                     | 逐元素执行 `func`             |      |
+| `foreachPartition(func)`            | 逐分区执行 `func`             |      |
+| `saveAsTextFile(path)`              | 持久化为 textfile             |      |
+| `saveAsSequenceFile(path)`          | 持久化为 sequencefile         |      |
+| `saveAsObjectFile(prefix[,suffix])` | 以 Java 序列化方式保存        |      |
+| `saveAsHadoopFile(prefix[,suffix])` | 保存为 Hadoop 文件            |      |
+| `print`                             | 打印（各） `RDD` 前 10 条元素 |      |
 
-|Output Operation|RDD|DStream|
-|-----|-----|-----|
-|`saveAsObjectFile(prefix[, suffix])`|保存为序列化文件|命名为`<prefix>-TIME_IN_M.<suffix>`|
-|`saveAsTextFile(prefix[, suffix])`|保存为文本文件||
+| Output Operation                     | RDD              | DStream                             |
+|--------------------------------------|------------------|-------------------------------------|
+| `saveAsObjectFile(prefix[, suffix])` | 保存为序列化文件 | 命名为`<prefix>-TIME_IN_M.<suffix>` |
+| `saveAsTextFile(prefix[, suffix])`   | 保存为文本文件   |                                     |
 
-|*Manipulation*|描述|说明|
-|-----|-----|-----|
-|`cache()`|缓存算子结果在内存中|性能提升等价于 *Memory-Only*|
-|`persist()`|根据 `StorageLevel` 持久化数据| |
-|`checkpoint()`|检查点宕机容错|还可切断 *RDD* 依赖关系|
+| *Manipulation* | 描述                           | 说明                         |
+|----------------|--------------------------------|------------------------------|
+| `cache()`      | 缓存算子结果在内存中           | 性能提升等价于 *Memory-Only* |
+| `persist()`    | 根据 `StorageLevel` 持久化数据 |                              |
+| `checkpoint()` | 检查点宕机容错                 | 还可切断 *RDD* 依赖关系      |
 
 > - `numTasks`：默认使用Spark默认并发数目
 > - Spark `RDD` 算子：<https://www.cnblogs.com/ronnieyuan/p/11768536.html>
 
+### DataFrame
 
-###	DataFrame
-
--	`DataFrame`：类似关系型数据库中表，数据被组织到具名列中
-	-	高抽象层次：相较于 `RDD` 是对分布式、结构化数据集的高层次抽象
+-   `DataFrame`：类似关系型数据库中表，数据被组织到具名列中
+    -   高抽象层次：相较于 `RDD` 是对分布式、结构化数据集的高层次抽象
         -   脱胎于 `sql.SchemaRDD`，在数据存储层面对数据进行结构化描述
-        -	可通过特定 API 集成过程性处理、关系处理
+        -   可通过特定 API 集成过程性处理、关系处理
             -   延迟执行，利于对关系操作、数据处理工作流进行深入优化
-            -	结构化的 `DataFrame` 可重新转换为无结构的 `RDD` 数据集
-	-	静态类型安全：相较于 SQL 查询语句，在编译时即可发现语法错误
-    -	可通过不同数据来源创建 `DataFrame`
-        -	`RDD` 数据集
-        -	结构化数据文件
-        -	JSON 数据集
-        -	Hive 表格
-        -	外部数据库表
+            -   结构化的 `DataFrame` 可重新转换为无结构的 `RDD` 数据集
+    -   静态类型安全：相较于 SQL 查询语句，在编译时即可发现语法错误
+    -   可通过不同数据来源创建 `DataFrame`
+        -   `RDD` 数据集
+        -   结构化数据文件
+        -   JSON 数据集
+        -   Hive 表格
+        -   外部数据库表
 
--	`Dataset`：有明确类型数据、或无明确数据类型集合
-	-	相较于 `DataFrame`，也可组织半结构化数据
+-   `Dataset`：有明确类型数据、或无明确数据类型集合
+    -   相较于 `DataFrame`，也可组织半结构化数据
         -   `DataFrame` 可视为无明确数据类型 `Dataset[Row]` 别名，每行是无类型 JVM 对象
         -   运行速度较慢
-	-	静态类型、运行时类型安全：相较于 `DataFrame`，集合元素有明确类型，在编译时即可发现分析错误
+    -   静态类型、运行时类型安全：相较于 `DataFrame`，集合元素有明确类型，在编译时即可发现分析错误
 
 ### Discreted Stream
 
@@ -342,16 +341,16 @@ val ssc = new StreamingContext(conf, Seconds(1))
         -   *Reliable Receiver*：支持应答，数据收到、且被正确复制至 Spark
         -   *Unreliable Receiver*：不支持应答
 
-####	DStream Window Action
+####    DStream Window Action
 
-|`DStream` *Window Action*|描述|
-|-----|-----|
-|`window(windowLength, slideInterval)`|基于DStream产生的窗口化批数据产生DStream|
-|`countByWindow(windowLength, slideInterval)`|返回滑动窗口数|
-|`reduceByWindow(func, windowLength, slideInterval)`||
-|`reduceByKeyAndWindow(func, windowLength, slidenInterval[, numTasks])`||
-|`reduceByKeyAndWindow(func, invFunc, windowLength, slideInterval[, numTasks])`|须提供`invFunc`消除离开窗口RDD对reduce结果影响|
-|`countByValueAndWindow(windowLength, slideInterval[, numTasks])`||
+| `DStream` *Window Action*                                                      | 描述                                           |
+|--------------------------------------------------------------------------------|------------------------------------------------|
+| `window(windowLength, slideInterval)`                                          | 基于DStream产生的窗口化批数据产生DStream       |
+| `countByWindow(windowLength, slideInterval)`                                   | 返回滑动窗口数                                 |
+| `reduceByWindow(func, windowLength, slideInterval)`                            |                                                |
+| `reduceByKeyAndWindow(func, windowLength, slidenInterval[, numTasks])`         |                                                |
+| `reduceByKeyAndWindow(func, invFunc, windowLength, slideInterval[, numTasks])` | 须提供`invFunc`消除离开窗口RDD对reduce结果影响 |
+| `countByValueAndWindow(windowLength, slideInterval[, numTasks])`               |                                                |
 
 > - `windowLength`：窗口长度
 > - `slideInterval`：滑动间隔
@@ -362,14 +361,14 @@ val ssc = new StreamingContext(conf, Seconds(1))
 
 ####    数据流来源
 
-|方法|描述|
-|-----|-----|
-|`ssc.ScoketTextStream(?host: String, ?port: Int)`|套接字连接流|
-|`ssc.actorStream(actorProps: ?, actorName: String)`|*Akka* 中 *Actor* 流|
-|`ssc.queueStream(queueOfRDDs: Seq[RDD])`|`RDD` 队列数据流|
-|`ssc.fileStream[keyClass, valueClass, inputFormatClass](dataDirectory: String)`| |
-|`ssc.textFileStream(dataDirectory)`| |
-|`kafkaUtils.createStream()`|*Kafka* 事件流|
+| 方法                                                                            | 描述                 |
+|---------------------------------------------------------------------------------|----------------------|
+| `ssc.ScoketTextStream(?host: String, ?port: Int)`                               | 套接字连接流         |
+| `ssc.actorStream(actorProps: ?, actorName: String)`                             | *Akka* 中 *Actor* 流 |
+| `ssc.queueStream(queueOfRDDs: Seq[RDD])`                                        | `RDD` 队列数据流     |
+| `ssc.fileStream[keyClass, valueClass, inputFormatClass](dataDirectory: String)` |                      |
+| `ssc.textFileStream(dataDirectory)`                                             |                      |
+| `kafkaUtils.createStream()`                                                     | *Kafka* 事件流       |
 
 -   说明
     -   文件系统流：文件流无需运行`receiver`
@@ -389,7 +388,7 @@ val ssc = new StreamingContext(conf, Seconds(1))
     -   设置正确的批容量，保证系统能正常、稳定处理数据
     -   内存调优，调整内存使用、应用的垃圾回收行为
 
-#### Checkpoint
+####    Checkpoint
 
 ```scala
 // 设置checkpoint存储信息目录
@@ -408,6 +407,3 @@ def StreamingContext.getOrCreate(?checkPointDirectory: String, ?functionToCreate
     -   需要开启 Checkpoint 场合
         -   使用有状态转换操作：`updateStateByKey`、`reduceByKeyAndWindow`等
         -   从程序的 Driver 故障中恢复
-
-
-

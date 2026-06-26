@@ -20,7 +20,6 @@ comments: true
 description: Hadoop概述
 ---
 
-
 ##  Hadoop
 
 -   *Hadoop*：*Apache* 的一个分布式计算、java 语言实现的开源框架
@@ -45,20 +44,20 @@ description: Hadoop概述
     -   据此实现对多种类型文件系统的兼容
     -   *HDFS* 可认为只是其中的一个实现
 
-|文件系统|URI方案|Java实现|描述|
-|-----|-----|-----|-----|
-|Local|`file`|`fs.LocalFileSystem`|使用客户端校验和本地磁盘文件系统，没有使用校验和文件系统`RawLocalFileSystem`|
-|HDFS|`hdfs`|`hdfs.DistributedFileSystem`|HDFS设计为与MapReduce结合使用实现高性能|
-|HFTP|`hftp`|`hdfs.HftpFileSystem`|在HTTP上提供对HDFS只读访问的文件系统，通常与distcp结合使用，以实现在运行不同版本HDFS集群之间复制数据|
-|HSFTP|`hsftp`|`hdfs.HsftpFileSystem`|在HTTPS上同以上|
-|WebHDFS|`Webhdfs`|`hdfs.web.WebHdfsFileSystem`|基于HTTP，对HDFS提供安全读写访问的文件系统，为了替代HFTP、HFSTP而构建|
-|HAR|`har`|`fs.HarFileSystem`|构建于其他文件系统之上，用于文件存档的文件系统，通常用于需要将HDFS中的文件进行存档时，以减少对NN内存的使用|
-|hfs|`kfs`|`fs.kfs.kosmosFileSystem`|CloudStore（前身为Kosmos文件系统）类似于HDFS（GFS），*C++*编写|
-|FTP|`ftp`|`fs.ftp.FTPFileSystem`|由FTP服务器支持的文件系统|
-|S3（原生）|`S3n`|`fs.s3native.NativeS3FileSystem`|由Amazon S3支持的文件系统|
-|S3（基于块）|`S3`|`fs.sa.S3FileSystem`|由Amazon S3支持的文件系统，以块格式存储文件（类似于HDFS），以解决S3Native 5GB文件大小限制|
-|分布式RAID|`hdfs`|`hdfs.DistributedRaidFileSystem`|RAID版本的HDFS是为了存档而设计的。针对HDFS中每个文件，创建一个更小的检验文件，并允许数据副本变为2，同时数据丢失概率保持不变。需要在集群中运行一个RaidNode后台进程|
-|View|`viewfs`|`viewfs.ViewFileSystem`|针对其他Hadoop文件系统挂载的客户端表，通常用于联邦NN创建挂载点|
+| 文件系统     | URI方案   | Java实现                         | 描述                                                                                                                                                              |
+|--------------|-----------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Local        | `file`    | `fs.LocalFileSystem`             | 使用客户端校验和本地磁盘文件系统，没有使用校验和文件系统`RawLocalFileSystem`                                                                                      |
+| HDFS         | `hdfs`    | `hdfs.DistributedFileSystem`     | HDFS设计为与MapReduce结合使用实现高性能                                                                                                                           |
+| HFTP         | `hftp`    | `hdfs.HftpFileSystem`            | 在HTTP上提供对HDFS只读访问的文件系统，通常与distcp结合使用，以实现在运行不同版本HDFS集群之间复制数据                                                              |
+| HSFTP        | `hsftp`   | `hdfs.HsftpFileSystem`           | 在HTTPS上同以上                                                                                                                                                   |
+| WebHDFS      | `Webhdfs` | `hdfs.web.WebHdfsFileSystem`     | 基于HTTP，对HDFS提供安全读写访问的文件系统，为了替代HFTP、HFSTP而构建                                                                                             |
+| HAR          | `har`     | `fs.HarFileSystem`               | 构建于其他文件系统之上，用于文件存档的文件系统，通常用于需要将HDFS中的文件进行存档时，以减少对NN内存的使用                                                        |
+| hfs          | `kfs`     | `fs.kfs.kosmosFileSystem`        | CloudStore（前身为Kosmos文件系统）类似于HDFS（GFS），*C++*编写                                                                                                    |
+| FTP          | `ftp`     | `fs.ftp.FTPFileSystem`           | 由FTP服务器支持的文件系统                                                                                                                                         |
+| S3（原生）   | `S3n`     | `fs.s3native.NativeS3FileSystem` | 由Amazon S3支持的文件系统                                                                                                                                         |
+| S3（基于块） | `S3`      | `fs.sa.S3FileSystem`             | 由Amazon S3支持的文件系统，以块格式存储文件（类似于HDFS），以解决S3Native 5GB文件大小限制                                                                         |
+| 分布式RAID   | `hdfs`    | `hdfs.DistributedRaidFileSystem` | RAID版本的HDFS是为了存档而设计的。针对HDFS中每个文件，创建一个更小的检验文件，并允许数据副本变为2，同时数据丢失概率保持不变。需要在集群中运行一个RaidNode后台进程 |
+| View         | `viewfs`  | `viewfs.ViewFileSystem`          | 针对其他Hadoop文件系统挂载的客户端表，通常用于联邦NN创建挂载点                                                                                                    |
 
 ### 文件系统接口
 
@@ -79,7 +78,6 @@ $ hadoop fs -copyFromLocal file hdfs://localhost/user/xyy15926/file
 
 $ hadoop fs -copyToLocal file file
 ```
-
 
 ### *Hadoop* 生态项目
 
@@ -114,7 +112,7 @@ $ hadoop fs -copyToLocal file file
 -   *Sqoop*：*Hadoop*、关系型数据库中数据迁移工具
 -   *Impala*：实时查询开源项目
 -   *Phoenix*：基于 *HBase* 的关系型数据库
-    -  支持 SQL 查询
+    -   支持 SQL 查询
     -   支持包括二级索引在内的丰富特性，借鉴关系型数据库优化查询方法
 -   *Oozie*：工作流引擎服务器，用于管理、协调运行在 *Hadoop* 平台的任务
 -   *Cloudera Hue*：基于 Web 的监控、管理系统
@@ -452,7 +450,7 @@ $ hadoop fs -copyToLocal file file
         -   抽象层次低：数据处理逻辑隐藏在用户代码中，可读性差
         -   表达能力有限：复杂数据处理任务，如：机器学习算法、SQL 连接查询很难表示用 *MapReduce* 计算默认表达
 
-#### *MapReduce* 执行过程
+####    *MapReduce* 执行过程
 
 -   *MapReduce* 执行引擎直接基于 *HDFS*
     -   *JobTracker*：在 *NameNode* 上执行，分解作业为数据处理任务并分发给 *TaskTacker*
@@ -497,13 +495,13 @@ $ hadoop fs -copyToLocal file file
 
 ####    Tez *DAG*
 
-| |*MapReduce*|Tez *DAG*|
-|------|------|------|
-|操作原语|*Map*、*Reduce*|较多|
-|抽象层次|低|高|
-|表达能力|差|强|
-|易用性|需手动处理作业之间依赖关系，易用性差|*DAG* 本身体现数据处理流程|
-|可读性|处理逻辑隐藏在代码中，没有整体逻辑|较好|
+|          | *MapReduce*                          | Tez *DAG*                  |
+|----------|--------------------------------------|----------------------------|
+| 操作原语 | *Map*、*Reduce*                      | 较多                       |
+| 抽象层次 | 低                                   | 高                         |
+| 表达能力 | 差                                   | 强                         |
+| 易用性   | 需手动处理作业之间依赖关系，易用性差 | *DAG* 本身体现数据处理流程 |
+| 可读性   | 处理逻辑隐藏在代码中，没有整体逻辑   | 较好                       |
 
 -   Tez *Directed Acyclic Graph* 中包含更多操作原语，表达能力强于 *MapReduce*
     -   *DAG* 由顶点、边构成
@@ -528,12 +526,12 @@ $ hadoop fs -copyToLocal file file
 
 ##  HBase
 
-||HBase|Bigtable|
-|-----|-----|-----|
-|存储系统|HDFS|GFS|
-|数据处理|Hadoop MapReduce|MapReduce|
-|协同服务|Zookeeper|Chubby|
-|RDBMS数据导入|Sqoop|-|
+|               | HBase            | Bigtable  |
+|---------------|------------------|-----------|
+| 存储系统      | HDFS             | GFS       |
+| 数据处理      | Hadoop MapReduce | MapReduce |
+| 协同服务      | Zookeeper        | Chubby    |
+| RDBMS数据导入 | Sqoop            | -         |
 
 -   HBase：高可靠、高性能、面向列、可伸缩的分布式数据库系统
     -   利用 HBase 技术可以在廉价硬件上搭建大规模非结构化数据管理集群
@@ -550,7 +548,7 @@ $ hadoop fs -copyToLocal file file
     -   可以在 HBase 系统上运行 MapReduce 作业，实现数据批处理
         ![hbase_mapreduce](imgs/hbase_mapreduce.png)
 
-###  HBase 数据结构
+### HBase 数据结构
 
 ![hbase_storage_structure](imgs/hbase_storage_structure.png)
 
@@ -568,7 +566,7 @@ $ hadoop fs -copyToLocal file file
         -   每个分区由 `[startkey, endkey)` 表示
         -   不同分区被分配给相应 *RegionServer* 进行管理（存储）
 
-###  HBase 架构
+### HBase 架构
 
 ![hbase_structure](imgs/hbase_structure.png)
 
@@ -606,7 +604,7 @@ $ hadoop fs -copyToLocal file file
         -   *HMaster* 按分区拆分日志文件，重新分配失效分区
         -   接收到新分区 *HRegionServer* 会尝试恢复需处理的日志文件
 
-###  HBase 存储结构
+### HBase 存储结构
 
 ![hbase_hfile_storage_formation](imgs/hbase_hfile_storage_formation.png)
 
@@ -655,7 +653,6 @@ $ hadoop fs -copyToLocal file file
     -   提供事件驱动模型，客户端能观察到 *Znode* 的变化
     -   可运行多个 *Zookeeper Ensemble* 以获得高可用性
         -   每个服务器上的 *Ensemble* 都持有分布式系统内存副本，为客户端读取请求提供服务
-
 
 ##  Flume
 
@@ -739,7 +736,7 @@ $ hadoop fs -copyToLocal file file
         -   *Event Sourcing*：事件溯源，把应用程序状态变化以时间顺序存储，需要支持大量数据
         -   *Commit Log*：日志提交，作为分布式系统提交日志的外部存储服务
 
-###  Kafka 架构
+### Kafka 架构
 
 ![kafka_structure](imgs/kafka_structure.png)
 
@@ -779,7 +776,7 @@ $ hadoop fs -copyToLocal file file
 > - *Publish Subscribe* 发布订阅模型：消息被广播给所有消费者
 > - *the Advanced Message Queuing Protocal* 标准开放的应用层消息中间件协议：定义通过网络发送的字节流的数据格式
 
-###  消息分区、存储、分发
+### 消息分区、存储、分发
 
 -   分区：有序的、不可更改、可在末尾不断追加的消息序列
     -   每个分区由单独的一组服务器处理，负责该分区数据管理、消息请求，支持多个副本以支持容错
@@ -810,14 +807,14 @@ $ hadoop fs -copyToLocal file file
                 其他消费者可以正常的消费
         -   从消息分区机制、消费者基于偏移量消费机制，可以看出 Kafka 消息消费机制不会对集群、其他消费者造成影响
 
-##   Storm
+##  Storm
 
 -   *Storm*：是分布式、高容错的实时流数据处理的开源系统
     -   Storm 为流数据处理设计，提供高容错性、可靠消息处理
         -   保证每个消息只能得到一次完整处理
         -   任务失败时会负责从消息源重试消息
 
-###  Storm 架构
+### Storm 架构
 
 ![storm_structure](imgs/storm_structure.png)
 
@@ -827,7 +824,7 @@ $ hadoop fs -copyToLocal file file
     -   *Nimbus*、*Supervisor* 都是无状态的，不负责维护客户端两次调用之间状态维护
         -   两者之间的协调由 Zookeeper 完成
 
-###  Storm 编程模型
+### Storm 编程模型
 
 -   Storm 编程模型
     -   *Topology* 计算拓扑：封装实时计算应用程序处理逻辑
@@ -857,16 +854,16 @@ $ hadoop fs -copyToLocal file file
 
 ##  Hive
 
-| |Hive|传统关系型数据库|
-|------|------|-------|
-|数据存储|HDFS 分布式文件系统|服务器本地文件系统|
-|查询处理|MapReduce 计算模型|自行设计的查询处理模型|
-|应用场景|海量数据分析处理|高性能查询，实时性好|
-|数据更新|不支持对具体数据行修改，只能覆盖、追加|支持|
-|事务处理|不支持|支持|
-|索引支持|不支持，一般需要对数据进行全部扫描|支持，多种索引|
-|扩展能力|基于 Hadoop 平台，存储、计算强大的扩展能力|扩展性较差|
-|数据加载|*Writing Time Schema*：数据加载时无需进行模式检查，在读取数据时对数据以一定模式进行解释|*Reading Time Schema*：要求数据必须符合数据库表结构|
+|          | Hive                                                                                    | 传统关系型数据库                                    |
+|----------|-----------------------------------------------------------------------------------------|-----------------------------------------------------|
+| 数据存储 | HDFS 分布式文件系统                                                                     | 服务器本地文件系统                                  |
+| 查询处理 | MapReduce 计算模型                                                                      | 自行设计的查询处理模型                              |
+| 应用场景 | 海量数据分析处理                                                                        | 高性能查询，实时性好                                |
+| 数据更新 | 不支持对具体数据行修改，只能覆盖、追加                                                  | 支持                                                |
+| 事务处理 | 不支持                                                                                  | 支持                                                |
+| 索引支持 | 不支持，一般需要对数据进行全部扫描                                                      | 支持，多种索引                                      |
+| 扩展能力 | 基于 Hadoop 平台，存储、计算强大的扩展能力                                              | 扩展性较差                                          |
+| 数据加载 | *Writing Time Schema*：数据加载时无需进行模式检查，在读取数据时对数据以一定模式进行解释 | *Reading Time Schema*：要求数据必须符合数据库表结构 |
 
 -   *Hive*：Hadoop 平台上的数据仓库，面向结构化数据分析
     -   将**结构化**数据文件映射为一张**数据库表**
@@ -925,7 +922,7 @@ $ hadoop fs -copyToLocal file file
     -   *WEB GUI*：允许用户通过网络图形界面访问 Hive
         -   需要首先启动 *Hive Web Interface* 服务
 
-###  Hive 查询处理
+### Hive 查询处理
 
 -   Hive 查询流程
     -   用户提交 *HiveQL* 至 *Driver*
@@ -967,7 +964,3 @@ $ hadoop fs -copyToLocal file file
         -   桶即表、分区目录中文件
         -   常 Hash 函数实现数据分桶，创建表时需要指定桶数量、分桶列
         -   Hive 可以使用分桶信息提高查询效率
-
-
-
-

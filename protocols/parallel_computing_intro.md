@@ -50,7 +50,7 @@ description: 并行计算简介
 
 -   *BSP* 模型：异步 *MIMD-DM*（Distributed Memory）模型
     -   *BSP* 模型支持消息传递系统，块内异步并行，块间显式同步
-    -   模型基于一个 master 协调，所有 worker 同步(lock-step)执行，数据从输入的队列中读取 
+    -   模型基于一个 master 协调，所有 worker 同步(lock-step)执行，数据从输入的队列中读取
 
 ####    模型描述
 
@@ -92,7 +92,6 @@ description: 并行计算简介
     -   *BSP* 模型起到为软件和硬件之间架起一座类似于冯·诺伊曼机的桥梁的作业，因此BSP模型也常叫做桥模型
     -   *BSP* 模型上曾直接实现了一些重要的算法（如矩阵乘、并行前序运算、FFT和排序等），均避免自动存储管理的额外开销
     -   为 *PRAM* 模型所设计的算法，都可以采用在每个 *BSP* 处理器上模拟一些 *PRAM* 处理器的方法来实现。
-
 
 ### LogP模型
 
@@ -186,4 +185,3 @@ description: 并行计算简介
 ####    *Hybrid*
 
 ![hybrid_mem_image](imgs/hybrid_mem_image.png)
-
