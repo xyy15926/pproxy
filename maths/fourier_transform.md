@@ -104,6 +104,3 @@ f(x,y) & = \frac 1 {\sqrt{NM}} \sum_{u=0}^{N-1}
         F(u,v) cos[\frac \pi N u(x + frac 1 2)]
         cos[\frac \pi N v(y + \frac 1 2)]
     \end{align*}$$
-
-
-

@@ -97,7 +97,7 @@ description: Vector
     -   三角系数矩阵可以方便的递推求解
     -   初等变换可将系数矩阵变换为上三角矩阵，而不影响方程解
 
-### *Jacobi Method* 
+### *Jacobi Method*
 
 ![matrix_decomposition_jacobi](imgs/matrix_decomposition_jacobi.png)
 
@@ -158,7 +158,7 @@ description: Vector
 
 -   *Transposation Matrix* 置换矩阵：系数只由 0、1 组成，每行、列恰好有一个 1 的方阵
 
-###  矩阵乘法
+### 矩阵乘法
 
 -   矩阵乘法
     -   向量左乘矩阵：即是对向量进行变换
@@ -236,7 +236,7 @@ $$\begin{align*}
 
 > - 当然 $p_{n+1,n+1}$ 可以置 1 参加运算，不影响结果
 
-###  *Determinant*
+### *Determinant*
 
 ![matrix_determinant_as_stretch](imgs/matrix_determinant_as_stretch.gif)
 
@@ -264,7 +264,7 @@ $$\begin{align*}
         > - $q_3q_1q_2$ 共线：行列式值为 0
     -   三维三点：行列式为三个向量张成的平行六面体体积
 
-###  *Eigen Value*、*Eigen Vector*
+### *Eigen Value*、*Eigen Vector*
 
 -   矩阵（变换）特征向量、特征值几何意义
     -   特征向量：在线性变换后仍然在自身生成空间中，即保持方向不变，仅是模变化的向量
@@ -452,7 +452,7 @@ $$
 -   标量 $y$ 关于向量 $X$ 求导
 
 $$
-\frac {\partial y} {\partial X} = [\frac {\partial y} 
+\frac {\partial y} {\partial X} = [\frac {\partial y}
     {\partial x_1}, \frac {\partial y} {\partial x_1},
     \cdots, \frac {\partial y} {\partial x_n}]
 $$
@@ -569,7 +569,7 @@ $$
         > - $u_k, v_k$：$U, V$的第$k$列向量
         > - $\|M\|_F$：矩阵的Frobenius范数
 
-###  *QR Decomposition*
+### *QR Decomposition*
 
 -   *QR* 分解：将矩阵分解为正交矩阵、上三角矩阵
     -   几何意义：由单位阵出发，经旋转、切变

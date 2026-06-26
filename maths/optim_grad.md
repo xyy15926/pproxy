@@ -62,9 +62,9 @@ s.t. & c_i(x) = 0, i \in E = \{1,2,\cdots,l\}, \\
     $$ f(x) > f(x^{*}) $$
     则称 $x^{*}$ 是约束问题的严格局部最优解
 
-###  局部解一阶必要条件
+### 局部解一阶必要条件
 
-#### 定理1
+####    定理1
 
 > - 设 $a_1,a_2,\cdots,a_m$ 和 $w \in R^n$，$C$ 定义如下
     $$ C = \{v |\sum_{i=1}^m \lambda_i a_i, \lambda_i \geq 0, i=1,2,\cdots,m \} $$
@@ -86,7 +86,7 @@ s.t. & c_i(x) = 0, i \in E = \{1,2,\cdots,l\}, \\
     $$ \lambda d^T \bar x \leq \alpha $$
     而 $\lambda \rightarrow \infty$，左端趋于无穷，矛盾
 
-#### *Farkas* 引理
+####    *Farkas* 引理
 
 > - 设$a_1,a_2,\cdots,a_m$和$w \in R^n$，则以下两个系统有且仅有一个有解
 > > -   系统I：存在 $d$ 满足
@@ -156,7 +156,6 @@ s.t. & g_i(x) \leq 0, i=1，2,\cdots,k \\
 > - $f(x), g(x)$：$R^n$ 上连续可微的凸函数
 > - $h_i(x)$：$R^n$ 上仿射函数
 > - 仿射函数：满足 $f(x)=ax+b, a \in R^n, b \in R, x \in R^n$
-
 
 ##  迭代求解
 
@@ -411,7 +410,7 @@ f_{best}^{(k+1)} & = \min \{ f_{best}^{(k)}, f(x^{(k+1)}) \}
 > - 向量的 *A-范数*、椭圆范数：$\|x\| = \sqrt{(x, x)_A} = \sqrt{x^TAx}$，其中 $A$ 为正定矩阵
 > - 牛顿法：<https://zhuanlan.zhihu.com/p/293951317>
 
-###  *Newton* 法算法
+### *Newton* 法算法
 
 -   *Newton* 法算法
     1.  初始点 $x^{(1)}$、精度要求 $\epsilon$，置 $k=1$
@@ -433,7 +432,7 @@ f_{best}^{(k+1)} & = \min \{ f_{best}^{(k)}, f(x^{(k+1)}) \}
         -   *Hessian* 矩阵不一定可逆
         -   只有迭代点处 *Hessian* 矩阵正定才能保证搜索方向下降
 
-###  阻尼 *Newton* 法
+### 阻尼 *Newton* 法
 
 -   阻尼 *Newton* 法：在搜索方向上增加线性搜索，确保目标值下降
     1.  初始点 $x^{(1)}$、精度要求 $\epsilon$，置 $k=1$
@@ -462,7 +461,7 @@ f_{best}^{(k+1)} & = \min \{ f_{best}^{(k)}, f(x^{(k+1)}) \}
         \end{array} \right.
         $$
 
--   *Goldfeld* 修正：*Hessian* 矩阵非正定时，使用单位矩阵修正 
+-   *Goldfeld* 修正：*Hessian* 矩阵非正定时，使用单位矩阵修正
     -   即，取迭代方向 $d^{(k)}$ 为以下方程的解
         $$ (\nabla^2 f(x^{(k)}) + v_k I) d = -\nabla f(x^{k}) $$
         > - $v_k$：大于 $\nabla^2 f(x^{(k)})$ 最大负特征值绝对值
@@ -489,7 +488,7 @@ m^{(t)}(d) &= f(x^{(t)}) + \nabla f(x^{(t)})^T d + \frac 1 2 d^T B^{(t)} d \\
 \Omega_{(t)} &= \{ x^{(t)} + d | \|d\| \leq \Delta^{(t)} \}
 \end{align*}$$
 > - $\lambda \in (0, 1)$：拉格朗日余项系数
-> - $B^{(t)}$：近似 *Hessian* 矩阵的对称矩阵 
+> - $B^{(t)}$：近似 *Hessian* 矩阵的对称矩阵
 > - $\Omega^{(t)}$：信赖域，确保泰勒展开可近似目标函数的局部
 > - $\Delta^{(t)} > 0$：信赖域半径，与迭代有关的的参数
 
@@ -816,9 +815,9 @@ f(x) & = \frac 1 2 \sum_{i=1}^m r^2_i(x) \\
     w_k &= \frac {y^{(k)}} {(y^{(k)})^T s^{(k)}} - \frac {B^{(k)} s^{(k)}} {(s^{(k)})^T B^{(k)} s^{(k)}}
     \end{align*}$$
 
-###  拟牛顿法的基本性质
+### 拟牛顿法的基本性质
 
-#### 算法的下降性
+####    算法的下降性
 
 > - 设 $B^{(k)}$（$H^{(k)}$）是正定对称矩阵，且有 $(s^{(k)})^T y^{(k)} > 0$，则由 *BFGS*（*DFS*） 公式构造的 $B^{(k+1)}$（$H^{(k+1)}$）是正定对称的
 
@@ -843,7 +842,7 @@ f(x) & = \frac 1 2 \sum_{i=1}^m r^2_i(x) \\
         -   或产生严格递减的序列 $\{f(x^{(k)})\}$
     -   若目标函数满足一定条件我，可以证明拟牛顿法产生的点列 $\{x^{(k)}\}$ 收敛到极小点，且收敛速率超线性
 
-#### 搜索方向共轭性
+####    搜索方向共轭性
 
 -   搜索方向共轭性：用变度量法 *BFGS*（*DFP*）算法求解正定二次函数
     $$ \min f(x) = \frac 1 2 x^T G x + r^T x + \sigma $$
@@ -860,7 +859,7 @@ f(x) & = \frac 1 2 \sum_{i=1}^m r^2_i(x) \\
         H^{(n+1)} &= G^{-1}
         \end{align*}$$
 
-#### 二次终止性
+####    二次终止性
 
 -   二次终止性：若一维搜索是精确的，则 *BFGS*（*DFP*）具有二次终止
     -   若 $\triangle f(x^{(k)}) = 0, k \leq n$，则得到最优解 $x^{(k)}$
@@ -950,7 +949,7 @@ $$
 
 ### 共轭梯度公式
 
--  （二次型目标函数下）等价的共轭梯度公式
+-   （二次型目标函数下）等价的共轭梯度公式
     -   *Hestenes-Stiefel* 公式
         $$
         \beta^{(k)} = \frac {\nabla f(x^{(k+1)})^T G d^{(k)}}
@@ -1016,7 +1015,7 @@ $$ \min_{x \in \mathcal{H}}R(x) + F(x) $$
 > - *Prox-Grad*：<https://www.stat.cmu.edu/~ryantibs/convexopt/lectures/prox-grad.pdf>
 > - 近端梯度下降：<https://www.zhihu.com/tardis/zm/art/82622940>
 
-###  *Proximal Operator*
+### *Proximal Operator*
 
 $$ prox_{f}(x) = \arg\min_u (f(u) + \frac 1 2 \|u - x\|^2) $$
 > - $f(x)$：凸函数
@@ -1040,7 +1039,7 @@ $$ prox_{f}(x) = \arg\min_u (f(u) + \frac 1 2 \|u - x\|^2) $$
 > - *Proximal Operator*：<https://en.wikipedia.org/wiki/Proximal_operator>
 > - 近端算子连续可微
 
-#### 近端算子部分性质
+####    近端算子部分性质
 
 -   分离函数：$f$ 为分离函数（各分量独立、可加）时，有
     $$\begin{align*}
@@ -1160,7 +1159,7 @@ F(u) & = F(x) + \nabla F(x)^T (u - x) + \frac 1 2
 > - $\|\nabla F(u) - \nabla F(x)\|_2 \leq L \|u-x\|_2$：
     $\nabla F(x)$利普希茨连续性质
 
-#### 反向推导
+####    反向推导
 
 -   对 $F(x)+R(x)$ 在 $x_0$ 附近作泰勒展开
     $$ F(u)+R(u) \leq F(x) + \nabla F(x)^T (u - x) + \frac 1 {2\gamma} \|u - x\|_2^2 + R(x) $$
@@ -1176,7 +1175,7 @@ F(u) & = F(x) + \nabla F(x)^T (u - x) + \frac 1 2
     & = \arg\min_u (R(u) + \|u - x + \frac 1 {2\gamma} \nabla F(x)\|_2^2)
     \end{align*}$$
 
-###  近端算法推广
+### 近端算法推广
 
 -   以下算法都是近端算法的特例
     -   *shrinkage thresholding algorithm*
@@ -1190,7 +1189,7 @@ F(u) & = F(x) + \nabla F(x)^T (u - x) + \frac 1 2
     $$ prox_{\gamma, f}(x) = \arg\min_u (f(u) + \mu(u) - \mu(x) + <\nabla \mu(x), u - x>) $$
     -   取 $\mu(x) = \frac 1 2 \|x\|_2^2$ 时，即为普通近端算子
 
-## *Projected Gradient Descent*
+##  *Projected Gradient Descent*
 
 $$\begin{array}{l}
 \min_{x} & F(x) \\
@@ -1599,7 +1598,7 @@ $$
 
 ### *Fenchel Conjugate* 推导 *Lagrange Duality*
 
--   原问题 *Prime* 
+-   原问题 *Prime*
 
     $$\begin{align*}
     & \min {f(x)} \\
@@ -1928,7 +1927,7 @@ x^{(t+1)} &= \arg\min_x \{ \frac 1 t \sum_{r=1}^t \partial R(x^{(r)}) x + F(x)
 > - *Dual Averaging Method*：<https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/rda_nips09_fixed.pdf>
 > - *FTRL* 不太简短之介绍：<https://liam.page/2019/08/31/a-not-so-simple-introduction-to-FTRL/>
 
-###  *Follow the Regularized Leader*
+### *Follow the Regularized Leader*
 
 $$\begin{align*}
 x^{(t+1)} &= \arg\min_x \{ \sum_{r=1}^t \partial R(x^{(r)}) x

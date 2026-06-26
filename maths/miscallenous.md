@@ -15,14 +15,14 @@ date: 2024-01-10 20:53:15
 updated: 2025-08-23 12:54:17
 toc: true
 mathjax: true
-description: 
+description: 初等代数与杂项
 ---
 
 #   初等代数
 
 ##  公式
 
-###    最大公约数、最小公倍数
+### 最大公约数、最小公倍数
 
 -   最大公约数
     -   辗转相除法：$gcd(m, n) = gcd(n, m \mod n)$
@@ -99,7 +99,7 @@ description:
 
 #   分析
 
-##   级数
+##  级数
 
 -   *Analytic Continuation* 解析延拓
     -   将解析函数从其原始定义域扩展到更大定义域，同时保持函数的解析性
@@ -239,10 +239,9 @@ $$ f(x) = h(f_1(x), \cdots, f_n(x)) $$
         & = f(\hat x) + g^T(x - \hat x)
         \end{align*}$$
 
-
 #   概率、随机
 
-##  *Frequentist and Bayesian* 
+##  *Frequentist and Bayesian*
 
 |          | 频率学派                                     | 贝叶斯学派                                      |
 |----------|----------------------------------------------|-------------------------------------------------|
@@ -281,7 +280,7 @@ $$ f(x) = h(f_1(x), \cdots, f_n(x)) $$
 -   *Statistic* 统计量：样本的函数，代表从样本中提取的信息
     -   *Sufficient Statistics* 充分统计量：统计量单独可确定某个分布（所有未知参数），则称为分布的充分统计量
 
-##   随机分布
+##  随机分布
 
 | 分布     | *PDF*                                                                          | *CDF* | 描述 |
 |----------|--------------------------------------------------------------------------------|-------|------|
@@ -327,7 +326,7 @@ $$ f(x) = h(f_1(x), \cdots, f_n(x)) $$
             -   特别的，联合概率分布剔除最后随机变量即得到 1
             -   条件概率分布剔除最后目标随机变量时即为 **条件随机变量的联合分布**
 
-###    特殊分布
+### 特殊分布
 
 ####    *P-stable Distributions*
 
@@ -406,9 +405,9 @@ f_X(x|\theta) &= h(x) e^{\eta(\theta) T(x) - A(\theta)} \\
 
 > - 2.参数估计：<https://www.zhangzhenhu.kcom/probability_model/2.%E5%8F%82%E6%95%B0%E4%BC%B0%E8%AE%A1.html>
 
-###    最大似然估计
+### 最大似然估计
 
-#### *Likelihood*
+####    *Likelihood*
 
 $$\begin{align*}
 L(\theta; D) &= P(D; \theta) \\
@@ -619,7 +618,7 @@ $$\begin{align*}
 
 > - 两不等式可用绝对值合并，但将不够精确
 
-#### *Bretagnolle-Huber-Carol Inequility*
+####    *Bretagnolle-Huber-Carol Inequility*
 
 -   *Bretagnolle-Huber-Carol* 不等式：${X_i: i=1,2,\cdots,N} i.i.d. M(p1, p_2, \cdots, p_k)$ 服从类别为 $k$ 的多项分布
     $$ p{\sum_{i=1}^k |N_i - Np_i| \geq \epsilon} \leq
@@ -630,7 +629,7 @@ $$\begin{align*}
 
 ##  集合概念
 
-###    集合的势
+### 集合的势
 
 -   等势：若集合 $X, Y$ 之间存在双射 $\phi: X \rightarrow Y$，则称 $X, Y$ 等势
     -   等势构成集合之间的等价关系
@@ -641,7 +640,7 @@ $$\begin{align*}
 
 > - 集合的势：<https://zhuanlan.zhihu.com/p/33770583>
 
-###    集合关系
+### 集合关系
 
 -   *Equivalence Relation* 等价关系：设 $R$ 是集合 $A$ 上的二元关系，若 $R$ 满足以下条件则称为定义在 $A$ 上的等价关系，并习惯性改记为 $\sim$
     -   等价关系条件
@@ -656,7 +655,7 @@ $$\begin{align*}
 
 -   同余关系：若 $aRb, cRd \Rightarrow (ac)R(bd)$，则称 $R$ 是同余关系
 
-###    集合的序
+### 集合的序
 
 -   偏序、全序、良序
     -   偏序集：若集合 $A$ 上有二元关系 $\leq$ 满足以下性质，则称集合 $A$ 为偏序集，关系 $\leq$ 称为偏序关系
@@ -675,7 +674,7 @@ $$\begin{align*}
         -   由选择公理，可以一直从集合中选择元素，建立偏序关系
         -   而集合有限，则集合和序数之间可以建立双射
 
-###    序数
+### 序数
 
 -   序数：若集合 $A$ 中每个元素都是 $A$ 的子集，则称 $A$ 是传递的。而 $A$ 对于关系 $\in$ 构成良序集，则称 $A$ 为序数
     -   满足如下形式的集合即为序数
@@ -694,7 +693,7 @@ $$\begin{align*}
 > - 序数：<https://zh.wikipedia.org/wiki/%E5%BA%8F%E6%95%B0>
 > - 自然数可用于描述集合大小（势，基数）、序列中元素的位置（序，序数）
 
-###    基数
+### 基数
 
 -   基数：序数 $k$ 为基数，若对任意序数 $\lambda < k$，都有 $|\lambda| < |k|$
     -   基数是集合势的标尺
@@ -711,7 +710,7 @@ $$\begin{align*}
 > - 基数：<https://zh.wikipedia.org/wiki/%E5%9F%BA%E6%95%B0_(%E6%95%B0%E5%AD%A6)>
 > - 连续统假设：<https://zhuanlan.zhihu.com/p/34097692>
 
-##   *Convexity Set*
+##  *Convexity Set*
 
 -   *Convex Set* 凸集：集合 $C \in R^NK$ 是凸集，如果 $\forall x_1, x_2 \in C, \lambda \in [0, 1]$ 有
     $$ \lambda x_1 + (1 - \lambda)x_1 \in C $$
@@ -758,7 +757,7 @@ $$\begin{align*}
 > - $V$：向量空间
 > - 凸集：<https://zhuanlan.zhihu.com/p/441144463>
 
-# 空间：集合 + 结构
+#   空间：集合 + 结构
 
 -   空间：赋予了某种结构或规则的的集合
     -   （数学、集合上）结构：附加在集合上的对象，使得集合更易操作、被赋予特殊意义
@@ -921,7 +920,6 @@ $$\begin{align*}
     -   说明
         -   直观上，若 $X$ 中任一点可被 $A$ 中点很好逼近，则称 $A$ 在 $X$ 中稠密
 
-
 ##  向量空间、线性空间
 
 -   向量空间、线性空间：定义了加法、数乘的空间
@@ -961,7 +959,7 @@ $$\begin{align*}
 
 > - 度量空间不一定是线性空间
 
-###    柯西列
+### 柯西列
 
 -   *Cauthy Sequence* 柯西列：给定度量空间 $(M,d)$，序列 $x_1,x_2,\cdots$ 被称为柯西列，若 $\forall r > 0, \exists N, \forall m,n > N, d(x_m,x_n) < r$
     -   柯西列定义依赖度量空间，在该空间中柯西列总是趋近的，即距离越来越小
@@ -969,7 +967,7 @@ $$\begin{align*}
 
 > - 在一致空间中可定义更为抽象的柯西滤子、柯西网
 
-###    *Complete Metric Space*
+### *Complete Metric Space*
 
 -   完备（度量）空间：空间中任何柯西列收敛于该空间内空间
     -   有理数空间不完备，如：$\sqrt 2$ 的有限位小数表示构成柯西列，但是极限不在有理数空间内
@@ -1004,7 +1002,7 @@ $$\begin{align*}
 
 > - P-进数：<https://zh.wikipedia.org/wiki/P%E9%80%B2%E6%95%B8>
 
-###    紧致性
+### 紧致性
 
 -   紧致性
     -   紧致性等价的 3 个条件（定义）
@@ -1015,11 +1013,11 @@ $$\begin{align*}
         -   紧致集合的闭子集也是紧致的
         -   *海涅-博雷尔* 定理：度量空间是紧致的，当且仅当该空间是完备且完全有界的
 
-###    稠密性
+### 稠密性
 
 -   稠密性：度量空间 $(E,d)$ 中，当 $X$ 拓扑由度量给定时，在 $X$ 中 $A$ 的闭包 $\bar A = X$ 时，$A$ 在 $X$ 中是稠密的
 
-###    度量空间间映射
+### 度量空间间映射
 
 -   *Isometry* 等距同构/保距映射：对度量空间 $M_1, M_2$，映射 $f: M_1 \rightarrow M_2$ 称为等距同构，若 $\forall a,b \in M_1, d_2(f(a),f(b)) = d_1(a,b)$
     -   即在度量空间中保持距离不变的同构关系
@@ -1169,9 +1167,9 @@ $$\begin{align*}
 
 -   *Automorphism* 自同构：若一个自同态也是自同构的，那么称为自同构
 
-#  杂项
+#   杂项
 
-## 不等式、等式
+##  不等式、等式
 
 ### *Holder Inequity*
 

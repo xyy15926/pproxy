@@ -390,7 +390,6 @@ description: Line Search
 
         转 2
 
-
 ##  非精确一维搜索
 
 -   非精确一维搜索
@@ -453,4 +452,3 @@ description: Line Search
 
 -   说明
     -   *Wolfe-Powell* 方法能保证可接受解中包含最优解，而 *Goldstein* 方法不能保证
-

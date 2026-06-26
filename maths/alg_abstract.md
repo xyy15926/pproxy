@@ -16,7 +16,7 @@ date: 2021-09-06 11:19:01
 updated: 2024-07-21 16:59:38
 toc: true
 mathjax: true
-description: 
+description: 群、环、域、数论
 ---
 
 #   群
@@ -205,9 +205,7 @@ description:
 -   定理：$H$ 为 $G$ 的子群，$a,b \in G$，则 $aH = bH \Longleftrightarrow a^{-1} b \in H$
     -   逻辑上：$aH=bH \Longleftrightarrow aRb \Longleftrightarrow a^{-1}b \in H$
 
-
 -   商集：$H$ 为 $G$ 的子群，$G$ 关于等价关系 $aRb \Longleftrightarrow a^{-1}b \in H$ 的商集合称为 $G$ 对 $H$ 的左商集，也称为 $G$ 对 $H$ 的左陪集空间，记作 $G/H$；$G/H$ 的阶 $|G/H|$ 称为 $H$ 在 $G$ 中的指数，记为 $[G:H]$
-
 
 > - $a^{-1}b$ 性质的优越性可以从其涉及元、逆元理解，而元、逆元可导出单位元
 
@@ -216,7 +214,7 @@ description:
 -   群同构：两个群之间的双射
     -   若两个群之间存在同构，则两个群称为同构的
     -   从群论角度，同构群有相同性质而无需区分
-    -   
+    -
 
 -   内自同构：群 $G$ 的自同构如果是 $g \in G$ 的共轭作用，称为内自同构
     -   共轭作用：$\iota_g: G \leftarrow G, x \mapsto gxg^{-1}$
@@ -367,7 +365,7 @@ description:
     -   $m$ 存在原根，当前仅当 $m=1,2,4,p^g,2p^g$，其中 $p$ 奇素数
     -   $m$ 有原根 $g$ 时，所有与 $m$ 互质的数均可用 $g$ 幂次表示，记与 $m$ 互质的数为 $g^0,g^1,\cdots,g^{\phi(m)-1}$
 
--   离散对数：$(a,m)=1$ 时，用 $log_{m,g}a$ 表示模 $m$ 意义下以原根 $g$ 为底 $a$ 的离散对数，满足 
+-   离散对数：$(a,m)=1$ 时，用 $log_{m,g}a$ 表示模 $m$ 意义下以原根 $g$ 为底 $a$ 的离散对数，满足
 
     $$
     g^{log_{m,g}^a} \equiv a \pmod m
@@ -654,7 +652,6 @@ x \equiv a_n, & (\mod m_n)
 -   *Lucas* 定理：对质数 $p$，有
     $$ C(n, m) \% p = (C(n//p, m//p) * C(n\%p, m\%p)) \% p $$
     > - $C(n, m)$：为 $n$ 中取 $m$ 的组合数，$m=0$ 时取 1
-    》 - 
 
 -   应用说明
     -   *Lucas* 定理常用于求解大组合数对素数取模问题
@@ -662,7 +659,7 @@ x \equiv a_n, & (\mod m_n)
 
 > - *Lucas* 定理：<https://oi-wiki.org/math/number-theory/lucas/>
 
-# Real Number
+#   Real Number
 
 ##  实数定义
 
@@ -719,8 +716,3 @@ x \equiv a_n, & (\mod m_n)
 
 > - 其中区间套定理、柯西收敛准则本身不内蕴实数域的无限性，需要补充阿基米德性质才足够强
 > - <https://zhuanlan.zhihu.com/p/48859870>
-
-
-
-
-
